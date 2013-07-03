@@ -348,14 +348,7 @@ public abstract class Analyzer{
 		return eval;
 	}
 
-	public Evaluation getTrainTestEval(Classifier cls, Instances train, Instances test) throws Exception{
-		Classifier classifier = AbstractClassifier.makeCopy(cls);
-		classifier.buildClassifier(train);
-		Evaluation eval = new Evaluation(train);
-		test.setClassIndex(test.numAttributes()-1);
-		eval.evaluateModel(classifier,test);
-		return eval;
-	}
+	public abstract Evaluation getTrainTestEval(Instances train, Instances test) throws Exception ;
 	
 	/**
 	 * Returns the last training Weka Instances set that was used for classification.

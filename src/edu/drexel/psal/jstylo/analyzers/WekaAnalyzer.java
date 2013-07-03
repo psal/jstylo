@@ -207,6 +207,16 @@ public class WekaAnalyzer extends Analyzer {
 	}
 	
 	@Override
+	public Evaluation getTrainTestEval(Instances train, Instances test) throws Exception{
+		Classifier cls = AbstractClassifier.makeCopy(classifier);
+		cls.buildClassifier(train);
+		Evaluation eval = new Evaluation(train);
+		test.setClassIndex(test.numAttributes()-1);
+		eval.evaluateModel(cls,test);
+		return eval;
+	}
+	
+	@Override
 	public Evaluation runCrossValidation(Instances data, int folds, long randSeed,
 			int relaxFactor) {
 		

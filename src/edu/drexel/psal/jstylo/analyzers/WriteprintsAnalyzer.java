@@ -753,6 +753,12 @@ public class WriteprintsAnalyzer extends Analyzer {
 				;
 		return description;
 	}
+
+	@Override
+	public Evaluation getTrainTestEval(Instances train, Instances test) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	// ============================================================================================
 	// ============================================================================================

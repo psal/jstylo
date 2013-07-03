@@ -931,7 +931,7 @@ public class AnalysisTabDriver {
 					updateResultsView();
 					Evaluation results = null;
 					try {
-						results = main.analysisDriver.getTrainTestEval(a.getClassifier(),
+						results = main.analysisDriver.getTrainTestEval(
 								main.ib.getTrainingInstances(),
 								main.ib.getTestInstances());
 						
