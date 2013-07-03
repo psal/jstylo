@@ -3,6 +3,7 @@ package edu.drexel.psal.jstylo.generics;
 import java.io.StringReader;
 import java.util.*;
 
+import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
@@ -190,7 +191,8 @@ public abstract class Analyzer{
 	 * &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp To avoid this, make sure each author name is unique and not a subset of another, adding symbols or numbers if necessary.<br>
 	 * @return an evaluation object representing the classification results
 	 */
-	public Evaluation getTrainTestEval(List<Document> testDocs){ //TODO overhaul this for the new author stuff
+	//TODO remove this later
+	public Evaluation getTrainTestEvalCompatability(List<Document> testDocs){ //TODO overhaul this for the new author stuff
 		
 		Evaluation eval = null; //return object
 		SMO smo = new SMO(); //dummy classifier to hold data
@@ -346,139 +348,13 @@ public abstract class Analyzer{
 		return eval;
 	}
 
-	public List<Author> getAuthorStatistics(List<Document> testDocs){
-		
-		ArrayList<String> extractedAuthors = new ArrayList<String>();
-		
-		//use the results map to find all of the potential authors and add them to extractedAuthors
-		for (String temp: results.keySet()){
-			for (String s: results.get(temp).keySet()){
-				extractedAuthors.add(s);
-			}
-			break;
-		}
-		List<Author> authorStats = new ArrayList<Author>(extractedAuthors.size());
-		for (String s: extractedAuthors){
-			Author temp = new Author(s);
-			authorStats.add(temp);
-		}
-		
-		
-		for (String testDoc: results.keySet()){
-			
-			String selectedAuthor = "";
-			Double max =0.0;
-
-			//Nabs the corresponding testing document
-			
-			Document currTestDoc=null;
-			for (Document d: testDocs){
-				if (d.getTitle().equals(testDoc)){
-					currTestDoc = d;
-					break;
-				}
-			}
-
-			//find the most likely author
-			for (String potentialAuthor:results.get(currTestDoc.getTitle()).keySet()){
-				if (results.get(currTestDoc.getTitle()).get(potentialAuthor).doubleValue()>max){ //find which document has the highest probability of being selected
-					max = results.get(currTestDoc.getTitle()).get(potentialAuthor).doubleValue();
-					selectedAuthor=potentialAuthor;
-				}
-			}
-			
-			//check to see whether or not that author was correct, and evaluate the model accordingly.
-			if (currTestDoc.getAuthor().equals(selectedAuthor)){ //correctly identified
-				
-				for (Author a: authorStats){
-					if (currTestDoc.getAuthor().equals(a.getName())){ //increase the real author's TP and numDocs
-						a.incrementTruePositiveCount();
-						a.incrementNumberOfDocuments();
-						
-					} else { //Increase everyone else's TN
-						a.incrementTrueNegativeCount();
-					}
-				}
-				
-			} else { //incorrectly identified
-				
-				for (Author a: authorStats){
-					if (currTestDoc.getAuthor().equals(a.getName())){ //increase the real author's FN and numDocs
-						a.incrementFalseNegativeCount();
-						a.incrementNumberOfDocuments();
-					} else if (selectedAuthor.equals(a.getName())){ //increase the guess's FP
-						a.incrementFalsePositiveCount();
-					} else { //increase everyone else's TN
-						a.incrementTrueNegativeCount();
-					}
-				}
-			}
-		}
-		
-		return authorStats;
-	}
-		
-	/**
-	 * @return String containing accuracy and confusion matrix from train/test.
-	 */
-	public String getTrainTestStatString(List<Document> testDocs) { //TODO implement ROC stuff
-		
-		try {
-			
-			String resultsString = "==========Accuracy==========\n\n";
-			
-			double weightedTPR = 0.0;
-			double weightedFPR = 0.0;
-			double weightedPre = 0.0;
-			double weightedRec = 0.0;
-			double weightedF1M = 0.0;
-			double weightedMCC = 0.0;
-			double weightedROC = 0.0;
-			
-			List<Author> stats = getAuthorStatistics(testDocs);
-			int correctDocs = 0;
-			int totalDocs = 0;
-			String authorInfoString="==========Detailed Accuracy by Author==========\n\n";
-			authorInfoString+="\t\tTP Rate  FP Rate  Precision  Recall   F-Measure  MCC      Class\n";
-			for (Author a: stats){
-
-				if (!(a.getName().equals("_dummy_"))){
-					correctDocs+=a.getTruePositiveCount();
-					int numDocs = a.getNumberOfDocuments();
-					totalDocs+=numDocs;
-					authorInfoString+=String.format("\t\t%.3f    %.3f    %.3f      %.3f    %.3f      %.3f    %s\n",
-						a.getTruePositiveRate(),a.getFalsePositiveRate(),a.getPrecision(),a.getRecall(),a.getF1Measure(),a.getMCC(),a.getName());
-					
-					//weighted statistics stuff
-					
-					weightedTPR+=a.getTruePositiveRate()*numDocs;
-					weightedFPR+=a.getFalsePositiveRate()*numDocs;
-					weightedPre+=a.getPrecision()*numDocs;
-					weightedRec+=a.getRecall()*numDocs;
-					weightedF1M+=a.getF1Measure()*numDocs;
-					weightedMCC+=a.getMCC()*numDocs;
-				}
-			}
-						
-			resultsString+=String.format("\tCorrectly classified instances: %d\t%.3f %%\n",correctDocs,((double)correctDocs/totalDocs)*100.0);
-			resultsString+=String.format("\tIncorrectly classified instances: %d\t%.3f %%\n\n",(totalDocs-correctDocs),
-					((double)(totalDocs-correctDocs)/totalDocs)*100.0);
-			
-			resultsString+=authorInfoString;
-			resultsString+=String.format("Weighted Avg.\t%.3f    %.3f    %.3f      %.3f    %.3f      %.3f\n\n",
-					weightedTPR/totalDocs,weightedFPR/totalDocs,weightedPre/totalDocs,weightedRec/totalDocs,
-					weightedF1M/totalDocs,weightedMCC/totalDocs);
-			
-			Evaluation eval = getTrainTestEval(testDocs);
-			resultsString += eval.toMatrixString() + "\n";
-			
-			return resultsString;
-		
-		} catch (Exception e) {
-			System.out.println("Failed to get train/test statistics string");
-			e.printStackTrace();
-			return "";
-		}
+	public Evaluation getTrainTestEval(Classifier cls, Instances train, Instances test) throws Exception{
+		Classifier classifier = AbstractClassifier.makeCopy(cls);
+		classifier.buildClassifier(train);
+		Evaluation eval = new Evaluation(train);
+		test.setClassIndex(test.numAttributes()-1);
+		eval.evaluateModel(classifier,test);
+		return eval;
 	}
 	
 	/**

@@ -7,8 +7,10 @@ import java.util.Map;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
+import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.functions.SMO;
 import weka.core.Instances;
 
 /**
@@ -261,7 +263,7 @@ public class SimpleAPI {
 	 * @return Evaluation containing train/test statistics
 	 */
 	public Evaluation getTrainTestEval(){
-		return analysisDriver.getTrainTestEval(ib.getProblemSet().getAllTrainDocs());
+		return analysisDriver.getTrainTestEvalCompatability(ib.getProblemSet().getAllTestDocs());
 	}
 	
 	/**
@@ -294,22 +296,17 @@ public class SimpleAPI {
 	
 	/**
 	 * @return String containing accuracy and confusion matrix from train/test.
+	 * @throws Exception 
 	 */
 	public String getTrainTestStatString() {
-		return analysisDriver.getTrainTestStatString(ib.getProblemSet().getAllTestDocs());
-	}
-	
-	public String getWeightedStats(){
-		String source = analysisDriver.getTrainTestStatString(ib.getProblemSet().getAllTestDocs());
-		String resultsString = "";
 		
-		int start = source.indexOf("Weighted Avg.");
-		
-		String trimmed = source.substring(start);
-		int end = trimmed.indexOf("\n");
-		resultsString = trimmed.substring(0,end+1);
-		
-		return resultsString;
+		Evaluation eval = getTrainTestEval();
+		try {
+			return eval.toSummaryString() + "\n" + eval.toClassDetailsString() + "\n" + eval.toMatrixString();
+		} catch (Exception e) {
+			Logger.logln("Failed to generate stat string!", LogOut.STDERR);
+			return null;
+		}
 	}
 	
 	/**
@@ -327,7 +324,7 @@ public class SimpleAPI {
 			results+=summary.substring(start,end+1)+"\n";
 			
 		} else if (selected == analysisType.TRAIN_TEST){
-			String source = analysisDriver.getTrainTestStatString(ib.getProblemSet().getAllTestDocs());
+			String source = getTrainTestStatString();
 					
 			int start = source.indexOf("Correctly classified");
 			int end = source.indexOf("%");
@@ -336,23 +333,8 @@ public class SimpleAPI {
 			
 		} else {
 			
-			Evaluation crossEval = getCrossValEval();
-			String summary = crossEval.toSummaryString();
-			int start = summary.indexOf("Correctly Classified Instances");
-			int end = summary.indexOf("%");
-			results+=" CrossVal Results: " + summary.substring(start,end+1)+"\n";
-			
-			List<Author> stats = analysisDriver.getAuthorStatistics(ib.getTestDocs());
-			int correctDocs = 0;
-			int totalDocs = 0;
-			for (Author a: stats){
+			return "Not available for BOTH enum";
 
-				if (!(a.getName().equals("_dummy_"))){
-					correctDocs+=a.getTruePositiveCount();
-					totalDocs+=a.getNumberOfDocuments();
-				}
-			}
-			results+="\t\t\tTrain/Test results: "+(((double) correctDocs)/totalDocs)+" %\n";
 		}
 		
 		return results;
@@ -429,17 +411,26 @@ public class SimpleAPI {
 	public static void main(String[] args){
 		
 		SimpleAPI test = new SimpleAPI(
-				"C:/Users/Mordio/workspace/research/tests/200000Words-10000perAuthorNC/CrossVal_600-700.xml",
+				"./jsan_resources/problem_sets/drexel_1_train_test_new.xml",
 				"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
 				8, "weka.classifiers.functions.SMO",
-				analysisType.CROSS_VALIDATION);
+				analysisType.TRAIN_TEST);
 
 		
 		test.prepareInstances();
 		test.prepareAnalyzer();
 		test.run();
+
+		SMO smo = new SMO();
+		try {
+			smo.buildClassifier(test.getTrainingInstances());
+			Evaluation eval = new Evaluation(test.getTrainingInstances());
+			eval.evaluateModel(smo,test.getTestInstances());
+			System.out.println("results: "+eval.weightedAreaUnderROC());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
-		System.out.println(test.getCrossValEval().weightedAreaUnderROC());
 		
 		//test.writeArff("./training.arff",test.getTrainingInstances());
 		//test.writeArff("./testing.arff",test.getTestInstances());
