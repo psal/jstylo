@@ -1317,10 +1317,9 @@ public class GUIMain extends javax.swing.JFrame {
 							analysisTypeButtonGroup.add(analysisClassTestUnknownJRadioButton);
 							analysisClassTestUnknownJRadioButton.setText("Train on training corpus and classify unknown test documents");
 							analysisClassTestUnknownJRadioButton.setToolTipText("<html>" +
-									"Use the provided training documents to classify all documents in the \"_Unknown\" folder.<br>" +
+									"Use the provided training documents to classify all of the provided testing documents.<br>" +
 									"This will output a matrix of documents versus authors with the probability of each document being written by a particular author.<br>" +
 									"The most likely author will be marked with a \"+\" sign.<br>" +
-									"WARNING: All documents not in the \"_Unknown_\" directory will be ignored!" +
 									"</html>");
 							options.add(analysisClassTestJPanel,BorderLayout.CENTER);
 						}

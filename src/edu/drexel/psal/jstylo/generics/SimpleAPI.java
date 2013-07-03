@@ -2,6 +2,7 @@ package edu.drexel.psal.jstylo.generics;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,8 @@ import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
+import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 
 /**
@@ -263,7 +266,26 @@ public class SimpleAPI {
 	 * @return Evaluation containing train/test statistics
 	 */
 	public Evaluation getTrainTestEval(){
-		return analysisDriver.getTrainTestEvalCompatability(ib.getProblemSet().getAllTestDocs());
+		try {
+			Instances train = ib.getTrainingInstances();
+			Instances test = ib.getTestInstances();
+			test.setClassIndex(test.numAttributes()-1);
+			List toRemove = new ArrayList<Instance>();
+			
+			for (int i=0;i<test.numInstances();i++){
+				if (test.get(i).classAttribute().value(Attribute.STRING)=="_Unknown_"){
+					toRemove.add(test.get(i));
+				}
+			}
+			
+			test.remove(toRemove);
+			
+			return analysisDriver.getTrainTestEval(ib.getTrainingInstances(),ib.getTestInstances());
+		} catch (Exception e) {
+			Logger.logln("Failed to build evaluation");
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	/**

@@ -14,8 +14,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
@@ -27,6 +29,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import weka.classifiers.Evaluation;
+import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 
 public class AnalysisTabDriver {
@@ -746,7 +750,11 @@ public class AnalysisTabDriver {
 				
 				content += getTimestamp()+" Extracting features from test documents ("+(main.ib.isSparse() ? "" : "not ")+"using sparse representation)...\n";
 				updateResultsView();
-
+				
+				if (main.analysisClassTestKnownJRadioButton.isSelected()){
+					main.ib.getProblemSet().removeAuthor("_Unknown_");
+				}
+				
 				try {
 					main.ib.createTestInstancesThreaded();
 				} catch (Exception e) {
@@ -929,11 +937,16 @@ public class AnalysisTabDriver {
 					content += getTimestamp()+" Starting classification...\n";
 					Logger.log("Starting classification...\n");
 					updateResultsView();
+					
+					Instances train = main.ib.getTrainingInstances();
+					Instances test = main.ib.getTestInstances();
+					test.setClassIndex(test.numAttributes()-1);
+
 					Evaluation results = null;
 					try {
 						results = main.analysisDriver.getTrainTestEval(
-								main.ib.getTrainingInstances(),
-								main.ib.getTestInstances());
+								train,
+								test);
 						
 					} catch (Exception e) {
 						Logger.logln("Failed to build train test eval with known authors!",LogOut.STDERR);
