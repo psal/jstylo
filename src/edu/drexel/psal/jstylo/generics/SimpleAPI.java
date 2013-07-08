@@ -38,7 +38,7 @@ public class SimpleAPI {
 	///////////////////////////////// Data
 	
 	//which evaluation to perform enumeration
-	public static enum analysisType {CROSS_VALIDATION,TRAIN_TEST,BOTH};
+	public static enum analysisType {CROSS_VALIDATION,TRAIN_TEST_UNKNOWN,TRAIN_TEST_KNOWN};
 	
 	//Persistant/necessary data
 	InstancesBuilder ib; //does the feature extraction
@@ -185,13 +185,14 @@ public class SimpleAPI {
 			break;
 
 		// do a train/test
-		case TRAIN_TEST:
+		case TRAIN_TEST_UNKNOWN:
 			trainTestResults = analysisDriver.classify(ib.getTrainingInstances(), ib.getTestInstances(), ib.getProblemSet().getAllTestDocs());
 			break;
 
 		//do both
-		case BOTH:
+		case TRAIN_TEST_KNOWN:
 			crossValResults = analysisDriver.runCrossValidation(ib.getTrainingInstances(), numFolds, 0);
+			ib.getProblemSet().removeAuthor("_Unknown_");
 			trainTestResults = analysisDriver.classify(ib.getTrainingInstances(), ib.getTestInstances(), ib.getProblemSet().getAllTestDocs());
 			break;
 		
@@ -270,17 +271,8 @@ public class SimpleAPI {
 			Instances train = ib.getTrainingInstances();
 			Instances test = ib.getTestInstances();
 			test.setClassIndex(test.numAttributes()-1);
-			List toRemove = new ArrayList<Instance>();
-			
-			for (int i=0;i<test.numInstances();i++){
-				if (test.get(i).classAttribute().value(Attribute.STRING)=="_Unknown_"){
-					toRemove.add(test.get(i));
-				}
-			}
-			
-			test.remove(toRemove);
-			
-			return analysisDriver.getTrainTestEval(ib.getTrainingInstances(),ib.getTestInstances());
+
+			return analysisDriver.getTrainTestEval(train,test);
 		} catch (Exception e) {
 			Logger.logln("Failed to build evaluation");
 			e.printStackTrace();
@@ -345,7 +337,7 @@ public class SimpleAPI {
 			int end = summary.indexOf("%");
 			results+=summary.substring(start,end+1)+"\n";
 			
-		} else if (selected == analysisType.TRAIN_TEST){
+		} else if (selected == analysisType.TRAIN_TEST_KNOWN ){
 			String source = getTrainTestStatString();
 					
 			int start = source.indexOf("Correctly classified");
@@ -354,8 +346,11 @@ public class SimpleAPI {
 			results += source.substring(start,end+1);
 			
 		} else {
-			
-			return "Not available for BOTH enum";
+			Evaluation eval = getTrainTestEval();
+			String summary = eval.toSummaryString();
+			int start = summary.indexOf("Correctly classified Instances");
+			int end = summary.indexOf("%");
+			results+=summary.substring(start,end+1)+"\n";
 
 		}
 		
@@ -373,90 +368,23 @@ public class SimpleAPI {
 		InstancesBuilder.writeToARFF(path,insts);
 	}
 	
-	/////////////////////////////////
-	//TODO try to modify these for statistics sake
-	/*
-	  /**
-	   * Returns the area under ROC for those predictions that have been collected
-	   * in the evaluateClassifier(Classifier, Instances) method. Returns
-	   * Utils.missingValue() if the area is not available.
-	   * 
-	   * @param classIndex the index of the class to consider as "positive"
-	   * @return the area under the ROC curve or not a number
-	   */
-	/*
-	  public double areaUnderROC(int classIndex) {
-
-	    // Check if any predictions have been collected
-	    if (m_Predictions == null) {
-	      return Utils.missingValue();
-	    } else {
-	      ThresholdCurve tc = new ThresholdCurve();
-	      Instances result = tc.getCurve(m_Predictions, classIndex);
-	      return ThresholdCurve.getROCArea(result);
-	    }
-	  }
-
-	  /**
-	   * Calculates the weighted (by class size) AUC.
-	   * 
-	   * @return the weighted AUC.
-	   */
-	/*
-	  public double weightedAreaUnderROC() {
-	    double[] classCounts = new double[m_NumClasses];
-	    double classCountSum = 0;
-	    double[][] matrix = getTrainTestEval().confusionMatrix()
-
-	    for (int i = 0; i < m_NumClasses; i++) {
-	      for (int j = 0; j < m_NumClasses; j++) {
-	        classCounts[i] += matrix[i][j];
-	      }
-	      classCountSum += classCounts[i];
-	    }
-
-	    double aucTotal = 0;
-	    for (int i = 0; i < m_NumClasses; i++) {
-	      double temp = areaUnderROC(i);
-	      if (!Utils.isMissingValue(temp)) {
-	        aucTotal += (temp * classCounts[i]);
-	      }
-	    }
-
-	    return aucTotal / classCountSum;
-	  }
-	
-	*/
 	
 	///////////////////////////////// Main method for testing purposes
-	
+	/*
 	public static void main(String[] args){
 		
 		SimpleAPI test = new SimpleAPI(
 				"./jsan_resources/problem_sets/drexel_1_train_test_new.xml",
 				"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
 				8, "weka.classifiers.functions.SMO",
-				analysisType.TRAIN_TEST);
+				analysisType.TRAIN_TEST_UNKNOWN);
 
-		
 		test.prepareInstances();
 		test.prepareAnalyzer();
 		test.run();
-
-		SMO smo = new SMO();
-		try {
-			smo.buildClassifier(test.getTrainingInstances());
-			Evaluation eval = new Evaluation(test.getTrainingInstances());
-			eval.evaluateModel(smo,test.getTestInstances());
-			System.out.println("results: "+eval.weightedAreaUnderROC());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		
+		test.writeArff("./training.arff",test.getTrainingInstances());
+		test.writeArff("./testing.arff",test.getTestInstances());
 		
-		//test.writeArff("./training.arff",test.getTrainingInstances());
-		//test.writeArff("./testing.arff",test.getTestInstances());
-		
-
-	}
+	}*/
 }
