@@ -407,16 +407,25 @@ public class InstancesBuilder extends Engine {
 	}
 	
 	/**
-	 * A niche method for when you already have a training Instances object and
-	 * only want to build test instances
+	 * A niche method for when you already have a training Instances object
 	 * 
 	 * @param ti
 	 *            training Instances object
 	 */
-	public void setInstances(Instances ti) {
+	public void setTrainingInstances(Instances ti) {
 		trainingInstances = ti;
 	}
-
+	
+	/**
+	 * A niche method for when you already have a testing Instances object
+	 * 
+	 * @param ti
+	 *            testing Instances object
+	 */
+	public void setTestingInstances(Instances ti){
+		testInstances = ti;
+	}
+	
 	/**
 	 * 
 	 * @return The Instances object representing the training documents

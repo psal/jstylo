@@ -207,6 +207,22 @@ public class SimpleAPI {
 	///////////////////////////////// Setters/Getters
 	
 	/**
+	 * 
+	 * @param insts
+	 */
+	public void setTrainingInstances(Instances insts){
+		ib.setTrainingInstances(insts);
+	}
+	
+	/**
+	 * 
+	 * @param insts
+	 */
+	public void setTestingInstances(Instances insts){
+		ib.setTestingInstances(insts);
+	}
+	
+	/**
 	 * Change the number of folds to use in cross validation
 	 * @param n number of folds to use from now on
 	 */
