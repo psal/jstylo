@@ -349,26 +349,26 @@ public class SimpleAPI {
 			
 			Evaluation crossEval = getCrossValEval();
 			String summary = crossEval.toSummaryString();
-			int start = summary.indexOf("Correctly classified Instances");
+			int start = summary.indexOf("Correctly Classified Instances");
 			int end = summary.indexOf("%");
 			results+=summary.substring(start,end+1)+"\n";
 			
 		} else if (selected == analysisType.TRAIN_TEST_KNOWN ){
 			String source = getTrainTestStatString();
 					
-			int start = source.indexOf("Correctly classified");
+			int start = source.indexOf("Correctly Classified");
 			int end = source.indexOf("%");
 
 			results += source.substring(start,end+1);
 			
-		} else {
+		}/* else {
 			Evaluation eval = getTrainTestEval();
 			String summary = eval.toSummaryString();
 			int start = summary.indexOf("Correctly classified Instances");
 			int end = summary.indexOf("%");
 			results+=summary.substring(start,end+1)+"\n";
 
-		}
+		}*/
 		
 		return results;
 	}
