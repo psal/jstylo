@@ -89,7 +89,7 @@ public class CumulativeFeatureDriver {
 	 * @throws Exception
 	 */
 	public CumulativeFeatureDriver(String filename) throws Exception {
-		Logger.logln("Reading CumulativeFeatureDriver from "+filename);
+		//Logger.logln("Reading CumulativeFeatureDriver from "+filename);
 		XMLParser parser = new XMLParser(filename);
 		CumulativeFeatureDriver generated = parser.cfd;
 		this.name = generated.name;

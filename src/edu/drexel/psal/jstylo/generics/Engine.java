@@ -82,12 +82,7 @@ public class Engine implements API {
 			for (EventSet esToAdd : l) {
 				// whether or not to add the event set to the list (if false, it
 				// is already on the list)
-				boolean add = true;
-
-				// the index of where the event set is--assuming it's in the
-				// list of relevant events
-				// if it is not in the list, this variable is not referenced
-				int index = 0;
+				boolean add = true;;
 
 				for (EventSet esl : relevantEvents) {
 					// this should compare the category/name of the event set
@@ -95,8 +90,6 @@ public class Engine implements API {
 						add = false;
 						break;
 					}
-					if (add)
-						index++;
 				}
 
 				// this event set isn't on the list at all, just add it (which
@@ -345,26 +338,21 @@ public class Engine implements API {
 			List<EventSet> documentData, Document document, boolean isSparse,
 			boolean hasDocTitles) throws Exception {
 
-		int numOfFeatureClasses = relevantEvents.size();
-
 		// initialize vector size (including authorName and title if required)
 		// and first indices of feature classes array
-
 		int vectorSize = attributes.size();
 		if (hasDocTitles)
 			vectorSize++;
 
 		// generate training instances
 		Instance inst = null;
-		int numOfVectors = documentData.size();
-
 		if (isSparse)
 			inst = new SparseInstance(vectorSize);
 		else
 			inst = new DenseInstance(vectorSize);
 		
-		//-1 for indexing -1 for skipping the author
-		for (int i=0; i<attributes.size()-2;i++){
+		//-1 for indexing
+		for (int i=0; i<attributes.size()-1;i++){
 			inst.setValue(((Attribute)attributes.get(i)), 0);
 		}
 		
@@ -373,7 +361,6 @@ public class Engine implements API {
 			
 			ArrayList<Integer> indices = new ArrayList<Integer>();
 			ArrayList<Event> events = new ArrayList<Event>();
-			//Set<Event> events = new HashSet<Event>();
 			EventHistogram currHistogram = new EventHistogram();
 			
 			boolean eventSetIsRelevant = false;
@@ -432,10 +419,10 @@ public class Engine implements API {
 					}
 
 					//calculate/add the histograms
-					
 					int index = 0;
 					for (Integer i: indices){
 						inst.setValue((Attribute)attributes.get(i),currHistogram.getAbsoluteFrequency(events.get(index)));
+						System.out.println("Adding attr: "+(Attribute)attributes.get(i)+" value: "+currHistogram.getAbsoluteFrequency(events.get(index)));
 						index++;
 					}
 					
