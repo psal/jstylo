@@ -422,7 +422,6 @@ public class Engine implements API {
 					int index = 0;
 					for (Integer i: indices){
 						inst.setValue((Attribute)attributes.get(i),currHistogram.getAbsoluteFrequency(events.get(index)));
-						System.out.println("Adding attr: "+(Attribute)attributes.get(i)+" value: "+currHistogram.getAbsoluteFrequency(events.get(index)));
 						index++;
 					}
 					
