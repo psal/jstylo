@@ -49,6 +49,7 @@ public class SimpleAPI {
 	
 	//Result Data
 	Map<String,Map<String, Double>> trainTestResults;
+	Evaluation trainTestEval;
 	Evaluation crossValResults;
 	
 	///////////////////////////////// Constructors
@@ -116,28 +117,28 @@ public class SimpleAPI {
 		selected = type;
 		numFolds = nf;
 	}
-	
+	//TODO
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = analysisType.CROSS_VALIDATION;
 		numFolds = 10;
 		analysisDriver = new WekaAnalyzer(classifier);
 	}
-	
+	//TODO
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = analysisType.CROSS_VALIDATION;
 		numFolds = 10;
 		analysisDriver = new WekaAnalyzer();
 	}
-	
+	//TODO
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier, analysisType type){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = type;
 		numFolds = 10;
 		analysisDriver = new WekaAnalyzer(classifier);
 	}
-	
+	//TODO
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, analysisType type){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = type;
@@ -217,11 +218,18 @@ public class SimpleAPI {
 			trainTestResults = analysisDriver.classify(ib.getTrainingInstances(), ib.getTestInstances(), ib.getProblemSet().getAllTestDocs());
 			break;
 
-		//do both
+		//do a train/test where we know the answer and just want statistics
 		case TRAIN_TEST_KNOWN:
-			crossValResults = analysisDriver.runCrossValidation(ib.getTrainingInstances(), numFolds, 0);
 			ib.getProblemSet().removeAuthor("_Unknown_");
-			trainTestResults = analysisDriver.classify(ib.getTrainingInstances(), ib.getTestInstances(), ib.getProblemSet().getAllTestDocs());
+			try {
+				Instances train = ib.getTrainingInstances();
+				Instances test = ib.getTestInstances();
+				test.setClassIndex(test.numAttributes()-1);
+				trainTestEval = analysisDriver.getTrainTestEval(train,test);
+			} catch (Exception e) {
+				Logger.logln("Failed to build trainTest Evaluation");
+				e.printStackTrace();
+			}
 			break;
 		
 		//should not occur
@@ -234,20 +242,24 @@ public class SimpleAPI {
 	
 	///////////////////////////////// Setters/Getters
 	
+	//TODO
 	/**
-	 * 
 	 * @param insts
 	 */
 	public void setTrainingInstances(Instances insts){
 		ib.setTrainingInstances(insts);
 	}
 	
+	//TODO
 	/**
-	 * 
 	 * @param insts
 	 */
 	public void setTestingInstances(Instances insts){
 		ib.setTestingInstances(insts);
+	}
+	//TODO
+	public void setExperimentType(analysisType type){
+		selected = type;
 	}
 	
 	/**
@@ -256,6 +268,11 @@ public class SimpleAPI {
 	 */
 	public void setNumFolds(int n){
 		numFolds = n;
+	}
+	
+	//TODO
+	public void setNumThreads(int nt){
+		ib.setNumThreads(nt);
 	}
 	
 	/**
@@ -311,17 +328,7 @@ public class SimpleAPI {
 	 * @return Evaluation containing train/test statistics
 	 */
 	public Evaluation getTrainTestEval(){
-		try {
-			Instances train = ib.getTrainingInstances();
-			Instances test = ib.getTestInstances();
-			test.setClassIndex(test.numAttributes()-1);
-
-			return analysisDriver.getTrainTestEval(train,test);
-		} catch (Exception e) {
-			Logger.logln("Failed to build evaluation");
-			e.printStackTrace();
-			return null;
-		}
+		return trainTestEval;
 	}
 	
 	/**
