@@ -28,6 +28,7 @@ import weka.core.converters.CSVSaver;
 public class InstancesBuilder extends Engine {
 
 	//////////////////////////////////////////// Data
+	public static final int DEFAULT_THREADS = 4;
 	
 	// These vars should be initialized in the constructor and stay the same
 	// throughout the entire process
@@ -195,6 +196,15 @@ public class InstancesBuilder extends Engine {
 
 	}
 
+	public InstancesBuilder(ProblemSet probSet, CumulativeFeatureDriver cumulativeFD){
+		ps = probSet;
+		cfd = cumulativeFD;
+		
+		isSparse = false;
+		useDocTitles = false;
+		numThreads = DEFAULT_THREADS;
+	}
+	
 	//////////////////////////////////////////// Methods
 	
 	/**

@@ -117,6 +117,34 @@ public class SimpleAPI {
 		numFolds = nf;
 	}
 	
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = analysisType.CROSS_VALIDATION;
+		numFolds = 10;
+		analysisDriver = new WekaAnalyzer(classifier);
+	}
+	
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = analysisType.CROSS_VALIDATION;
+		numFolds = 10;
+		analysisDriver = new WekaAnalyzer();
+	}
+	
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier, analysisType type){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = type;
+		numFolds = 10;
+		analysisDriver = new WekaAnalyzer(classifier);
+	}
+	
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, analysisType type){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = type;
+		numFolds = 10;
+		analysisDriver = new WekaAnalyzer();
+	}
+	
 	///////////////////////////////// Methods
 	
 	/**
