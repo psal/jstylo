@@ -97,7 +97,20 @@ public class SimpleAPI {
 	 */
 	public SimpleAPI(String psXML, String cfdXML, int numThreads, Classifier classifier, analysisType type){
 		ib = new InstancesBuilder(psXML,cfdXML,true,false,numThreads);
-		analysisDriver = new WekaAnalyzer(classifier);
+		try {
+			Object tmpObject = null;
+			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
+
+			if (tmpObject instanceof Classifier) { //if it's a weka classifier
+				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+						.newInstance());
+			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
+				analysisDriver = new WriteprintsAnalyzer(); 
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to prepare Analyzer");
+			e.printStackTrace();
+		}
 		selected = type;
 		numFolds = 10;
 	}
@@ -113,7 +126,20 @@ public class SimpleAPI {
 	 */
 	public SimpleAPI(String psXML, String cfdXML, int numThreads, Classifier classifier, analysisType type, int nf){
 		ib = new InstancesBuilder(psXML,cfdXML,true,false,numThreads);
-		analysisDriver = new WekaAnalyzer(classifier);
+		try {
+			Object tmpObject = null;
+			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
+
+			if (tmpObject instanceof Classifier) { //if it's a weka classifier
+				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+						.newInstance());
+			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
+				analysisDriver = new WriteprintsAnalyzer(); 
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to prepare Analyzer");
+			e.printStackTrace();
+		}
 		selected = type;
 		numFolds = nf;
 	}
@@ -122,7 +148,20 @@ public class SimpleAPI {
 		ib = new InstancesBuilder(ps,cfd);
 		selected = analysisType.CROSS_VALIDATION;
 		numFolds = 10;
-		analysisDriver = new WekaAnalyzer(classifier);
+		try {
+			Object tmpObject = null;
+			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
+
+			if (tmpObject instanceof Classifier) { //if it's a weka classifier
+				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+						.newInstance());
+			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
+				analysisDriver = new WriteprintsAnalyzer(); 
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to prepare Analyzer");
+			e.printStackTrace();
+		}
 	}
 	//TODO
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd){
@@ -136,7 +175,20 @@ public class SimpleAPI {
 		ib = new InstancesBuilder(ps,cfd);
 		selected = type;
 		numFolds = 10;
-		analysisDriver = new WekaAnalyzer(classifier);
+		try {
+			Object tmpObject = null;
+			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
+
+			if (tmpObject instanceof Classifier) { //if it's a weka classifier
+				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+						.newInstance());
+			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
+				analysisDriver = new WriteprintsAnalyzer(); 
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to prepare Analyzer");
+			e.printStackTrace();
+		}
 	}
 	//TODO
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, analysisType type){
@@ -159,7 +211,6 @@ public class SimpleAPI {
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on
 			ib.createTrainingInstancesThreaded(); //creates train Instances
 			ib.createTestInstancesThreaded(); //creates test Instances (if present)
-			ib.calculateInfoGain(); //calculates infoGain
 		} catch (Exception e) {
 			System.out.println("Failed to prepare instances");
 			e.printStackTrace();
@@ -185,6 +236,16 @@ public class SimpleAPI {
 			System.out.println("Failed to prepare Analyzer");
 			e.printStackTrace();
 		}
+	}
+	
+	//TODO
+	public void calcInfoGain(){
+		try {
+			ib.calculateInfoGain();
+		} catch (Exception e) {
+			Logger.logln("Failed to calculate infoGain",LogOut.STDERR);
+			e.printStackTrace();
+		} //calculates infoGain
 	}
 	
 	/**
@@ -396,14 +457,7 @@ public class SimpleAPI {
 
 			results += source.substring(start,end+1);
 			
-		}/* else {
-			Evaluation eval = getTrainTestEval();
-			String summary = eval.toSummaryString();
-			int start = summary.indexOf("Correctly classified Instances");
-			int end = summary.indexOf("%");
-			results+=summary.substring(start,end+1)+"\n";
-
-		}*/
+		}
 		
 		return results;
 	}
