@@ -233,8 +233,9 @@ public class Engine implements API {
 		// I can't get the doc titles without passing the documents through here
 		// which seems like a waste
 		if (hasDocTitles) {
-			// FastVector docTitles = new FastVector();
-			attributes.add(new Attribute("Document Title"));
+			//FastVector empty = new FastVector();
+			Attribute docTitle = new Attribute("Document Title", (FastVector) null);
+			attributes.add(docTitle);
 		}
 			
 		// here's where we create the new Attribute object and add it to the
@@ -351,9 +352,15 @@ public class Engine implements API {
 		else
 			inst = new DenseInstance(vectorSize);
 		
+		int start = 0;
+		if (hasDocTitles){
+			start = 1;
+		
+			inst.setValue(attributes.get(0),(document.getTitle()));
+		}
 		//-1 for indexing
-		for (int i=0; i<attributes.size()-1;i++){
-			inst.setValue(((Attribute)attributes.get(i)), 0);
+		for (int i=start; i<attributes.size()-1;i++){
+			inst.setValue((attributes.get(i)), 0);
 		}
 		
 		//go through all eventSets in the document
@@ -473,7 +480,6 @@ public class Engine implements API {
 			}
 		}
 		
-		//TODO
 		// if it's a test document, it won't have an author
 		if (!(document.getAuthor() == null)) {
 			inst.setValue((Attribute) attributes.get(attributes.size() - 1),

@@ -226,6 +226,7 @@ public class SimpleAPI {
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on
 			ib.createTrainingInstancesThreaded(); //creates train Instances
 			ib.createTestInstancesThreaded(); //creates test Instances (if present)
+			
 		} catch (Exception e) {
 			System.out.println("Failed to prepare instances");
 			e.printStackTrace();
@@ -303,6 +304,7 @@ public class SimpleAPI {
 				Instances train = ib.getTrainingInstances();
 				Instances test = ib.getTestInstances();
 				test.setClassIndex(test.numAttributes()-1);
+				train.setClassIndex(train.numAttributes()-1);
 				trainTestEval = analysisDriver.getTrainTestEval(train,test);
 			} catch (Exception e) {
 				Logger.logln("Failed to build trainTest Evaluation");
@@ -318,6 +320,14 @@ public class SimpleAPI {
 	}
 	
 	///////////////////////////////// Setters/Getters
+	
+	/**
+	 * 
+	 * @param useDocTitles
+	 */
+	public void setUseDocTitles(boolean useDocTitles){
+		ib.setUseDocTitles(useDocTitles);
+	}
 	
 	/**
 	 * Sets the training Instances object
@@ -498,21 +508,22 @@ public class SimpleAPI {
 	
 	
 	///////////////////////////////// Main method for testing purposes
-	/*
+	
 	public static void main(String[] args){
 		
 		SimpleAPI test = new SimpleAPI(
-				"./jsan_resources/problem_sets/drexel_1_train_test_new.xml",
+				"./jsan_resources/problem_sets/drexel_1_train_test.xml",
 				"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
 				8, "weka.classifiers.functions.SMO",
-				analysisType.TRAIN_TEST_UNKNOWN);
+				analysisType.TRAIN_TEST_KNOWN);
 
+		test.setUseDocTitles(true);
 		test.prepareInstances();
-		test.prepareAnalyzer();
-		test.run();
+		//test.prepareAnalyzer();
+		//test.run();
 		
 		test.writeArff("./training.arff",test.getTrainingInstances());
 		test.writeArff("./testing.arff",test.getTestInstances());
 		
-	}*/
+	}
 }

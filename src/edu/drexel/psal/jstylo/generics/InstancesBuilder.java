@@ -409,6 +409,10 @@ public class InstancesBuilder extends Engine {
 		infoGain = doubles;
 	}
 	
+	public void setUseDocTitles(boolean udt){
+		useDocTitles = udt;
+	}
+	
 	/**
 	 * @return Returns the problem set used by the InstancesBuilder
 	 */
@@ -550,10 +554,11 @@ public class InstancesBuilder extends Engine {
 	public static boolean writeToARFF(String filename, Instances set) {
 		try {
 			ArffSaver saver = new ArffSaver();
-			 saver.setInstances(set);
-			 saver.setFile(new File(filename));
-			 saver.writeBatch();
-			 return true;
+			
+			saver.setInstances(set);
+			saver.setFile(new File(filename));
+			saver.writeBatch();
+			return true;
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			return false;
