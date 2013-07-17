@@ -1,9 +1,5 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
@@ -11,14 +7,11 @@ import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.functions.SMO;
-import weka.core.Attribute;
-import weka.core.Instance;
 import weka.core.Instances;
 
 /**
  * 
- * JStylo SimpleAPI Version .3<br>
+ * JStylo SimpleAPI Version .5<br>
  * 
  * A simple API for the inner JStylo functionality.<br>
  * Provides four constructors at the moment (eventually more) <br>
@@ -27,12 +20,7 @@ import weka.core.Instances;
  * After fetch the relevant information with the correct get method<br>
  * @author Travis Dutko
  */
-/*
- * TODO list:
- * 
- * 1) Add the ability to load pre-made objects (problem sets, cfds)
- * 
- */
+
 public class SimpleAPI {
 
 	///////////////////////////////// Data
@@ -143,7 +131,14 @@ public class SimpleAPI {
 		selected = type;
 		numFolds = nf;
 	}
-	//TODO
+	
+	/**
+	 * Constructor for use with a weka classifier that uses default params
+	 * Do not call prepareAnalyzer if using this constructor
+	 * @param ps 
+	 * @param cfd
+	 * @param classifier
+	 */
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = analysisType.CROSS_VALIDATION;
@@ -163,14 +158,27 @@ public class SimpleAPI {
 			e.printStackTrace();
 		}
 	}
-	//TODO
+	
+	/**
+	 * Minimalistic constructor that takes only a problemset object and a CumulativeFeatureDriver.<br>
+	 * Defaults to an SMO classifier performing cross validation with ten folds
+	 * @param ps
+	 * @param cfd
+	 */
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = analysisType.CROSS_VALIDATION;
 		numFolds = 10;
 		analysisDriver = new WekaAnalyzer();
 	}
-	//TODO
+	
+	/**
+	 * Basic constructor that takes a problemSet object, CFD, classifier, and analysis type<br>
+	 * @param ps
+	 * @param cfd
+	 * @param classifier
+	 * @param type
+	 */
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier, analysisType type){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = type;
@@ -190,7 +198,14 @@ public class SimpleAPI {
 			e.printStackTrace();
 		}
 	}
-	//TODO
+	
+	/**
+	 * Basic Constructor which takes a ProblemSet object, CFD, and analysis type.<br>
+	 * Defaults to the basic SMO classifier.
+	 * @param ps
+	 * @param cfd
+	 * @param type
+	 */
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, analysisType type){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = type;
@@ -238,14 +253,16 @@ public class SimpleAPI {
 		}
 	}
 	
-	//TODO
+	/**
+	 * Calculates and stores the infoGain for future use
+	 */
 	public void calcInfoGain(){
 		try {
 			ib.calculateInfoGain();
 		} catch (Exception e) {
 			Logger.logln("Failed to calculate infoGain",LogOut.STDERR);
 			e.printStackTrace();
-		} //calculates infoGain
+		} 
 	}
 	
 	/**
@@ -298,27 +315,30 @@ public class SimpleAPI {
 			System.out.println("Unreachable. Something went wrong somewhere.");
 			break;
 		}
-		
 	}
 	
 	///////////////////////////////// Setters/Getters
 	
-	//TODO
 	/**
-	 * @param insts
+	 * Sets the training Instances object
+	 * @param insts the Instances object to use as training data
 	 */
 	public void setTrainingInstances(Instances insts){
 		ib.setTrainingInstances(insts);
 	}
 	
-	//TODO
 	/**
-	 * @param insts
+	 * Sets the testing Instances object
+	 * @param insts the Instances object to use as testing data
 	 */
 	public void setTestingInstances(Instances insts){
 		ib.setTestingInstances(insts);
 	}
-	//TODO
+	
+	/**
+	 * Sets the type of experiment to run
+	 * @param type enum value of either CROSS_VALIDATION, TRAIN_TEST_UNKNOWN, or TRAIN_TEST_KNOWN
+	 */
 	public void setExperimentType(analysisType type){
 		selected = type;
 	}
@@ -331,7 +351,10 @@ public class SimpleAPI {
 		numFolds = n;
 	}
 	
-	//TODO
+	/**
+	 * Sets the number of calculation threads to use
+	 * @param nt the number of calculation threads to use
+	 */
 	public void setNumThreads(int nt){
 		ib.setNumThreads(nt);
 	}
