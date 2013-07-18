@@ -173,6 +173,68 @@ public class SimpleAPI {
 	}
 	
 	/**
+	 *
+	 * @param ps
+	 * @param cfd
+	 */
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, int nf){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = analysisType.CROSS_VALIDATION;
+		numFolds = nf;
+		analysisDriver = new WekaAnalyzer();
+	}
+	
+	/**
+	 * 
+	 * @param ps
+	 * @param cfd
+	 * @param nf
+	 * @param numThreads
+	 */
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, int nf, int numThreads){
+		ib = new InstancesBuilder(ps,cfd);
+		ib.setNumThreads(numThreads);
+		selected = analysisType.CROSS_VALIDATION;
+		numFolds = nf;
+		analysisDriver = new WekaAnalyzer();
+	}
+	
+	/**
+	 * 
+	 * @param ps
+	 * @param cfd
+	 * @param nf
+	 * @param numThreads
+	 * @param isSparse
+	 */
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, int nf, int numThreads, boolean isSparse){
+		ib = new InstancesBuilder(ps,cfd);
+		ib.setNumThreads(numThreads);
+		ib.setUseSparse(isSparse);
+		selected = analysisType.CROSS_VALIDATION;
+		numFolds = nf;
+		analysisDriver = new WekaAnalyzer();
+	}
+	
+	/**
+	 * 
+	 * @param ps
+	 * @param cfd
+	 * @param nf
+	 * @param numThreads
+	 * @param isSparse
+	 * @param useDocTitles
+	 */
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, int nf, int numThreads, boolean isSparse, boolean useDocTitles){
+		ib = new InstancesBuilder(ps,cfd);
+		ib.setNumThreads(numThreads);
+		ib.setUseSparse(isSparse);
+		selected = analysisType.CROSS_VALIDATION;
+		numFolds = nf;
+		analysisDriver = new WekaAnalyzer();
+	}
+	
+	/**
 	 * Basic constructor that takes a problemSet object, CFD, classifier, and analysis type<br>
 	 * @param ps
 	 * @param cfd
@@ -182,6 +244,97 @@ public class SimpleAPI {
 	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier, analysisType type){
 		ib = new InstancesBuilder(ps,cfd);
 		selected = type;
+		numFolds = 10;
+		try {
+			Object tmpObject = null;
+			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
+
+			if (tmpObject instanceof Classifier) { //if it's a weka classifier
+				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+						.newInstance());
+			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
+				analysisDriver = new WriteprintsAnalyzer(); 
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to prepare Analyzer");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * @param ps
+	 * @param cfd
+	 * @param classifier
+	 * @param type
+	 * @param isSparse
+	 * @param useDocTitles
+	 */
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier, analysisType type, boolean isSparse, boolean useDocTitles, int numThreads){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = type;
+		ib.setNumThreads(numThreads);
+		ib.setUseSparse(isSparse);
+		ib.setUseDocTitles(useDocTitles);
+		numFolds = 10;
+		try {
+			Object tmpObject = null;
+			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
+
+			if (tmpObject instanceof Classifier) { //if it's a weka classifier
+				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+						.newInstance());
+			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
+				analysisDriver = new WriteprintsAnalyzer(); 
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to prepare Analyzer");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 
+	 * @param ps
+	 * @param cfd
+	 * @param classifier
+	 * @param type
+	 * @param isSparse
+	 * @param useDocTitles
+	 */
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier, analysisType type, boolean isSparse, boolean useDocTitles){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = type;
+		ib.setUseSparse(isSparse);
+		ib.setUseDocTitles(useDocTitles);
+		numFolds = 10;
+		try {
+			Object tmpObject = null;
+			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
+
+			if (tmpObject instanceof Classifier) { //if it's a weka classifier
+				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+						.newInstance());
+			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
+				analysisDriver = new WriteprintsAnalyzer(); 
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to prepare Analyzer");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 
+	 * @param ps
+	 * @param cfd
+	 * @param classifier
+	 * @param type
+	 * @param numThreads 
+	 */
+	public SimpleAPI(ProblemSet ps, CumulativeFeatureDriver cfd, Classifier classifier, analysisType type, int numThreads){
+		ib = new InstancesBuilder(ps,cfd);
+		selected = type;
+		ib.setNumThreads(numThreads);
 		numFolds = 10;
 		try {
 			Object tmpObject = null;
