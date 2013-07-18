@@ -413,6 +413,10 @@ public class InstancesBuilder extends Engine {
 		useDocTitles = udt;
 	}
 	
+	public void setUseSparse(boolean sparse){
+		isSparse = sparse;
+	}
+	
 	/**
 	 * @return Returns the problem set used by the InstancesBuilder
 	 */

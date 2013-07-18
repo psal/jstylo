@@ -329,6 +329,10 @@ public class SimpleAPI {
 		ib.setUseDocTitles(useDocTitles);
 	}
 	
+	public void setUseSparse(boolean sparse){
+		ib.setUseSparse(sparse);
+	}
+	
 	/**
 	 * Sets the training Instances object
 	 * @param insts the Instances object to use as training data
@@ -518,6 +522,7 @@ public class SimpleAPI {
 				analysisType.TRAIN_TEST_KNOWN);
 
 		test.setUseDocTitles(true);
+		test.setUseSparse(true);
 		test.prepareInstances();
 		//test.prepareAnalyzer();
 		//test.run();

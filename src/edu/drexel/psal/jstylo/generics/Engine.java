@@ -355,8 +355,7 @@ public class Engine implements API {
 		int start = 0;
 		if (hasDocTitles){
 			start = 1;
-		
-			inst.setValue(attributes.get(0),(document.getTitle()));
+			inst.setValue(attributes.get(0),(document.getTitle().replaceAll("\\\\","/")));
 		}
 		//-1 for indexing
 		for (int i=start; i<attributes.size()-1;i++){
@@ -387,7 +386,10 @@ public class Engine implements API {
 					// find the indices of the events
 					// and count all of the events
 					for (Event e : es) {
-						int currIndex=(hasDocTitles ? 1 : 0);
+						int currIndex=0;
+						if (hasDocTitles){
+							currIndex++;
+						}
 						boolean hasInner = false;
 
 						for (EventSet res : relevantEvents) {
@@ -414,20 +416,24 @@ public class Engine implements API {
 									found = true;
 								}
 								//currHistogram.add(e);
-								if (found)
+								if (found){
 									break;
+								}
 								currIndex++;
 							}
-							if (found)
+							if (found){
 								break;
-							if (!hasInner)
+							}
+							if (!hasInner){
 								currIndex++;
+							}
 						}
 					}
 
 					//calculate/add the histograms
 					int index = 0;
 					for (Integer i: indices){
+						//if (index ==0) System.out.println("Adding: "+attributes.get(i).name()+" "+currHistogram.getAbsoluteFrequency(e)); //TODO
 						inst.setValue((Attribute)attributes.get(i),currHistogram.getAbsoluteFrequency(events.get(index)));
 						index++;
 					}
@@ -436,6 +442,8 @@ public class Engine implements API {
 			} else { //non histogram feature
 				
 				int nonHistIndex = 0;
+				if (hasDocTitles)
+					nonHistIndex++;
 				//find the indices of the events
 				//and count all of the events
 				
