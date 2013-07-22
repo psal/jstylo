@@ -661,6 +661,7 @@ public class AnalysisTabDriver {
 			main.ib = tempBuilder;
 			main.ib.setProblemSet(main.ps);
 			main.ib.setCumulativeFeatureDriver(main.cfd);
+			main.ib.setUseSparse(main.ib.isSparse());
 			// training set
 			
 			content += getTimestamp()+" Extracting features from training corpus ("+(main.ib.isSparse() ? "" : "not ")+"using sparse representation)...\n";
