@@ -238,6 +238,23 @@ V.	Instructions
 			
 		- The new arg string will now be in the text field. Press the add button to add the modified classifier.
 		
+		[Using the WriteprintsAnalyzer]
+		-The WriteprintsAnalyzer is an experimental analyzer. It requires special set up in order to use.
+			-The WriteprintsAnalyzer is also not optimized. As such, we recommend that you use it only if you need this particular analyzer.
+				For general classification purposes, we recommend utilizing one of the WEKA Classifiers
+			-The files needed to run the WriteprintsAnalyzer are 
+			-You will require an archive tool such as 7-zip to open the archive and extract files from it.
+		-To set up the WriteprintsAnalyzer
+			1) In the jsan_resources directory, create a directory named "wordnet"
+			
+			2) 
+				If you are running from a jar:
+					-Extract the contents of the com/jgaap/resources/wordnet/ directory to the newly created jsan_resources/wordnet/ directory
+				
+				If you are running from an IDE/directory:
+					-Extract the contents of the com/jgaap/resources/wordnet/ directory from jgaap-5.2.0-lite.jar to the newly created jsan_resources/wordnet/
+
+			3) Restart JStylo
 
 	Analysis Tab:
 		* In the analysis tab, you will choose what type of classification to run, and view the results.
