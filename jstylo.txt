@@ -1,0 +1,283 @@
+JStylo Version 1.2
+
+Table of Contents:
+
+I.		About JStylo
+II.		About Drexel PSAL
+III.	Copyright/License Information
+IV.		Definitions
+V.		Instructions
+
+
+I.	About JStylo
+	
+	[To be completed]
+
+II.	About Drexel PSAL
+
+	PSAL is Drexel University's Privacy Security and Automation Lab. 
+	
+III. Copyright/License Information
+
+	JStylo was released by the Privacy, Security and Automation lab at Drexel University in 2011 under the AGPLv3 license.
+	A copy of this license is included with the repository/program. If for some reason it is absent, it can be viewed here: http://www.gnu.org/licenses/agpl.html
+	
+IV. Glossary
+
+	[Disclaimer: All of these terms are described in context of JStylo and may have different meanings in other situations]
+
+	Analyzer:
+		A wrapper for different classifier types. JStylo is "pluggable" in that new libraries of classifiers can be added and used provided that
+		a corresponding analyzer is written to be used as an interface between the two. 
+
+	ARFF: 
+		ARFF stands for Attribute-Relation File Format. It is the format for using text to represent the features of a document.
+		It was developed for and is used with the WEKA machine learning software.
+		
+		For more information see Waikato's page on the ARFF at (http://www.cs.waikato.ac.nz/~ml/weka/arff.html)
+
+	Arguments:
+		Arguments are strings or numbers which are passed to classifiers in order to change how they run.
+		Essentially, they are the classifier's options.
+
+	Classification:
+		The identification of which author to which a particular document belongs. Classification is the "test" being performed
+		where the answer is the program's best guess as to the true author.
+
+	Classifier:
+		A machine learning algorithm. The algorithm describes how to use the extracted data from the documents to "learn" an author's
+		writing style. Each algorithm learns a different way and has different degrees of effectiveness depending on the dataset.
+		For more information on a particular algorithm, JStylo lists the publications in which a particular classifier is documented
+		in the classifier editor window.
+
+	Confusion Matrix:
+		The confusion matrix is a chart of predictions versus truth. Each author is given a column and a row with the columns representing
+		guesses and the rows representing the true author. When these two intersect for an author, the number is how many documents were
+		correctly classified.
+
+	Corpus:
+		A corpus is a collection of pieces of writing. Problem-Sets are subsets of a specific corpora.
+		
+	Cross-Validation:
+		Cross-Validation is a type of classification where the problem-set consists solely of documents who have known true authors.
+		These documents are divided into K (usually 10) equal-sized folds. Nine of these folds are used as training data with the tenth
+		being used as testing data. The folds are then rotated so that each of the K folds has a turn being testing data. The results are
+		useful in evaluating classifier and feature set effectiveness.
+
+	CSV:
+		Comma Separated Value. This is a file format which JStylo is capable of representing feature vectors with. It can be an alternate or
+		used in conjunction with the ARFF format.
+
+	Document:
+		A document is a text file which has several attributes: body text, a path to the file, and an author name (or _Unknown_ if the author is unknown.)
+		They can be used as either training data or testing data.
+
+	Factoring:
+		Factoring multiplies a given feature's values by some number in order to adjust all resultant values into a desired range.
+
+	Feature:
+		A feature is a stylometrically interesting part of a document. They can be anything from average word length to the number of instances of the letter "i".
+		Vectors of these feature values are collected for each document. For example, if the feature being extracted was simply "Letter frequencies" the resultant
+		feature vector for a document would have twenty-six number values, one for each letter of the alphabet, which describes how often each letter was used in the document.
+	
+	Feature-Set:
+		A feature-set is a collection of individual features. These features are then used in tandem to give the classifier more data to work with, in most cases improving
+		its ability to learn how a given author writes-and by extension-its ability to correctly identify unknown authors.
+	
+	Fold:
+		A fold is a subset of the problem-set which has been divided up for purposes of cross-validation.
+	
+	JGAAP:
+		The Java Graphical Authorship Attribution Program. It is an open source program and library used for text analysis. JStylo uses JGAAP code as a base
+		document handling and feature extraction.
+	
+		For more information, consult the JGAAP wiki at (http://evllabs.com/jgaap/w/index.php/Main_Page)
+	
+	InfoGain:
+		InfoGain is a method of producing analytic data that represents how useful a feature was to classification.
+	
+	Normalization:
+		Normalization is the dividing of a given feature's values so as to correct differences between documents. For example, a longer document is going to have more
+		uses of a given letter than a shorter document of the same length. Rather than compare the raw counts, normalization can be used to get the rate of each letter
+		compared to the overall size of the document, allowing the gap in size to be bridged more easily.
+	
+	Pre-Processing:
+		Pre-processing is modification of the document for feature extraction purposes. This removes data from the document which isn't relevant to the feature being
+		extracted. For example, if you were extracting letter frequencies, you may want to unify case so that uppercase and lowercase letters are treated the same.
+	
+	Post-Processing/Culling:
+		Post-processing/culling is the modification of extracted features to be used in classification. Often this is used to limit the amount of features for sake of
+		saving computational time and power on less useful features. For example, you may take only the top fifty or one-hundred letter bigrams, as to take them all would
+		be hundreds of features.
+
+	Problem Set:
+		The problem-set is the collection of documents to be used and in what way they are to be used. It consists of both documents to use as training data and documents
+		to use as test data.
+
+	Relaxation Factor:
+		The relaxation factor is the number of ranks off the classifier can be while still being correct. In other words, in cross-validation with a relaxation factor of three,
+		any time the correct author appears in the top three choices, the answer will be listed as correct. This is useful when you have large datasets and want to narrow down your
+		list of suspects.
+
+	Train/Test Classification:
+		In Train/Test classification, there are some documents which are treated as unknowns for purposes of classification. These test documents can be truly unknown
+		or they can be documents which you know the author of, but want to test on using a specific configuration of features, classifiers, and problem-sets. In the unknown scenario,
+		JStylo will use the training documents to learn the respective authors' writing styles and make its best guess as to the author of the unknown documents. In the scenario where
+		the true author of the test document is known, JStylo will output statistics similar to those of cross-validation to evaluate classifier, feature, and problem-set effectiveness.
+
+	Training Data:
+		Training data is the source of a classifier's knowledge. Each author has their training documents analyzed so that the classifier can get an idea of the author's writing style.
+	
+	Testing Data:
+		The test data is the collection of documents to be identified. The authors are either unknown or treated as unknown.
+
+	WEKA:
+		The Waikato Environment for Knowledge Analysis. It is a machine learning algorithm library which JStylo uses for the classification portion of its processes.
+		
+		For more information on WEKA, visit its website at (http://www.cs.waikato.ac.nz/ml/weka/)
+
+	XML:
+		Extensible Markup Language. JStylo uses XML files for configuration and customization purposes. Feature-sets and problem-sets are both stored in XML files and can be saved/loaded
+		for sake of user convenience. 
+
+
+V.	Instructions
+
+	Documents Tab:
+		*In the documents tab, you configure your problem set.
+		
+		*If you are just testing out JStylo and are new to Stylometry, click the "Load Problem Set" button,
+		navigate to the jsan_resources/problem_sets folder and select drexel_1_train_test
+	
+		[Adding Training Documents]
+		-To create your own problem set, begin by adding the training data. If you have previous collected your own data, we recommend that you sort it
+		such that each author has a folder with all of the documents you want to train on for that author inside of it. This folder should have the same name as the author.
+		Select the "add author(s)" button and press "ok" without entering anything. Select all of the folders you want to add, and JStylo will import all of the underlying documents for you as well.
+			-Don't have the documents organized in this format? You can add new authors by clicking the "add author(s)" button and entering a name. Then, click the "add document(s)" button and
+				select any/all documents you want to add to the training data for this author.
+				
+		-If you only wish to perform cross-validation, you can now move on to the next tab.
+		
+		[Adding Testing Documents]
+		-If you want to test on data, you have two options depending on your knowledge of the data.
+			-If you know the true author, you can add test data in the same manner as training data, including test authors. Simply follow the procedure above but use the buttons under the test documents
+				instead of the ones under the training documents.
+			-If you do not know that true author of a document, then select the "_Unknown_" folder. Then, click the "add document(s)" button and select the documents you want to identify.
+	
+		[Removing an Author/Document]
+		- To remove a document or author, simply select the author or document you wish to remove and press the corresponding remove button.
+		
+		[Previewing a Document]
+		- To preview a document, select the specific document you which to preview and press the "Preview Document" button. The document will be displayed in the text pane at the bottom of the page.
+		
+	Features Tab:
+		*In the features tab, you will decide what features you want to pay attention to in your documents.
+		
+		*If you are just testing out JStylo and are new to Stylometry, select the "Writeprints (Limited)" Feature set from the dropdown menu. This feature set is a powerful feature set good for classifying long documents.
+			*Having issues? If the analysis is taking a long time, your computer is experiencing massive slowdown, or JStylo crashes, you may not have enough memory for your problem-set/feature-set configuration.
+				If you are just testing out JStylo and this is occurring, use the "9-Feature Set" instead. It has lower accuracy, but is much less memory intensive.
+				
+		[Selecting a Feature Set]
+		- The drop down menu adjacent to the label "Feature Set" can be used to select one of the pre-loaded JStylo feature sets. Simply select one to import all of the features in that set.
+	
+		[Saving/Loading Feature Sets]
+		-To save or load a feature set not in the drop down menu, simply press the "Export to XML" or "Import from XML" button, respectively. Then navigate to where you wish to save/load from and
+		complete the task.
+	
+		[Viewing Features]
+		-Selecting a specific feature in the column on the left-hand side will allow you to view its various traits on the right half of the screen.
+		
+		[Remove Features]
+		-To remove a feature, highlight the feature you wish to remove then press the "Remove" button at the bottom of the feature column.
+	
+		[Add/Edit Features]
+		-To Add a feature, press the "Add..." button or to edit, press the "Edit..." button. Both buttons will lead to the same window, but using the edit button will pre-load the options with that of the selected feature.
+			-Pressing either of these buttons will create an editor window to work in.
+			
+		-Add/Edit the name and description of your feature. An explanation of all of the values you need to set can be found on this first tab of the editor window.
+			-When you finish each step, press the next button in the bottom right to proceed.
+			
+		-Text Pre-processing
+			- Select and add any changes you want to make to the document before the feature is extracted.
+			- You can select any number of pre-processors.
+			
+		-Feature Extractors
+			-Select the feature driver to use. This will decide what is actually being extracted. If the driver has options, set them on the right side of the screen.
+			-Note: since you can only have a single feature extractor, just highlight the one you want, set the options, and press next.
+		
+		-Feature Post-processing
+			-Select any adjustments you want to make to the features after they are extracted. Like with pre-processors, you can add any number of post-processors, and some may have arguments to set.
+			
+		-Normalization
+			- Select what value you wish to normalize your feature over, if any.
+			- Select what value you want to factor your feature by. If you do not wish to factor, leave the value at 1.0.
+			
+		-Click Update/Add Feature to complete the process
+	
+	
+	Classifiers Tab:
+		* In the classifiers tab, you will select which machine learning algorithm to use.
+		
+		* If you are just testing out JStylo and are new to machine learning, select the "SMO" classifier under the weka->classifiers->functions->SMO. This classifier offers a good balance of power, accuracy, and speed.
+			*Once the classifier is selected, press the "Add" button.
+			
+		[Adding a Classifier]
+		-To add a classifier, select the classifier you wish to add and press the add button at the bottom of the left half of the screen.
+	
+		[Removing a Classifier]
+		-To remove a classifier, select the classifier you wish to remove and press the remove button at the bottom right half of the screen.
+		
+		[Customizing a Classifier]
+		-To customize a classifier, select the classifier you wish to modify and then click in the text field at the bottom left of the screen.
+			- This will bring up the classifier editor window.
+			
+		- The top half of the window provides instructions on how to edit the args as well as the publications which the classifier was described under.
+		
+		- The bottom half of the window is comprised of labels and text fields describing each argument for the classifier and allowing you to edit the values.
+			- Select apply changes to create a classifier with the changes you've made.
+			
+		- The new arg string will now be in the text field. Press the add button to add the modified classifier.
+		
+
+	Analysis Tab:
+		* In the analysis tab, you will choose what type of classification to run, and view the results.
+		
+		* If you are just testing out JStylo and have been following the other instructions so far, select any classification type and hit run. You will be able to view the results in the text pane below.
+			* The test will take a few minutes to run. Depending on your computer, it may take ten minutes or longer. If it is running for a long time, try restarting and lowering the number of threads or removing a few authors
+				from the problem-set.
+			* Run each type of test to see how each performs. The drexel_1_train_test problem set is capable of being used in all three scenarios.
+
+		[Running Analysis]
+		- Select the radio button representing the type of analysis you wish to run.
+			- If you select cross validation, you can modify the number of folds and the relaxation factor in the text fields under the radio button.
+		
+		- Press the "Run Analysis" button
+		
+		[Saving Feature Vectors]
+		- To save the feature vectors representing your documents, press one of the four "Save" buttons on the upper right hand side of the tab.
+			- Two of these buttons save the training documents, the other two save the testing documents
+			- Two buttons save the features as ARFFs, the other two save as CSVs.
+			- Pick whichever button is relevant to the document set and file format you wish to have.
+		
+		[Output feature vectors]
+		-The output feature vectors checkbox on the upper left will display the feature vectors in the results tab if checked. These tend to be large amounts of text, so it is off by default.
+		
+		[Using Sparse Representation]
+		- Sparse representation reduces the file size of ARFF/CSV representations of features when a large chunk of features are not present in a given document.
+		- If the check box is selected, sparse vectors are being used. You can unselect the box to use dense instances.
+		- Which type performs better varies on the problem/feature sets.
+		
+		[InfoGain]
+		- The "Calculate InfoGain on Feature Set" check box reports how much the classifier learns from each feature and prints the results to the results pane from most to least useful feature, 
+			skipping over features which had a usefulness value of zero.
+		
+		- The "Apply InfoGain on top N Features" reduces the number of features used in classification to the top N features. This reduces memory usage during classification, but may impact results if N is too low.
+		
+		[Calculation Threads]
+		- Specify the number of processing threads to use for the analysis. In general, if your computer has enough memory/cores, more is better.
+		- Do not try to use more threads than the amount of cores (including virtual cores) your computer has, as this may cause performance issues.
+		- If your computer has low memory, set the number of threads to 1 or 2.
+		- If the analysis keeps crashing due to an out of memory exception, try reducing the number of threads being used.
+		
+		[Saving results]
+		- To save the analysis results, press the "Save Results..." button on the bottom left of the window. You can then save the results as a text file.

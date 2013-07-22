@@ -669,19 +669,16 @@ public class SimpleAPI {
 	public static void main(String[] args){
 		
 		SimpleAPI test = new SimpleAPI(
-				"./jsan_resources/problem_sets/drexel_1_train_test.xml",
+				"./jsan_resources/problem_sets/enron_demo.xml",
 				"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
 				8, "weka.classifiers.functions.SMO",
-				analysisType.TRAIN_TEST_KNOWN);
+				analysisType.CROSS_VALIDATION);
 
-		test.setUseDocTitles(true);
-		test.setUseSparse(true);
 		test.prepareInstances();
-		//test.prepareAnalyzer();
-		//test.run();
+		test.prepareAnalyzer();
+		test.run();
 		
-		test.writeArff("./training.arff",test.getTrainingInstances());
-		test.writeArff("./testing.arff",test.getTestInstances());
+		//test.writeArff("./testing.arff",test.getTestInstances());
 		
 	}
 }

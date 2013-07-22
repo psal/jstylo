@@ -9,7 +9,7 @@ http://psal.cs.drexel.edu/
 
 JStylo
 - Authorship recognition analysis tool
-- Version: 1.1
+- Version: 1.2
 
 ----------------------------------------------------
 
