@@ -242,8 +242,9 @@ V.	Instructions
 		-The WriteprintsAnalyzer is an experimental analyzer. It requires special set up in order to use.
 			-The WriteprintsAnalyzer is also not optimized. As such, we recommend that you use it only if you need this particular analyzer.
 				For general classification purposes, we recommend utilizing one of the WEKA Classifiers
-			-The files needed to run the WriteprintsAnalyzer are 
 			-You will require an archive tool such as 7-zip to open the archive and extract files from it.
+			-As of JStylo version 1.2, infoGain does not work with the WriteprintsAnalyzer. This will not crash the program if you only attempt to view infoGain; the step will be skipped.
+				However, attempting to apply infoGain will cause undesirable behavior. 
 		-To set up the WriteprintsAnalyzer
 			1) In the jsan_resources directory, create a directory named "wordnet"
 			
