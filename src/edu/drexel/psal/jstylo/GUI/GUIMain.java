@@ -1387,29 +1387,6 @@ public class GUIMain extends javax.swing.JFrame {
 							}
 						}
 					}
-					
-					/*
-					// line 4
-					header.add(new JPanel());
-					header.add(new JPanel());
-					{
-						analysisOutputConfusionMatrixJCheckBox = new JCheckBox();
-						analysisOutputConfusionMatrixJCheckBox.setSelected(true);
-						header.add(analysisOutputConfusionMatrixJCheckBox);
-						analysisOutputConfusionMatrixJCheckBox.setText("Output Weka confusion matrix");
-					}
-					header.add(new JPanel());
-					
-					// line 5
-					header.add(new JPanel());
-					{
-						analysisOutputAccByClassJCheckBox = new JCheckBox();
-						analysisOutputAccByClassJCheckBox.setSelected(true);
-						header.add(analysisOutputAccByClassJCheckBox);
-						analysisOutputAccByClassJCheckBox.setText("Output Weka detailed accuracy by class");
-					}
-					header.add(new JPanel());
-					*/
 				}
 				{
 					// main

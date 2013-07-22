@@ -205,6 +205,19 @@ public class InstancesBuilder extends Engine {
 		numThreads = DEFAULT_THREADS;
 	}
 	
+	/**
+	 * Copy constructor
+	 * @param oib
+	 */
+	public InstancesBuilder(InstancesBuilder oib){
+		ps = oib.getProblemSet();
+		cfd = oib.getCFD();
+		isSparse = oib.getIsSparse();
+		useDocTitles = oib.getUseDocTitles();
+		numThreads = oib.getNumThreads();
+		
+	}
+	
 	//////////////////////////////////////////// Methods
 	
 	/**
@@ -396,6 +409,26 @@ public class InstancesBuilder extends Engine {
 	}
 	
 	//////////////////////////////////////////// Setters/Getters
+	
+	public boolean getUseDocTitles(){
+		return useDocTitles;
+	}
+	
+	public boolean getIsSparse(){
+		return isSparse;
+	}
+	
+	public void setProblemSet(ProblemSet probSet){
+		ps = probSet;
+	}
+	
+	public void setCumulativeFeatureDriver(CumulativeFeatureDriver cumulativeFeatureDriver){
+		cfd = cumulativeFeatureDriver;
+	}
+	
+	public CumulativeFeatureDriver getCFD(){
+		return cfd;
+	}
 	
 	/**
 	 * @return Returns the infoGain value and stores it locally incase we decide

@@ -80,6 +80,8 @@ public class ClassTabDriver {
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
 						} else if (tmpObject instanceof WriteprintsAnalyzer){
 							tmpAnalyzer = new WriteprintsAnalyzer();
+							main.ib.setUseDocTitles(true);
+							main.analysisCalcInfoGainJCheckBox.setSelected(false);
 						} else {
 							Logger.logln("Tried to add an Analyzer we do not yet support");
 						}	

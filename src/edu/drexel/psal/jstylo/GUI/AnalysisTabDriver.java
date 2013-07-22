@@ -1,6 +1,7 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
+import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.InstancesBuilder;
 import edu.drexel.psal.jstylo.generics.Logger;
@@ -14,10 +15,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
@@ -29,8 +28,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import weka.classifiers.Evaluation;
-import weka.core.Attribute;
-import weka.core.Instance;
 import weka.core.Instances;
 
 public class AnalysisTabDriver {
@@ -659,12 +656,11 @@ public class AnalysisTabDriver {
 			
 			contentJTextArea.setText(content);
 
-			InstancesBuilder tempBuilder = new InstancesBuilder(main.ps,
-					main.cfd,
-					main.analysisSparseInstancesJCheckBox.isSelected(), false,
-					main.ib.getNumThreads());
+			InstancesBuilder tempBuilder = new InstancesBuilder(main.ib);
 			main.ib.reset();
 			main.ib = tempBuilder;
+			main.ib.setProblemSet(main.ps);
+			main.ib.setCumulativeFeatureDriver(main.cfd);
 			// training set
 			
 			content += getTimestamp()+" Extracting features from training corpus ("+(main.ib.isSparse() ? "" : "not ")+"using sparse representation)...\n";
@@ -933,6 +929,11 @@ public class AnalysisTabDriver {
 							"> Options:    "+ClassTabDriver.getOptionsStr(a.getOptions())+"\n\n";
 					
 					main.analysisDriver = a;
+					
+					//TODO ick another instanceof. See if there's a way around using it.
+					if (a instanceof WriteprintsAnalyzer){
+						a.classify(main.ib.getTrainingInstances(),main.ib.getTestInstances(), main.ps.getAllTestDocs());
+					}
 					
 					content += getTimestamp()+" Starting classification...\n";
 					Logger.log("Starting classification...\n");
