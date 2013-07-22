@@ -1,5 +1,6 @@
 package edu.drexel.psal.jstylo.analyzers;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.JarURLConnection;
@@ -89,8 +90,8 @@ public class WriteprintsAnalyzer extends Analyzer {
 	 */
 	
 	@Override
-	public Map<String,Map<String, Double>> classify(Instances trainingSet,
-			Instances testSet, List<Document> unknownDocs) {
+	public Map<String,Map<String, Double>> classify(Instances train,
+			Instances test, List<Document> unknownDocs) {
 		Logger.logln(">>> classify started");
 
 		/* ========
@@ -102,6 +103,9 @@ public class WriteprintsAnalyzer extends Analyzer {
 		trainAuthorData.clear();
 		testAuthorData.clear();
 		
+		//use new instances objects and temporarily strip titles
+		trainingSet = new Instances(train);
+		testSet = new Instances(test);
 		
 		trainingSet.deleteAttributeAt(0); //TODO
 		testSet.deleteAttributeAt(0); //TODO
@@ -128,7 +132,7 @@ public class WriteprintsAnalyzer extends Analyzer {
 				if (authors == null)
 					authors = new ArrayList<String>();
 				authors.add(authorName);
-				Logger.logln("- " + authorName);
+				//Logger.logln("- " + authorName);
 				authorData.initFeatureMatrix(trainingSet, averageFeatureVectors);
 				trainAuthorData.add(authorData);
 				authorData.initBasisAndWriteprintMatrices();
@@ -141,11 +145,11 @@ public class WriteprintsAnalyzer extends Analyzer {
 			Logger.logln("Initializing test authors data (author per test document):");
 			for (int i = 0; i < numTestInstances; i++) {
 				authorName =
-						TEST_AUTHOR_NAME_PREFIX +
+						/*TEST_AUTHOR_NAME_PREFIX +
 						String.format("%03d", i) + "_" +
-						unknownDocs.get(i).getTitle();
+						*/unknownDocs.get(i).getTitle();
 				authorData = new AuthorWPData(authorName);
-				Logger.logln("- " + authorName);
+				//Logger.logln("- " + authorName);
 				authorData.initFeatureMatrix(testSet, i, averageFeatureVectors);
 				testAuthorData.add(authorData);				
 				authorData.initBasisAndWriteprintMatrices();
@@ -155,12 +159,15 @@ public class WriteprintsAnalyzer extends Analyzer {
 		else {
 			Logger.logln("Initializing test authors data (CV mode):");
 			for (int i = 0; i < numAuthors; i++) {
+				
 				authorName = classAttribute.value(i);
-				authorData = new AuthorWPData(authorName);
-				Logger.log("- " + authorName);
-				authorData.initFeatureMatrix(testSet, averageFeatureVectors);
-				testAuthorData.add(authorData);
-				authorData.initBasisAndWriteprintMatrices();
+				if (!authorName.equals("_Unknown_")){
+					authorData = new AuthorWPData(authorName);
+					//Logger.log("- " + authorName);
+					authorData.initFeatureMatrix(testSet, averageFeatureVectors);
+					testAuthorData.add(authorData);
+					authorData.initBasisAndWriteprintMatrices();
+				}
 			}
 		}
 		
@@ -225,6 +232,13 @@ public class WriteprintsAnalyzer extends Analyzer {
 			results.put(testData.authorName,testRes);
 		}
 		Logger.logln(">>> classify finished");
+		
+		//set back to the originals so that we have titles again
+		trainingSet = train;
+		testSet = test;
+		trainingSet.setClassIndex(trainingSet.numAttributes()-1);
+		testSet.setClassIndex(testSet.numAttributes()-1);
+		
 		return normalize(results);
 	}
 
@@ -586,27 +600,18 @@ public class WriteprintsAnalyzer extends Analyzer {
 		//TODO have to change this to deal with jars, not directories
 		try{
 			
-			URL url = Thread.currentThread().getClass().getResource(JSANConstants.JGAAP_RESOURCE_WORDNET);
-			System.out.println("URL: "+url);
-			System.setProperty("wordnet.database.dir", url.getPath());
+			File wordnetDBDir = new File(JSANConstants.JGAAP_RESOURCE_WORDNET);
+			System.setProperty("wordnet.database.dir", wordnetDBDir.getAbsolutePath());
 			wndb = WordNetDatabase.getFileInstance();
+			
 		} catch (Exception e){
-		/*	try {
-				URL url = Thread.currentThread().getClass().getResource(JSANConstants.JGAAP_RESOURCE_WORDNET);
-				JarURLConnection jarURL = (JarURLConnection) url.openConnection();
-				System.setProperty("wordnet.database.dir", jarURL.getJarFileURL().toString());
-				wndb = WordNetDatabase.getFileInstance();
-				e.printStackTrace();
-			} catch (Exception ex) {
-				Logger.logln("Failed to load Wordnest DB", LogOut.STDERR);
-				ex.printStackTrace();
-			}
-		*/
-			e.printStackTrace();
-			Logger.logln("Wordnet Database for use with the WriteprintsAnalyzer not found");
+			//e.printStackTrace();
+			Logger.logln("Wordnet Database for use with the WriteprintsAnalyzer not found",LogOut.STDERR);
 			Logger.logln("\tFor distribution purposes, this database is compressed by default.");
 			Logger.logln("\tPlease create a folder named \"wordnet\" in the jsan_resources folder.");
-			Logger.logln("\tExtract the contents of com/jgaap/");
+			Logger.logln("\tExtract the contents of com/jgaap/resources/wordnet/ to jsan_resources/wordnet/ restart jstylo, and try running the analysis again.");
+			Logger.logln("\t\tThe WriteprintsAnalyzer is an experimental Analyzer, and has not been optimized.");
+			Logger.logln("\t\tUnless there is a reason you wish to use this Analyzer specifically, it may be better to use one of the WEKA classifiers for your experiments.");
 		}
 	}
 
@@ -874,7 +879,7 @@ public class WriteprintsAnalyzer extends Analyzer {
 
 			String selectedAuthor = "";
 			Double max = 0.0;
-
+			
 			// find the most likely author
 			for (String potentialAuthor : results.get(currTestInst.stringValue(currTestInst.attribute(0))).keySet()) {
 				if (results.get(currTestInst.stringValue(currTestInst.attribute(0))).get(potentialAuthor).doubleValue() > max) { // find which document has the highest
