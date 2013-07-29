@@ -11,7 +11,7 @@ V.		Instructions
 
 I.	About JStylo
 	
-	[To be completed]
+	JStylo - authorship attribution framework 
 
 II.	About Drexel PSAL
 
