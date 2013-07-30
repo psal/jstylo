@@ -128,6 +128,8 @@ public class CumulativeFeatureDriver {
 			currDoc.load();
 			currDoc.processCanonicizers();
 			
+			//TODO maybe just check what type ir is before hand? isn't there a features.get(i).isCalcHist() or something?
+			
 			// extract event set
 			String prefix = features.get(i).displayName().replace(" ", "-");
 			EventSet tmpEs = ed.createEventSet(currDoc);
@@ -136,8 +138,12 @@ public class CumulativeFeatureDriver {
 			es.setAuthor(doc.getAuthor());
 			es.setDocumentName(doc.getTitle());
 			es.setEventSetID(tmpEs.getEventSetID());
-			for (Event e: tmpEs)
+			for (Event e: tmpEs){
 				es.addEvent(new Event(prefix+"{"+e.getEvent()+"}"));
+			}
+			//System.out.println("EventSetID: "+es.getEventSetID()+" numEvents: "+tmpEs.size());
+			//FIXME if only a single event was added, it /MIGHT/ be an event histogram. 
+			//somehow flag non-histogram features
 			esl.add(es);
 		}
 		return esl;

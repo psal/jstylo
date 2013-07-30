@@ -26,7 +26,7 @@ public class CumulativeEventCuller {
 	 * 		A new list of lists of event sets after the corresponding event cullers were applied.
 	 * @throws EventCullingException 
 	 */
-	// TODO change in place
+	// FIXME make sure that non-histogram features are handled correctly
 	public static List<List<EventSet>> cull(List<List<EventSet>> eventSets, CumulativeFeatureDriver ced) throws EventCullingException {
 		int totalSetLists = eventSets.size();
 		List<List<EventSet>> res = new ArrayList<List<EventSet>>(totalSetLists);
@@ -36,7 +36,7 @@ public class CumulativeEventCuller {
 		List<EventSet> tmpEventSets;
 		List<EventCuller> cullers;
 		
-		// save event sets details for after culling
+		// save eventSet details for after culling
 		List<String> authorNames = new ArrayList<String>(totalSetLists);
 		List<String> docNames = new ArrayList<String>(totalSetLists);
 		List<String> esIds = new ArrayList<String>(totalSetLists);

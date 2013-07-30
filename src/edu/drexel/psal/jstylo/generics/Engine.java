@@ -34,14 +34,14 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 
 public class Engine implements API {
 
-	// Done
+	// FIXME change how non-hist features are handled
 	@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
 		return cumulativeFeatureDriver.createEventSets(document);
 	}
 
-	// Done
+	// FIXME change how non-hist features are handled
 	@Override
 	public List<List<EventSet>> cull(List<List<EventSet>> eventSets,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
@@ -67,7 +67,7 @@ public class Engine implements API {
 		return culledEventSets;
 	}
 
-	// Done
+	// FIXME change how non-hist features are handled
 	@Override
 	public List<EventSet> getRelevantEvents(
 			List<List<EventSet>> culledEventSets,
@@ -142,7 +142,7 @@ public class Engine implements API {
 		return relevantEvents;
 	}
 
-	// Done
+	// FIXME change how non-hist features are handled
 	@Override
 	public ArrayList<Attribute> getAttributeList(
 			List<List<EventSet>> culledEventSets,
@@ -331,12 +331,12 @@ public class Engine implements API {
 		return attributes;
 	}
 
-	// Done
+	// FIXME change how non-hist features are handled
 	@Override
 	public Instance createInstance(List<Attribute> attributes,
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,
-			List<EventSet> documentData, Document document, boolean isSparse,
+			List<EventSet> documentData, /*Document document,*/ boolean isSparse,
 			boolean hasDocTitles) throws Exception {
 
 		// initialize vector size (including authorName and title if required)
@@ -429,7 +429,6 @@ public class Engine implements API {
 							}
 						}
 					}
-
 					//calculate/add the histograms
 					int index = 0;
 					for (Integer i: indices){
@@ -444,9 +443,9 @@ public class Engine implements API {
 				int nonHistIndex = 0;
 				if (hasDocTitles)
 					nonHistIndex++;
+				
 				//find the indices of the events
 				//and count all of the events
-				
 				for (EventSet res : relevantEvents) {
 					
 					if (es.getEventSetID().equals(res.getEventSetID())){
@@ -463,28 +462,14 @@ public class Engine implements API {
 						nonHistIndex++;
 				}
 
-				//Extract and add the event
-				FeatureDriver nonHistDriver = cumulativeFeatureDriver
-						.featureDriverAt(documentData.indexOf(es));
-				Document tempDoc = document;
+				//Extract and add the event				
+				String eventString = es.eventAt(0).getEvent();
+				int startIndex = eventString.indexOf("{");
+				int endIndex = eventString.indexOf("}");
+				eventString = eventString.substring(startIndex+1,endIndex);
 
-				for (Canonicizer c : nonHistDriver.getCanonicizers()) {
-					tempDoc.addCanonicizer(c);
-				}
-
-				EventDriver underlyingDriver = nonHistDriver
-						.getUnderlyingEventDriver();
-
-				tempDoc.load();
-				tempDoc.processCanonicizers();
-
-				EventSet nonHistES = underlyingDriver
-						.createEventSet(tempDoc);
-
-				double value = Double.parseDouble(nonHistES.eventAt(0)
-						.getEvent());
+				double value = Double.parseDouble(eventString);
 				inst.setValue((Attribute) attributes.get(nonHistIndex), value);
-				
 			}
 		}
 		
@@ -653,7 +638,7 @@ public class Engine implements API {
 		}
 	}
 
-	// Calculates the information gain for the Instances object
+	// Done
 	@Override
 	public double[][] calcInfoGain(Instances insts) throws Exception {
 
@@ -690,6 +675,7 @@ public class Engine implements API {
 		return infoArr;
 	}
 
+	// Done
 	@Override
 	public double[][] applyInfoGain(double[][] chosenFeatures, Instances insts, int n)
 			throws Exception {
@@ -724,7 +710,7 @@ public class Engine implements API {
 		return tempArr;
 	}
 
-	// Done
+	// FIXME change how non-hist features are handled
 	@Override
 	public List<EventSet> cullWithRespectToTraining(
 			List<EventSet> relevantEvents, List<EventSet> eventSetsToCull,

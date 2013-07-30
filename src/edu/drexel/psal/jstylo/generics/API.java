@@ -78,7 +78,7 @@ public interface API {
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,
 			List<EventSet> documentData,
-			Document document, 
+		/*	Document document, */
 			boolean isSparse, boolean hasDocTitles) throws Exception;
 	//create and use histograms here
 	
