@@ -56,7 +56,7 @@ public class Engine implements API {
 	public List<List<EventSet>> cull(List<List<EventSet>> eventSets,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
 
-		// FIXME a hacky workaround for the bug in the eventCuller. Fix that
+		// a hacky workaround for the bug in the eventCuller. Fix that
 		// later then remove these
 		ArrayList<String> IDs = new ArrayList<String>();
 		for (EventSet es : eventSets.get(0)) {
@@ -80,7 +80,7 @@ public class Engine implements API {
 			index++;
 		}
 		
-		// FIXME a hacky workaround for the bug in the eventCuller. Fix that
+		// a hacky workaround for the bug in the eventCuller. Fix that
 		// later then remove these
 		for (int j1 = 0; j1 < culledEventSets.size(); j1++) {
 			for (int iterator = 0; iterator < culledEventSets.get(j1).size(); iterator++) {
@@ -767,7 +767,7 @@ public class Engine implements API {
 		return tempArr;
 	}
 
-	// FIXME change how non-hist features are handled
+	// Done
 	@Override
 	public List<EventSet> cullWithRespectToTraining(
 			List<EventSet> relevantEvents, List<EventSet> eventSetsToCull,
