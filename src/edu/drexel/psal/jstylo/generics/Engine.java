@@ -34,14 +34,24 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 
 public class Engine implements API {
 
-	// FIXME change how non-hist features are handled
+	// Done
 	@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
-		return cumulativeFeatureDriver.createEventSets(document);
+		//Extract the document events
+		List<EventSet> generatedEvents = cumulativeFeatureDriver.createEventSets(document);
+		//create metadata event to store document information
+		EventSet documentInfo = new EventSet();
+		documentInfo.setEventSetID("<DOCUMENT METADATA>");
+		Event authorEvent = new Event(document.getAuthor());
+		Event titleEvent = new Event(document.getTitle());
+		documentInfo.addEvent(authorEvent);
+		documentInfo.addEvent(titleEvent);
+		generatedEvents.add(documentInfo);
+		return generatedEvents;
 	}
 
-	// FIXME change how non-hist features are handled
+	// Done
 	@Override
 	public List<List<EventSet>> cull(List<List<EventSet>> eventSets,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
@@ -52,10 +62,24 @@ public class Engine implements API {
 		for (EventSet es : eventSets.get(0)) {
 			IDs.add(es.getEventSetID());
 		}
-
+		
+		//remove the metdata prior to culling
+		ArrayList<EventSet> docMetaData = new ArrayList<EventSet>();
+		for (List<EventSet> les : eventSets){
+			docMetaData.add(les.remove(les.size()-1));
+		}
+		
+		//cull the events
 		List<List<EventSet>> culledEventSets = CumulativeEventCuller.cull(
 				eventSets, cumulativeFeatureDriver);
 
+		//add the metadata back in
+		int index = 0;
+		for (List<EventSet> les : culledEventSets){
+			les.add(docMetaData.get(index));
+			index++;
+		}
+		
 		// FIXME a hacky workaround for the bug in the eventCuller. Fix that
 		// later then remove these
 		for (int j1 = 0; j1 < culledEventSets.size(); j1++) {
@@ -64,15 +88,23 @@ public class Engine implements API {
 						.setEventSetID(IDs.get(iterator));
 			}
 		}
+		
+		//return culled events
 		return culledEventSets;
 	}
 
-	// FIXME change how non-hist features are handled
+	// Done.
 	@Override
 	public List<EventSet> getRelevantEvents(
 			List<List<EventSet>> culledEventSets,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
 
+		//remove the metadata prior to generating the relevantEvents
+		ArrayList<EventSet> docMetaData = new ArrayList<EventSet>();
+		for (List<EventSet> les : culledEventSets){
+			docMetaData.add(les.remove(les.size()-1));
+		}
+		
 		List<EventSet> relevantEvents = new LinkedList<EventSet>();
 
 		// iterate over the List of Lists
@@ -139,10 +171,18 @@ public class Engine implements API {
 				featureIndex++;
 			}
 		}
+		
+		//add the metadata back in
+		int index = 0;
+		for (List<EventSet> les : culledEventSets){
+			les.add(docMetaData.get(index));
+			index++;
+		}
+		
 		return relevantEvents;
 	}
 
-	// FIXME change how non-hist features are handled
+	// Done
 	@Override
 	public ArrayList<Attribute> getAttributeList(
 			List<List<EventSet>> culledEventSets,
@@ -150,6 +190,12 @@ public class Engine implements API {
 			CumulativeFeatureDriver cumulativeFeatureDriver,
 			boolean hasDocTitles) throws Exception {
 
+		//remove the metdata prior to generating attribute list
+		ArrayList<EventSet> docMetaData = new ArrayList<EventSet>();
+		for (List<EventSet> les : culledEventSets){
+			docMetaData.add(les.remove(les.size()-1));
+		}
+		
 		int numOfFeatureClasses = relevantEvents.size();
 
 		int numOfVectors = culledEventSets.size();
@@ -228,12 +274,8 @@ public class Engine implements API {
 		// The actual list of attributes to return
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 		
-		
-		// FIXME not sure what type of attribute to use here
-		// I can't get the doc titles without passing the documents through here
-		// which seems like a waste
+		// Add the attribute for document title if enabled
 		if (hasDocTitles) {
-			//FastVector empty = new FastVector();
 			Attribute docTitle = new Attribute("Document Title", (FastVector) null);
 			attributes.add(docTitle);
 		}
@@ -326,17 +368,24 @@ public class Engine implements API {
 			}
 		}
 
+		//add the metadata back in
+		int index = 0;
+		for (List<EventSet> les : culledEventSets){
+			les.add(docMetaData.get(index));
+			index++;
+		}
+		
 		// add authors attribute as last attribute
 		attributes.add(authorNameAttribute);
 		return attributes;
 	}
 
-	// FIXME change how non-hist features are handled
+	// Done
 	@Override
 	public Instance createInstance(List<Attribute> attributes,
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,
-			List<EventSet> documentData, /*Document document,*/ boolean isSparse,
+			List<EventSet> documentData, boolean isSparse,
 			boolean hasDocTitles) throws Exception {
 
 		// initialize vector size (including authorName and title if required)
@@ -353,10 +402,22 @@ public class Engine implements API {
 			inst = new DenseInstance(vectorSize);
 		
 		int start = 0;
+		
+		//add the document title if need be
 		if (hasDocTitles){
 			start = 1;
-			inst.setValue(attributes.get(0),(document.getTitle().replaceAll("\\\\","/")));
+			inst.setValue(attributes.get(0),(documentData.get(documentData.size()-1).eventAt(1).getEvent().replaceAll("\\\\","/")));
 		}
+		
+		// add the document author
+		if (!(documentData.get(documentData.size()-1).eventAt(0).getEvent() == null)) {
+			inst.setValue((Attribute) attributes.get(attributes.size() - 1),
+					documentData.get(documentData.size()-1).eventAt(0).getEvent());
+		}
+		
+		//remove metadata event
+		EventSet metadata = documentData.remove(documentData.size()-1);
+		
 		//-1 for indexing
 		for (int i=start; i<attributes.size()-1;i++){
 			inst.setValue((attributes.get(i)), 0);
@@ -472,12 +533,8 @@ public class Engine implements API {
 				inst.setValue((Attribute) attributes.get(nonHistIndex), value);
 			}
 		}
-		
-		// if it's a test document, it won't have an author
-		if (!(document.getAuthor() == null)) {
-			inst.setValue((Attribute) attributes.get(attributes.size() - 1),
-					document.getAuthor());
-		}
+		//add metadata back. Not sure if necessary
+		documentData.add(metadata);
 		
 		return inst;
 	}
@@ -716,10 +773,13 @@ public class Engine implements API {
 			List<EventSet> relevantEvents, List<EventSet> eventSetsToCull,
 			CumulativeFeatureDriver cfd) throws Exception {
 		List<EventSet> relevant = relevantEvents;
-		int numOfFeatureClasses = eventSetsToCull.size();
+		int numOfFeatureClasses = eventSetsToCull.size()-1; //-1 to compensate for removing metadata
 		int i;
 		List<EventSet> culledUnknownEventSets = new LinkedList<EventSet>();
 
+		//remove the metadata prior to culling
+		EventSet metadata = eventSetsToCull.remove(eventSetsToCull.size()-1);
+		
 		// make sure all unknown sets would have only events that appear in the
 		// known sets
 		// UNLESS the event set contains a sole numeric value event - in that
@@ -784,6 +844,10 @@ public class Engine implements API {
 					culledUnknownEventSets.add(eventSetsToCull.get(i));
 			}
 		}
+		
+		eventSetsToCull.add(metadata);
+		culledUnknownEventSets.add(metadata);
+		
 		return culledUnknownEventSets;
 	}
 
