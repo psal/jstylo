@@ -34,20 +34,95 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 
 public class Engine implements API {
 
+	
+	/*
+	 * Metadata Event format:
+	 * 
+	 * EventSetID: "<DOCUMENT METADATA>"
+	 * Event at Index:
+	 * 		0 : author
+	 * 		1 : title
+	 * 		2 : Sentences in document
+	 * 		3 : Words in document
+	 * 		4 : Characters in document
+	 * 		5 : Letters in document
+	 */	
+	
+	private static final HashMap<Instance, int[]> featureClassPerInst = null;
+
 	// Done
 	@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
-		//Extract the document events
+		
+		//Extract the Events from the documents
 		List<EventSet> generatedEvents = cumulativeFeatureDriver.createEventSets(document);
+		
 		//create metadata event to store document information
 		EventSet documentInfo = new EventSet();
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
+		
+		//Extract document title and author
 		Event authorEvent = new Event(document.getAuthor());
 		Event titleEvent = new Event(document.getTitle());
 		documentInfo.addEvent(authorEvent);
 		documentInfo.addEvent(titleEvent);
+		
+		//Extract normalization baselines
+		// initialize normalization baselines
+		
+			//Feature Class in Doc //Dunno if we actually want this or not. Makes everything more complicated
+			/*	int sum = 0;
+				featureClassPerInst.put(instance, new int[numOfFeatureClasses]);
+				for (k = start; k < end; k++)
+					sum += instance.value(k);
+				featureClassPerInst.get(instance)[i] = sum;
+					*/
+		
+			//Sentences in doc
+			{
+				Document doc = null;
+				SingleNumericEventDriver counter = new SentenceCounterEventDriver();
+				doc = document;
+				doc.load();
+				Event tempEvent = new Event(""+(int) counter.getValue(doc));
+				documentInfo.addEvent(tempEvent);
+			}
+				
+			//Words in doc
+			{
+				Document doc = null;
+				SingleNumericEventDriver counter = new WordCounterEventDriver();
+				doc = document;
+				doc.load();
+				Event tempEvent = new Event(""+(int) counter.getValue(doc));
+				documentInfo.addEvent(tempEvent);
+			}
+				
+			//Characters in doc
+			{
+				Document doc = null;
+				SingleNumericEventDriver counter = new CharCounterEventDriver();
+				doc = document;
+				doc.load();
+				Event tempEvent = new Event(""+(int) counter.getValue(doc));
+				documentInfo.addEvent(tempEvent);
+			}
+				
+			//Letters in doc
+			{
+				Document doc = null;
+				SingleNumericEventDriver counter = new LetterCounterEventDriver();
+				doc = document;
+				doc.load();
+				Event tempEvent = new Event(""+(int) counter.getValue(doc));
+				documentInfo.addEvent(tempEvent);
+			}
+		
+		//add the metadata EventSet to the List<EventSet>
 		generatedEvents.add(documentInfo);
+		
+		//return the List<EventSet>
 		return generatedEvents;
 	}
 
@@ -493,7 +568,6 @@ public class Engine implements API {
 					//calculate/add the histograms
 					int index = 0;
 					for (Integer i: indices){
-						//if (index ==0) System.out.println("Adding: "+attributes.get(i).name()+" "+currHistogram.getAbsoluteFrequency(e)); //TODO
 						inst.setValue((Attribute)attributes.get(i),currHistogram.getAbsoluteFrequency(events.get(index)));
 						index++;
 					}
@@ -540,18 +614,18 @@ public class Engine implements API {
 	}
 
 	// Done
-	@Override
+	@Override //TODO erase this
 	public void normInstance(CumulativeFeatureDriver cfd, Instance instance,
-			Document document, boolean hasDocTitles) throws Exception {
+			List<EventSet> documentData, boolean hasDocTitles) throws Exception {
 
 		int i;
 		int numOfFeatureClasses = cfd.numOfFeatureDrivers();
 
-		HashMap<Instance, int[]> featureClassPerInst = null;
-		HashMap<Instance, Integer> sentencesPerInst = null;
-		HashMap<Instance, Integer> wordsPerInst = null;
-		HashMap<Instance, Integer> charsPerInst = null;
-		HashMap<Instance, Integer> lettersPerInst = null;
+		//HashMap<Instance, int[]> featureClassPerInst = null;
+		int sentencesPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(2).getEvent());
+		int wordsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(3).getEvent());
+		int charsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(4).getEvent());
+		int lettersPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(5).getEvent());
 		int[] featureClassAttrsFirstIndex = new int[numOfFeatureClasses + 1];
 
 		// initialize vector size (including authorName and title if required)
@@ -569,76 +643,6 @@ public class Engine implements API {
 			}
 		}
 
-		// initialize normalization baselines
-		for (i = 0; i < numOfFeatureClasses; i++) {
-			NormBaselineEnum norm = cfd.featureDriverAt(i).getNormBaseline();
-			int start = featureClassAttrsFirstIndex[i], end = featureClassAttrsFirstIndex[i + 1], k;
-
-			if (norm == NormBaselineEnum.FEATURE_CLASS_IN_DOC
-					|| norm == NormBaselineEnum.FEATURE_CLASS_ALL_DOCS) {
-				// initialize
-				if (featureClassPerInst == null)
-					featureClassPerInst = new HashMap<Instance, int[]>();
-
-				// accumulate feature class sum per document
-
-				int sum = 0;
-				featureClassPerInst.put(instance, new int[numOfFeatureClasses]);
-				for (k = start; k < end; k++)
-					sum += instance.value(k);
-				featureClassPerInst.get(instance)[i] = sum;
-
-			} else if (norm == NormBaselineEnum.SENTENCES_IN_DOC) {
-				// initialize
-				if (sentencesPerInst == null)
-					sentencesPerInst = new HashMap<Instance, Integer>();
-
-				// extract sentence count and update
-				Document doc;
-				SingleNumericEventDriver counter = new SentenceCounterEventDriver();
-
-				doc = document;
-				doc.load();
-				sentencesPerInst.put(instance, (int) counter.getValue(doc));
-
-			} else if (norm == NormBaselineEnum.WORDS_IN_DOC) {
-				// initialize
-				if (wordsPerInst == null)
-					wordsPerInst = new HashMap<Instance, Integer>();
-
-				// extract word count and update
-				Document doc;
-				SingleNumericEventDriver counter = new WordCounterEventDriver();
-				doc = document;
-				doc.load();
-				wordsPerInst.put(instance, (int) counter.getValue(doc));
-
-			} else if (norm == NormBaselineEnum.CHARS_IN_DOC) {
-				// initialize
-				if (charsPerInst == null)
-					charsPerInst = new HashMap<Instance, Integer>();
-
-				// extract character count and update
-				Document doc;
-				SingleNumericEventDriver counter = new CharCounterEventDriver();
-				doc = document;
-				doc.load();
-				charsPerInst.put(instance, (int) counter.getValue(doc));
-
-			} else if (norm == NormBaselineEnum.LETTERS_IN_DOC) {
-				// initialize
-				if (lettersPerInst == null)
-					lettersPerInst = new HashMap<Instance, Integer>();
-
-				// extract letter count and update
-				Document doc;
-				SingleNumericEventDriver counter = new LetterCounterEventDriver();
-				doc = document;
-				doc.load();
-				lettersPerInst.put(instance, (int) counter.getValue(doc));
-			}
-		}
-
 		// normalizes features
 		for (i = 0; i < numOfFeatureClasses; i++) {
 
@@ -646,7 +650,8 @@ public class Engine implements API {
 			double factor = cfd.featureDriverAt(i).getNormFactor();
 			int start = featureClassAttrsFirstIndex[i], end = featureClassAttrsFirstIndex[i + 1], k;
 
-			if (norm == NormBaselineEnum.FEATURE_CLASS_IN_DOC) {
+		/*	if (norm == NormBaselineEnum.FEATURE_CLASS_IN_DOC) { //TODO decide if we want to keep this or remove it
+				
 				// use featureClassPerDoc
 				if (!cfd.featureDriverAt(i).isCalcHist()) {
 					instance.setValue(start, instance.value(start) * factor
@@ -660,36 +665,47 @@ public class Engine implements API {
 										/ ((double) featureClassPerInst
 												.get(instance)[i]));
 				}
-			} else if (norm == NormBaselineEnum.SENTENCES_IN_DOC) {
+			} else */
+			if (norm == NormBaselineEnum.SENTENCES_IN_DOC) {
 				// use wordsInDoc
 				if (!cfd.featureDriverAt(i).isCalcHist()) {
 					instance.setValue(start, instance.value(start) * factor
-							/ ((double) sentencesPerInst.get(instance)));
+							/ ((double) sentencesPerInst));
 				} else {
 					for (k = start; k < end; k++)
 						instance.setValue(k, instance.value(k) * factor
-								/ ((double) sentencesPerInst.get(instance)));
+								/ ((double) sentencesPerInst));
 				}
 			} else if (norm == NormBaselineEnum.WORDS_IN_DOC) {
 				// use wordsInDoc
 				if (!cfd.featureDriverAt(i).isCalcHist()) {
 					instance.setValue(start, instance.value(start) * factor
-							/ ((double) wordsPerInst.get(instance)));
+							/ ((double) wordsPerInst));
 				} else {
 					for (k = start; k < end; k++)
 						instance.setValue(k, instance.value(k) * factor
-								/ ((double) wordsPerInst.get(instance)));
+								/ ((double) wordsPerInst));
 				}
 
 			} else if (norm == NormBaselineEnum.CHARS_IN_DOC) {
 				// use charsInDoc
 				if (!cfd.featureDriverAt(i).isCalcHist()) {
 					instance.setValue(start, instance.value(start) * factor
-							/ ((double) charsPerInst.get(instance)));
+							/ ((double) charsPerInst));
 				} else {
 					for (k = start; k < end; k++)
 						instance.setValue(k, instance.value(k) * factor
-								/ ((double) charsPerInst.get(instance)));
+								/ ((double) charsPerInst));
+				}
+			} else if (norm == NormBaselineEnum.LETTERS_IN_DOC) {
+				// use charsInDoc
+				if (!cfd.featureDriverAt(i).isCalcHist()) {
+					instance.setValue(start, instance.value(start) * factor
+							/ ((double) lettersPerInst));
+				} else {
+					for (k = start; k < end; k++)
+						instance.setValue(k, instance.value(k) * factor
+								/ ((double) lettersPerInst));
 				}
 			}
 		}

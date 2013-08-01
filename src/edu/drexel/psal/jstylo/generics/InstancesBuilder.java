@@ -727,7 +727,7 @@ public class InstancesBuilder extends Engine {
 					//add it to the dataset
 					instance.setDataset(testInstances);
 					//normalize it
-					normInstance(cfd, instance, doc, useDocTitles);
+					normInstance(cfd, instance, events, useDocTitles);
 					//add it to the collection of instances to be returned by the thread
 					list.add(instance);
 				} catch (Exception e) {
@@ -787,7 +787,7 @@ public class InstancesBuilder extends Engine {
 					//set it as a part of the dataset
 					instance.setDataset(trainingInstances);
 					//normalize it
-					normInstance(cfd, instance, doc, useDocTitles);
+					normInstance(cfd, instance, eventList.get(i), useDocTitles);
 					//add it to this div's list of completed instances
 					list.add(instance);
 				} catch (Exception e) {
