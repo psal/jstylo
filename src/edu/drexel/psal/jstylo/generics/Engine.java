@@ -749,10 +749,9 @@ public class Engine implements API {
 	}
 
 	// Done
-	@Override
+	@Override 
 	public double[][] applyInfoGain(double[][] chosenFeatures, Instances insts, int n)
 			throws Exception {
-		
 		double[][] infoArr = chosenFeatures;
 		// create an array with the value of infoArr's [i][1] this array will be
 		// shrunk and modified as needed
@@ -770,12 +769,16 @@ public class Engine implements API {
 		// for all the values we need to delete
 		for (int i = 0; i < valuesToKeep; i++) {
 
+			//delete the attribute
+			insts.deleteAttributeAt((int)tempArr[tempArr.length-1][1]);
+			
 			//shrink the array
 			double temp[][] = new double[tempArr.length - 1][2];
 			for (int k = 0; k < temp.length; k++){
 				temp[k][0] = tempArr[k][0];
 				temp[k][1] = tempArr[k][1];
 			}
+			
 			// update array
 			tempArr = temp;
 		}

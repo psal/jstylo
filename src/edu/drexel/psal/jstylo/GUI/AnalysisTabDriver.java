@@ -791,7 +791,7 @@ public class AnalysisTabDriver {
 				} catch (NumberFormatException e) {}
 				
 				try{
-					boolean apply = main.analysisCalcInfoGainJCheckBox.isSelected() && main.analysisApplyInfoGainJCheckBox.isSelected();
+					boolean apply = main.analysisApplyInfoGainJCheckBox.isSelected();
 					Instances trainingInstances = new Instances(main.ib.getTrainingInstances());
 					double[][] infoGain = main.ib.calculateInfoGain();
 					if (apply){
