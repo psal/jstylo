@@ -723,11 +723,11 @@ public class InstancesBuilder extends Engine {
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							events, doc, isSparse, useDocTitles);
+							events, isSparse, useDocTitles);
 					//add it to the dataset
 					instance.setDataset(testInstances);
 					//normalize it
-					normInstance(cfd, instance, doc, useDocTitles);
+					normInstance(cfd, instance, events, useDocTitles);
 					//add it to the collection of instances to be returned by the thread
 					list.add(instance);
 				} catch (Exception e) {
@@ -783,11 +783,11 @@ public class InstancesBuilder extends Engine {
 					Document doc = ps.getAllTrainDocs().get(i);
 					//create the instance using it
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							eventList.get(i), doc, isSparse, useDocTitles);
+							eventList.get(i), isSparse, useDocTitles);
 					//set it as a part of the dataset
 					instance.setDataset(trainingInstances);
 					//normalize it
-					normInstance(cfd, instance, doc, useDocTitles);
+					normInstance(cfd, instance, eventList.get(i), useDocTitles);
 					//add it to this div's list of completed instances
 					list.add(instance);
 				} catch (Exception e) {
@@ -832,7 +832,11 @@ public class InstancesBuilder extends Engine {
 			this.threadId = threadId;
 			this.knownDocsSize = knownDocsSize;
 			this.knownDocs = knownDocs;
-			this.cfd = cfd;
+			try {
+				this.cfd = new CumulativeFeatureDriver(cfd);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
 		}
 
@@ -844,7 +848,7 @@ public class InstancesBuilder extends Engine {
 					* (threadId + 1)); i++){
 				try {
 					//try to extract the events
-					List<EventSet> extractedEvents = cfd.createEventSets(ps.getAllTrainDocs().get(i));
+					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("Error extracting features!", LogOut.STDERR);

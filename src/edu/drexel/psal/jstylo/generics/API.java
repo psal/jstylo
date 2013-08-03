@@ -78,7 +78,7 @@ public interface API {
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,
 			List<EventSet> documentData,
-			Document document, 
+		/*	Document document, */
 			boolean isSparse, boolean hasDocTitles) throws Exception;
 	//create and use histograms here
 	
@@ -90,11 +90,10 @@ public interface API {
 	 * @throws Exception
 	 */
 	public void normInstance(CumulativeFeatureDriver cumulativeFeatureDriver,
-			Instance instance, Document document, boolean hasDocTitles) throws Exception;
+			Instance instance, List<EventSet> documentData, boolean hasDocTitles) throws Exception;
 	
 	// the full training Instances object is generated
 	
-	//TODO fixme
 	/**
 	 * Calculates InfoGain on the instances to provide information on how useful each feature was to identifying the documents.
 	 * @param insts the instances to calculate over
