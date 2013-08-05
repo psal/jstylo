@@ -103,16 +103,23 @@ public interface API {
 	public double[][] calcInfoGain(Instances insts) throws Exception;
 	
 	/**
-	 * Removes all but the top N features (as returned by calcInfoGain) from the instances
-	 * @param chosenFeatures the indices of the features to keep
+	 * Removes all but the top N features (as returned by calcInfoGain) from the Instances object
+	 * @param the indices and infoGain values of all attributes
 	 * @param insts the instances to remove infoGain from
 	 * @param n the number of features to keep
 	 * @throws Exception
 	 */
-	public double[][] applyInfoGain(double[][] chosenFeatures, Instances insts, int n)
+	public double[][] applyInfoGain(double[][] sortedFeatures, Instances insts, int n)
 			throws Exception;
 	
-	
+	/**
+	 * The above, but for a single Instance object
+	 * @param sortedFeatures
+	 * @param inst
+	 * @param n
+	 * @throws Exception
+	 */
+	public void applyInfoGain(double[][] sortedFeatures, Instance inst, int n) throws Exception;
 	// feature extraction - test set
 	
 	// extractEventSets - same as for training documents

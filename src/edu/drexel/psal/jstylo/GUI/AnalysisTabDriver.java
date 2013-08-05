@@ -792,18 +792,21 @@ public class AnalysisTabDriver {
 				
 				try{
 					boolean apply = main.analysisApplyInfoGainJCheckBox.isSelected();
-					Instances trainingInstances = new Instances(main.ib.getTrainingInstances());
 					double[][] infoGain = main.ib.calculateInfoGain();
 					if (apply){
 						main.ib.applyInfoGain(igValue);
 						infoGain = main.ib.getInfoGain();
 					}
 					
+					Instances trainingInstances = new Instances(main.ib.getTrainingInstances());
 					for (int i = 0; i<infoGain.length; i++){
-						if (infoGain[i][0]==0)
+/*						if (infoGain[i][0]==0){
 							break;
+						}
+	*/					
+						int index = (int)Math.round(infoGain[i][1]);
 						content+=String.format("> %-50s   %f\n",
-								trainingInstances.attribute((int)infoGain[i][1]).name(),
+								trainingInstances.attribute(index).name(),
 								infoGain[i][0]);
 					}
 					updateResultsView();

@@ -614,7 +614,7 @@ public class Engine implements API {
 	}
 
 	// Done
-	@Override //TODO erase this
+	@Override
 	public void normInstance(CumulativeFeatureDriver cfd, Instance instance,
 			List<EventSet> documentData, boolean hasDocTitles) throws Exception {
 
@@ -728,7 +728,7 @@ public class Engine implements API {
 		int j = 0;
 		for (int i = 0; i < infoArr.length; i++) {
 			if (insts.attribute(j).name().equals("authorName")) {
-				i--;
+				;
 			} else {
 				len = (len > insts.attribute(j).name().length() ? len : insts
 						.attribute(j).name().length());
@@ -750,42 +750,104 @@ public class Engine implements API {
 
 	// Done
 	@Override 
-	public double[][] applyInfoGain(double[][] chosenFeatures, Instances insts, int n)
+	public double[][] applyInfoGain(double[][] sortedFeatures, Instances insts, int n)
 			throws Exception {
-		double[][] infoArr = chosenFeatures;
-		// create an array with the value of infoArr's [i][1] this array will be
-		// shrunk and modified as needed
-		double[][] tempArr = new double[infoArr.length][2];
-		for (int i = 0; i < infoArr.length; i++) {
-			tempArr[i][0] = new Double(infoArr[i][0]);
-			tempArr[i][1] = new Double(infoArr[i][1]);
-		}
-
-		int valuesToKeep =-1;
-		if (n>infoArr.length)
-			return tempArr;
+		
+		//find out how many values to remove
+		int valuesToRemove =-1;
+		if (n>sortedFeatures.length)
+			return sortedFeatures;
 		else
-			valuesToKeep = infoArr.length-n;
-		// for all the values we need to delete
-		for (int i = 0; i < valuesToKeep; i++) {
-
-			//delete the attribute
-			insts.deleteAttributeAt((int)tempArr[tempArr.length-1][1]);
-			
-			//shrink the array
-			double temp[][] = new double[tempArr.length - 1][2];
-			for (int k = 0; k < temp.length; k++){
-				temp[k][0] = tempArr[k][0];
-				temp[k][1] = tempArr[k][1];
+			valuesToRemove = sortedFeatures.length-n;
+		
+		double[][] keepArray = new double[n][2]; //array to be returned
+		double[][] removeArray = new double[valuesToRemove][2]; //array to be sorted and be removed from the Instances object
+		
+		//populate the arrays
+		for (int i =0; i<sortedFeatures.length; i++){
+			if (i<n){
+				keepArray[i][0] = sortedFeatures[i][0];
+				keepArray[i][1] = sortedFeatures[i][1];
+			} else {
+				removeArray[i-n][0] = sortedFeatures[i][0];
+				removeArray[i-n][1] = sortedFeatures[i][1];
 			}
-			
-			// update array
-			tempArr = temp;
 		}
+		
+		//sort based on index
+		Arrays.sort(removeArray, new Comparator<double[]>() {
+			@Override
+			public int compare(final double[] first, final double[] second) {
+				return -1 * ((Double) first[1]).compareTo(((Double) second[1]));
+			}
+		});
+		
+		//for all of the values to remove
+		for (int i=0; i<removeArray.length;i++){
+			
+			//get the index to remove
+			int indexToRemove = (int)Math.round(removeArray[i][1]);
+			
+			//remove from the Instances object
+			insts.deleteAttributeAt(indexToRemove);
+			
+			//adjust all of the indices in the keepArray to compensate for the removal
+			for (int j=0; j<keepArray.length;j++){
+				if (indexToRemove <= (int)Math.round(keepArray[j][1])){
+					keepArray[j][1] = keepArray[j][1]-1;
+				}
+			}
+		}
+		
 		//return the array consisting only of the top n values
-		return tempArr;
+		return keepArray;
 	}
 
+	// Done
+	@Override 
+	public void applyInfoGain(double[][] sortedFeatures, Instance inst, int n)
+			throws Exception {
+		
+		// find out how many values to remove
+		int valuesToRemove = -1;
+		if (n > sortedFeatures.length)
+			;
+		else
+			valuesToRemove = sortedFeatures.length - n;
+
+		if (!(valuesToRemove == -1)) {
+			double[][] removeArray = new double[valuesToRemove][2]; // array to be sorted and be removed from the Instances object
+
+			// populate the arrays
+			for (int i = 0; i < sortedFeatures.length; i++) {
+				if (i < n) {
+					;
+				} else {
+					removeArray[i - n][0] = sortedFeatures[i][0];
+					removeArray[i - n][1] = sortedFeatures[i][1];
+				}
+			}
+
+			// sort based on index
+			Arrays.sort(removeArray, new Comparator<double[]>() {
+				@Override
+				public int compare(final double[] first, final double[] second) {
+					return -1 * ((Double) first[1]).compareTo(((Double) second[1]));
+				}
+			});
+
+			// for all of the values to remove
+			for (int i = 0; i < removeArray.length; i++) {
+
+				// get the index to remove
+				int indexToRemove = (int) Math.round(removeArray[i][1]);
+
+				// remove from the Instances object
+				inst.deleteAttributeAt(indexToRemove);
+			}
+		}
+	}
+	
 	// Done
 	@Override
 	public List<EventSet> cullWithRespectToTraining(
