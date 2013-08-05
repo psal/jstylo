@@ -543,7 +543,10 @@ public class ProblemSet {
 		for (String key: trainDocsMap.keySet()){
 			for (Document d:trainDocsMap.get(key)){
 				try {
-					allTrainDocs.add(new Document(d.getFilePath(),key,d.getTitle()));
+					if (d instanceof StringDocument)
+						allTrainDocs.add(new StringDocument((StringDocument)d));
+					else
+						allTrainDocs.add(new Document(d.getFilePath(),key,d.getTitle()));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
