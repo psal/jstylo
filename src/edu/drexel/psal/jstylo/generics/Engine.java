@@ -19,10 +19,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
 
-import com.jgaap.generics.Canonicizer;
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
-import com.jgaap.generics.EventDriver;
 import com.jgaap.generics.EventHistogram;
 import com.jgaap.generics.EventSet;
 
@@ -48,8 +46,6 @@ public class Engine implements API {
 	 * 		5 : Letters in document
 	 */	
 	
-	private static final HashMap<Instance, int[]> featureClassPerInst = null;
-
 	// Done
 	@Override
 	public List<EventSet> extractEventSets(Document document,
@@ -288,7 +284,7 @@ public class Engine implements API {
 		// initialize Weka attributes vector (but authors attribute will be
 		// added last)
 		FastVector attributeList = new FastVector(relevantEvents.size() + 1);
-		FastVector authorNames = new FastVector();
+		FastVector<String> authorNames = new FastVector();
 		authorNames.addElement("_Unknown_");
 		for (String name : authors)
 			authorNames.addElement(name);
