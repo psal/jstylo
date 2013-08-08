@@ -547,6 +547,14 @@ public class SimpleAPI {
 		return ib.getInfoGain();
 	}
 	
+	public ProblemSet getProblemSet(){
+		return ib.getProblemSet();
+	}
+	
+	public InstancesBuilder getUnderlyingInstancesBuilder(){
+		return ib;
+	}
+	
 	/**
 	 * Returns a string of features, in order of most to least useful, with their infogain values<br>
 	 * @param showZeroes whether or not to show features that have a 0 as their infoGain value
@@ -669,15 +677,16 @@ public class SimpleAPI {
 	public static void main(String[] args){
 		
 		SimpleAPI test = new SimpleAPI(
-				"./jsan_resources/problem_sets/enron_demo.xml",
-				"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
+				"C:/Users/Mordio/workspace/research/tests/200000Words-10000perAuthorNC/Train_500-600_Test_100-200.xml",
+				//"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
+				"C:/Users/Mordio/workspace/research/featureSets/moveBackToFeatureTests/Letters.xml",
 				8, "weka.classifiers.functions.SMO",
-				analysisType.CROSS_VALIDATION);
-
+				analysisType.TRAIN_TEST_KNOWN);
+ 
 		test.prepareInstances();
 		test.prepareAnalyzer();
 		test.run();
-		
+		System.out.println("test: "+test.getTrainTestStatString());
 		//test.writeArff("./testing.arff",test.getTestInstances());
 		
 	}

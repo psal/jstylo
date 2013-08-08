@@ -618,27 +618,32 @@ public class Engine implements API {
 		int numOfFeatureClasses = cfd.numOfFeatureDrivers();
 
 		//HashMap<Instance, int[]> featureClassPerInst = null;
+	
 		int sentencesPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(2).getEvent());
 		int wordsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(3).getEvent());
 		int charsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(4).getEvent());
 		int lettersPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(5).getEvent());
 		int[] featureClassAttrsFirstIndex = new int[numOfFeatureClasses + 1];
-
 		// initialize vector size (including authorName and title if required)
 		// and first indices of feature classes array
 		int vectorSize = (hasDocTitles ? 1 : 0);
 		for (i = 0; i < numOfFeatureClasses; i++) {
+			
 			String featureDriverName = cfd.featureDriverAt(i).displayName()
 					.replace(" ", "-");
 			String nextFeature = instance.attribute(vectorSize).name()
 					.replace(" ", "-");
+			
 			featureClassAttrsFirstIndex[i] = vectorSize;
 			while (nextFeature.contains(featureDriverName)) {
 				vectorSize++;
 				nextFeature = instance.attribute(vectorSize).name();
 			}
 		}
-
+		
+		//add the end index
+		featureClassAttrsFirstIndex[featureClassAttrsFirstIndex.length-1] = instance.numAttributes()-1;
+		
 		// normalizes features
 		for (i = 0; i < numOfFeatureClasses; i++) {
 
@@ -678,9 +683,10 @@ public class Engine implements API {
 					instance.setValue(start, instance.value(start) * factor
 							/ ((double) wordsPerInst));
 				} else {
-					for (k = start; k < end; k++)
+					for (k = start; k < end; k++){
 						instance.setValue(k, instance.value(k) * factor
 								/ ((double) wordsPerInst));
+					}
 				}
 
 			} else if (norm == NormBaselineEnum.CHARS_IN_DOC) {
