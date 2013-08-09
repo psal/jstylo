@@ -1,6 +1,8 @@
 package edu.drexel.psal.jstylo.generics;
 
 import com.jgaap.generics.*;
+
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -11,13 +13,15 @@ import java.util.*;
  * @author Ariel Stolerman
  *
  */
-public class FeatureDriver {
+public class FeatureDriver implements Serializable{
 	
 	/* ======
 	 * fields
 	 * ======
 	 */
 	
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The name of the feature.
 	 */

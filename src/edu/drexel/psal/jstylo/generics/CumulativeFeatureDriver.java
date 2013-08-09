@@ -20,7 +20,12 @@ import com.jgaap.generics.*;
  * @author Ariel Stolerman
  *
  */
-public class CumulativeFeatureDriver {
+public class CumulativeFeatureDriver implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/* ======
 	 * fields
 	 * ======

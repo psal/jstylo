@@ -677,9 +677,9 @@ public class SimpleAPI {
 	public static void main(String[] args){
 		
 		SimpleAPI test = new SimpleAPI(
-				"C:/Users/Mordio/workspace/research/tests/200000Words-10000perAuthorNC/Train_500-600_Test_100-200.xml",
+				"C:/Users/Mordio/CutTests/TruncatedWithSameDocs/150_Train_200-300_Test_100-200.xml",
 				//"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
-				"C:/Users/Mordio/workspace/research/featureSets/moveBackToFeatureTests/Letters.xml",
+				"C:/Users/Mordio/workspace/research/featureSets/featureTests/WLN.xml",
 				8, "weka.classifiers.functions.SMO",
 				analysisType.TRAIN_TEST_KNOWN);
  
