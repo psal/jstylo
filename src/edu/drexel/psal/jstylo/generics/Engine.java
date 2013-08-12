@@ -292,10 +292,9 @@ public class Engine implements API {
 		// initialize list of sets of events, which will eventually become the
 		// attributes
 		List<EventSet> allEvents = new ArrayList<EventSet>(numOfFeatureClasses);
-
+		
 		for (int currEventSet = 0; currEventSet < numOfFeatureClasses; currEventSet++){
 			// initialize relevant list of event sets and histograms
-
 			list = new ArrayList<EventSet>();
 			for (int i = 0; i < numOfFeatureClasses; i++)
 				list.add(relevantEvents.get(i));
@@ -611,7 +610,7 @@ public class Engine implements API {
 	// Done
 	@Override
 	public void normInstance(CumulativeFeatureDriver cfd, Instance instance,
-			List<EventSet> documentData, boolean hasDocTitles) throws Exception {
+			List<EventSet> documentData, boolean hasDocTitles, List<Attribute> attributes) throws Exception {
 
 		int i;
 		int numOfFeatureClasses = cfd.numOfFeatureDrivers();
@@ -630,13 +629,17 @@ public class Engine implements API {
 			
 			String featureDriverName = cfd.featureDriverAt(i).displayName()
 					.replace(" ", "-");
+		/*
 			String nextFeature = instance.attribute(vectorSize).name()
 					.replace(" ", "-");
+			*/
+			String nextFeature = attributes.get(vectorSize).name();
 			
 			featureClassAttrsFirstIndex[i] = vectorSize;
 			while (nextFeature.contains(featureDriverName)) {
 				vectorSize++;
-				nextFeature = instance.attribute(vectorSize).name();
+			//	nextFeature = instance.attribute(vectorSize).name();
+				nextFeature = attributes.get(vectorSize).name();
 			}
 		}
 		

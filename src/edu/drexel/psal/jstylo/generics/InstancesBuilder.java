@@ -725,9 +725,9 @@ public class InstancesBuilder extends Engine {
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
 							events, isSparse, useDocTitles);
 					//add it to the dataset
-					instance.setDataset(testInstances);
+	//TODO				instance.setDataset(testInstances);
 					//normalize it
-					normInstance(cfd, instance, events, useDocTitles);
+					normInstance(cfd, instance, events, useDocTitles, attributes);
 					//add it to the collection of instances to be returned by the thread
 					list.add(instance);
 				} catch (Exception e) {
@@ -785,9 +785,9 @@ public class InstancesBuilder extends Engine {
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
 							eventList.get(i), isSparse, useDocTitles);
 					//set it as a part of the dataset
-					instance.setDataset(trainingInstances);
+		//TODO			instance.setDataset(trainingInstances);
 					//normalize it
-					normInstance(cfd, instance, eventList.get(i), useDocTitles);
+					normInstance(cfd, instance, eventList.get(i), useDocTitles,attributes);
 					//add it to this div's list of completed instances
 					list.add(instance);
 				} catch (Exception e) {

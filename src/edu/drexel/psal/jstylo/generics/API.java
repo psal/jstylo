@@ -90,7 +90,7 @@ public interface API {
 	 * @throws Exception
 	 */
 	public void normInstance(CumulativeFeatureDriver cumulativeFeatureDriver,
-			Instance instance, List<EventSet> documentData, boolean hasDocTitles) throws Exception;
+			Instance instance, List<EventSet> documentData, boolean hasDocTitles, List<Attribute> attributes) throws Exception;
 	
 	// the full training Instances object is generated
 	
