@@ -59,6 +59,16 @@ public class SimpleAPI {
 	}
 	
 	/**
+	 * Constructor for an API that will be used solely for feature extraction
+	 * @param psXML
+	 * @param cfdXML
+	 * @param numThreads
+	 */
+	public SimpleAPI(String psXML, String cfdXML, int numThreads){
+		ib = new InstancesBuilder(psXML,cfdXML,true,false,numThreads);
+	}
+	
+	/**
 	 * SimpleAPI constructor. Does not support classifier arguments
 	 * @param psXML path to the XML containing the problem set
 	 * @param cfdXML path to the XML containing the cumulativeFeatureDriver/feature set
