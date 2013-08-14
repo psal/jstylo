@@ -693,11 +693,12 @@ public class SimpleAPI {
 				8, "weka.classifiers.functions.SMO",
 				analysisType.TRAIN_TEST_KNOWN);
  
+		test.setUseDocTitles(true);
 		test.prepareInstances();
-		test.prepareAnalyzer();
-		test.run();
-		System.out.println("test: "+test.getTrainTestStatString());
-		//test.writeArff("./testing.arff",test.getTestInstances());
+		//test.prepareAnalyzer();
+		//test.run();
+		//System.out.println("test: "+test.getTrainTestStatString());
+		test.writeArff("./testing.arff",test.getTestInstances());
 		
 	}
 }

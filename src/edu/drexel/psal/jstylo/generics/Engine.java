@@ -460,9 +460,10 @@ public class Engine implements API {
 		// initialize vector size (including authorName and title if required)
 		// and first indices of feature classes array
 		int vectorSize = attributes.size();
+		/*
 		if (hasDocTitles)
 			vectorSize++;
-
+		 */
 		// generate training instances
 		Instance inst = null;
 		if (isSparse)
@@ -517,8 +518,8 @@ public class Engine implements API {
 					// and count all of the events
 					for (Event e : es) {
 						int currIndex=0;
-						if (hasDocTitles){
-							currIndex++;
+						if (hasDocTitles) {
+							currIndex=1;
 						}
 						boolean hasInner = false;
 
@@ -570,8 +571,9 @@ public class Engine implements API {
 			} else { //non histogram feature
 				
 				int nonHistIndex = 0;
-				if (hasDocTitles)
-					nonHistIndex++;
+				if (hasDocTitles){
+					nonHistIndex=1;
+				}
 				
 				//find the indices of the events
 				//and count all of the events

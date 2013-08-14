@@ -724,8 +724,6 @@ public class InstancesBuilder extends Engine {
 					//build the instance
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
 							events, isSparse, useDocTitles);
-					//add it to the dataset
-	//TODO				instance.setDataset(testInstances);
 					//normalize it
 					normInstance(cfd, instance, events, useDocTitles, attributes);
 					//add it to the collection of instances to be returned by the thread
@@ -734,6 +732,7 @@ public class InstancesBuilder extends Engine {
 					Logger.logln("Error creating Test Instances!", LogOut.STDERR);
 					Logger.logln(ps.getAllTestDocs().get(i).getFilePath());
 					Logger.logln(e.getMessage(), LogOut.STDERR);
+					e.printStackTrace();
 				}
 		}
 		
@@ -784,8 +783,6 @@ public class InstancesBuilder extends Engine {
 					//create the instance using it
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
 							eventList.get(i), isSparse, useDocTitles);
-					//set it as a part of the dataset
-		//TODO			instance.setDataset(trainingInstances);
 					//normalize it
 					normInstance(cfd, instance, eventList.get(i), useDocTitles,attributes);
 					//add it to this div's list of completed instances
