@@ -792,15 +792,18 @@ public class Engine implements API {
 		for (int i=0; i<removeArray.length;i++){
 			
 			//get the index to remove
-			int indexToRemove = (int)Math.round(removeArray[i][1]);
-			
-			//remove from the Instances object
-			insts.deleteAttributeAt(indexToRemove);
-			
-			//adjust all of the indices in the keepArray to compensate for the removal
-			for (int j=0; j<keepArray.length;j++){
-				if (indexToRemove <= (int)Math.round(keepArray[j][1])){
-					keepArray[j][1] = keepArray[j][1]-1;
+			int indexToRemove = (int) Math.round(removeArray[i][1]);
+
+			if (!(insts.classIndex() == indexToRemove)) {
+
+				// remove from the Instances object
+				insts.deleteAttributeAt(indexToRemove);
+
+				// adjust all of the indices in the keepArray to compensate for the removal
+				for (int j = 0; j < keepArray.length; j++) {
+					if (indexToRemove <= (int) Math.round(keepArray[j][1])) {
+						keepArray[j][1] = keepArray[j][1] - 1;
+					}
 				}
 			}
 		}

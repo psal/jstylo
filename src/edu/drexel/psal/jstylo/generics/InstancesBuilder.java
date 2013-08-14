@@ -393,9 +393,11 @@ public class InstancesBuilder extends Engine {
 	 * @throws Exception
 	 */
 	public void applyInfoGain(int n) throws Exception {
-		setInfoGain(applyInfoGain(getInfoGain(), trainingInstances, n));
-		if (testInstances != null) // Apply infoGain to test set if we have one
+		//setInfoGain(applyInfoGain(getInfoGain(), trainingInstances, n));
+		applyInfoGain(getInfoGain(), trainingInstances, n);
+		if (testInstances != null){ // Apply infoGain to test set if we have one
 			applyInfoGain(getInfoGain(), testInstances, n);
+		}
 	}
 
 	/**

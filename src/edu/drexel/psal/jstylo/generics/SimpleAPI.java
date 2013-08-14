@@ -687,17 +687,19 @@ public class SimpleAPI {
 	public static void main(String[] args){
 		
 		SimpleAPI test = new SimpleAPI(
-				"C:/Users/Mordio/CutTests/TruncatedWithSameDocs/150_Train_200-300_Test_100-200.xml",
+				"C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml",
 				//"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
 				"C:/Users/Mordio/workspace/research/featureSets/featureTests/WLN.xml",
 				8, "weka.classifiers.functions.SMO",
 				analysisType.TRAIN_TEST_KNOWN);
  
-		test.setUseDocTitles(true);
+		
 		test.prepareInstances();
-		//test.prepareAnalyzer();
-		//test.run();
-		//System.out.println("test: "+test.getTrainTestStatString());
+		test.calcInfoGain();
+		test.applyInfoGain(1500);
+		test.prepareAnalyzer();
+		test.run();
+		System.out.println("test: "+test.getTrainTestStatString());
 		test.writeArff("./testing.arff",test.getTestInstances());
 		
 	}
