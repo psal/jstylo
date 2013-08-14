@@ -634,8 +634,6 @@ public class Engine implements API {
 			
 			String nextFeature = attributes.get(vectorSize).name().replace(" ", "-");;
 			
-			System.out.println("featureDriverName: "+featureDriverName+" nextFeature: "+nextFeature);
-			
 			featureClassAttrsFirstIndex[i] = vectorSize;
 			while (nextFeature.contains(featureDriverName)) {
 				vectorSize++;
@@ -646,10 +644,6 @@ public class Engine implements API {
 		
 		//add the end index
 		featureClassAttrsFirstIndex[featureClassAttrsFirstIndex.length-1] = instance.numAttributes()-1;
-		
-		for (int j=0; j<featureClassAttrsFirstIndex.length; j++){
-			System.out.println("Index "+j+": "+featureClassAttrsFirstIndex[j]);
-		}
 		
 		// normalizes features
 		for (i = 0; i < numOfFeatureClasses; i++) {
