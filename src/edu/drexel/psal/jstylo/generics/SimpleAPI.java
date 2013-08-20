@@ -85,7 +85,7 @@ public class SimpleAPI {
 			return this;
 		}
 		
-		public Builder numThread(int nt){
+		public Builder numThreads(int nt){
 			numThreads = nt;
 			return this;
 		}
@@ -153,9 +153,9 @@ public class SimpleAPI {
 			}
 		}
 		
-		if (b.classifierPath==null){
+		if (b.classifier!=null){
 			analysisDriver = new WekaAnalyzer(b.classifier);
-		} else {
+		} else if (b.classifierPath==null){
 			classifierPath = b.classifierPath;
 		}
 		
