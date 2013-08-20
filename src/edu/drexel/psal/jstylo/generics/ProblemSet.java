@@ -10,6 +10,7 @@ import javax.xml.parsers.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Collections;
@@ -18,13 +19,15 @@ import com.jgaap.generics.*;
 
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 
-public class ProblemSet {
+public class ProblemSet implements Serializable {
 	
 	/* ======
 	 * fields
 	 * ======
 	 */
 	
+	private static final long serialVersionUID = 1L;
+
 	private SortedMap<String,List<Document>> trainDocsMap;
 	
 	private SortedMap<String,List<Document>> testDocsMap;
@@ -101,14 +104,14 @@ public class ProblemSet {
 	 * 		The name of the XML file to generate the problem set from.
 	 * @throws Exception
 	 */
-	public ProblemSet(String filename) throws Exception {
+	public ProblemSet(String filename) {
 		XMLParser parser = new XMLParser(filename);
 		ProblemSet generated = parser.problemSet;
 		trainCorpusName = generated.trainCorpusName;
 		trainDocsMap = generated.trainDocsMap;
 		testDocsMap = generated.testDocsMap;
 	}
-	
+
 	/**
 	 * Copy constructor for ProblemSet.
 	 * @param other
@@ -808,10 +811,24 @@ public class ProblemSet {
 		 * constructors
 		 * ============
 		 */
-		public XMLParser(String filename) throws Exception {
+		public XMLParser(String filename){
 			problemSet = new ProblemSet();
 			this.filename = filename;
-			parse();
+			try { 
+				parse();
+			} catch (ParserConfigurationException pce){
+				Logger.logln("Encountered a Parser Configuration problem in the XMLParser constructor.",LogOut.STDERR);
+				pce.printStackTrace();
+			} catch (IOException ioe) {
+				Logger.logln("Encountered an IO exception in the XMLParser constructor.",LogOut.STDERR);
+				ioe.printStackTrace();
+			} catch (SAXException se) {
+				Logger.logln("Encountered a SAX exception in the XMLParser constructor.",LogOut.STDERR);
+				se.printStackTrace();
+			} catch (Exception e) {
+				Logger.logln("Problem creating a document. Exception thrown by JGAAP Document.", LogOut.STDERR);
+				e.printStackTrace();
+			}
 		}
 		
 		
@@ -825,7 +842,7 @@ public class ProblemSet {
 		 * @throws Exception
 		 * 		SAXException, ParserConfigurationException, IOException
 		 */
-		public void parse() throws Exception {
+		public void parse() throws ParserConfigurationException, IOException, SAXException , Exception{
 			
 			//intialize the parser, parse the document, and build the tree
 			DocumentBuilderFactory builder = DocumentBuilderFactory.newInstance();
