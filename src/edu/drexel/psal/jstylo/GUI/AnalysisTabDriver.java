@@ -661,7 +661,7 @@ public class AnalysisTabDriver {
 			main.ib = tempBuilder;
 			main.ib.setProblemSet(main.ps);
 			main.ib.setCumulativeFeatureDriver(main.cfd);
-			main.ib.setUseSparse(main.ib.isSparse());
+			main.ib.setUseSparse(main.analysisSparseInstancesJCheckBox.isSelected());
 			// training set
 			
 			content += getTimestamp()+" Extracting features from training corpus ("+(main.ib.isSparse() ? "" : "not ")+"using sparse representation)...\n";
@@ -795,7 +795,7 @@ public class AnalysisTabDriver {
 					double[][] infoGain = main.ib.calculateInfoGain();
 					if (apply){
 						main.ib.applyInfoGain(igValue);
-						infoGain = main.ib.getInfoGain();
+						infoGain = main.ib.calculateInfoGain();
 					}
 					
 					Instances trainingInstances = new Instances(main.ib.getTrainingInstances());
