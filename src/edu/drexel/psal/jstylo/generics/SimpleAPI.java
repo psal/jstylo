@@ -383,18 +383,14 @@ public class SimpleAPI {
 		return trainTestResults;
 	}
 	
-	/**
-	 * @return Evaluation containing train/test statistics
-	 */
-	public Evaluation getTrainTestEval(){
-		return trainTestEval;
-	}
-	
-	/**
-	 * @return Evaluation containing cross validation results
-	 */
-	public Evaluation getCrossValEval(){
-		return crossValResults;
+	public Evaluation getEvaluation(){
+		if (selected == analysisType.CROSS_VALIDATION)
+			return crossValResults;
+		else if (selected== analysisType.TRAIN_TEST_KNOWN)
+			return trainTestEval;
+		else
+			return null;
+			
 	}
 	
 	public String getStatString(){
@@ -412,7 +408,7 @@ public class SimpleAPI {
 	private String getCrossValStatString() {
 		
 		try {
-			Evaluation eval = getCrossValEval();
+			Evaluation eval = getEvaluation();
 			String resultsString = "";
 			resultsString += eval.toSummaryString(false) + "\n";
 			resultsString += eval.toClassDetailsString() + "\n";
@@ -433,7 +429,7 @@ public class SimpleAPI {
 	 */
 	private String getTrainTestStatString() {
 		
-		Evaluation eval = getTrainTestEval();
+		Evaluation eval = getEvaluation();
 		try {
 			return eval.toSummaryString() + "\n" + eval.toClassDetailsString() + "\n" + eval.toMatrixString();
 		} catch (Exception e) {
@@ -450,7 +446,7 @@ public class SimpleAPI {
 		
 		if (selected == analysisType.CROSS_VALIDATION){
 			
-			Evaluation crossEval = getCrossValEval();
+			Evaluation crossEval = getEvaluation();
 			String summary = crossEval.toSummaryString();
 			int start = summary.indexOf("Correctly Classified Instances");
 			int end = summary.indexOf("%");
