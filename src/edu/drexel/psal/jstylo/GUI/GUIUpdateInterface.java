@@ -22,7 +22,7 @@ public class GUIUpdateInterface {
 	// about dialog
 	// ============
 	
-	protected static String version = "1.1";
+	protected static String version = "1.2";
 	
 	protected static void showAbout(GUIMain main) {
 		ImageIcon logo = new ImageIcon(Thread.currentThread().getClass().getResource(JSANConstants.JSAN_GRAPHICS_PREFIX+"logo.png"), "JStylo Logo");

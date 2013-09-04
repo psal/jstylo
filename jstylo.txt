@@ -20,7 +20,8 @@ II.	About Drexel PSAL
 III. Copyright/License Information
 
 	JStylo was released by the Privacy, Security and Automation lab at Drexel University in 2011 under the AGPLv3 license.
-	A copy of this license is included with the repository/program. If for some reason it is absent, it can be viewed here: http://www.gnu.org/licenses/agpl.html
+	JStylo was moved to the 3-Clause BSD license in September, 2013. 
+	A copy of the current license is included with the repository/program. If for some reason it is absent, it can be viewed here: http://opensource.org/licenses/BSD-3-Clause
 	
 IV. Glossary
 
