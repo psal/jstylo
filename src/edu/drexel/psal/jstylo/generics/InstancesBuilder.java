@@ -851,6 +851,7 @@ public class InstancesBuilder extends Engine {
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("Error extracting features!", LogOut.STDERR);
+					Logger.logln("Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
 					Logger.logln(e.getMessage(), LogOut.STDERR);
 				}
 			}

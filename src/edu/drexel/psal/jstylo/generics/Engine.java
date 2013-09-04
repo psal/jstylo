@@ -328,12 +328,14 @@ public class Engine implements API {
 			Iterator<Event> iterator = es.iterator();
 			if (cumulativeFeatureDriver.featureDriverAt(featureIndex)
 					.isCalcHist()) {
-				Event nextEvent = (Event) iterator.next();
-				while (iterator.hasNext()) {
+				if (iterator.hasNext()){
+					Event nextEvent = (Event) iterator.next();
+					while (iterator.hasNext()) {
+						attributeList.addElement(nextEvent);
+						nextEvent = (Event) iterator.next();
+					}
 					attributeList.addElement(nextEvent);
-					nextEvent = (Event) iterator.next();
 				}
-				attributeList.addElement(nextEvent);
 			} else {
 				attributeList.addElement(es);
 			}
