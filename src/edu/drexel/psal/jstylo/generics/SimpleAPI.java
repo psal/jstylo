@@ -11,7 +11,7 @@ import weka.core.Instances;
 
 /**
  * 
- * JStylo SimpleAPI Version .5<br>
+ * JStylo SimpleAPI Version 1.0<br>
  * 
  * A simple API for the inner JStylo functionality.<br>
  * Provides four constructors at the moment (eventually more) <br>
@@ -133,6 +133,10 @@ public class SimpleAPI {
 	Evaluation resultsEvaluation;
 	
 	///////////////////////////////// Constructor
+	/**
+	 * Constructor; the SimpleAPI can be built solely via a Builder.
+	 * @param b the builder
+	 */
 	private SimpleAPI(Builder b){
 		ib = new InstancesBuilder();
 		

@@ -53,7 +53,18 @@ public class InstancesBuilder extends Engine {
 	private Instances testInstances;	//testDoc Instances
 	private double[][] infoGain;	//infoGain scores for all features
 
-	///
+	/**
+	 * Builder for the InstancesBuilder class.<br>
+	 * 
+	 * You must specifify at least one of the following parameter pairs:<br>
+	 * psPath and ps<br>
+	 * cfdPath and cfd<br>
+	 * 
+	 * All other parameters have the following default values:<br>
+	 * isSparse: false<br>
+	 * useDocTitles: false<br>
+	 * numThreads: 4<br>
+	 */
 	public static class Builder{
 		private String psPath;
 		private String cfdPath;
@@ -112,10 +123,14 @@ public class InstancesBuilder extends Engine {
 	 * information is set
 	 */
 	public InstancesBuilder() {
-
-		
 	}
 
+	/**
+	 * Builder constructor. Not currently used in house anywhere but someone who just wants to extract features
+	 * may appreciate this.<br>
+	 * 
+	 * @param b the builder to use
+	 */
 	public InstancesBuilder(Builder b){
 		if (b.psPath==null)
 			ps = b.ps;
@@ -344,22 +359,37 @@ public class InstancesBuilder extends Engine {
 	
 	//////////////////////////////////////////// Setters/Getters
 	
+	/**
+	 * @return whether or not we're keeping doc titles
+	 */
 	public boolean getUseDocTitles(){
 		return useDocTitles;
 	}
 	
+	/**
+	 * @return whether or not the instances are sparse
+	 */
 	public boolean getIsSparse(){
 		return isSparse;
 	}
 	
+	/**
+	 * @param probSet sets the problem set to the provided pset
+	 */
 	public void setProblemSet(ProblemSet probSet){
 		ps = probSet;
 	}
 	
+	/**
+	 * @param cumulativeFeatureDriver the cfd to use
+	 */
 	public void setCumulativeFeatureDriver(CumulativeFeatureDriver cumulativeFeatureDriver){
 		cfd = cumulativeFeatureDriver;
 	}
 	
+	/**
+	 * @return returns the current cfd
+	 */
 	public CumulativeFeatureDriver getCFD(){
 		return cfd;
 	}
@@ -372,14 +402,23 @@ public class InstancesBuilder extends Engine {
 		return infoGain;
 	}
 
+	/**
+	 * @param doubles the double array created by the infoGain
+	 */
 	public void setInfoGain(double[][] doubles){
 		infoGain = doubles;
 	}
 	
+	/**
+	 * @param udt whether or not to use doc titles
+	 */
 	public void setUseDocTitles(boolean udt){
 		useDocTitles = udt;
 	}
 	
+	/**
+	 * @param sparse whether or not to use sparse instances
+	 */
 	public void setUseSparse(boolean sparse){
 		isSparse = sparse;
 	}
@@ -394,8 +433,7 @@ public class InstancesBuilder extends Engine {
 	/**
 	 * A niche method for when you already have a training Instances object
 	 * 
-	 * @param ti
-	 *            training Instances object
+	 * @param ti training Instances object
 	 */
 	public void setTrainingInstances(Instances ti) {
 		trainingInstances = ti;
@@ -404,8 +442,7 @@ public class InstancesBuilder extends Engine {
 	/**
 	 * A niche method for when you already have a testing Instances object
 	 * 
-	 * @param ti
-	 *            testing Instances object
+	 * @param ti testing Instances object
 	 */
 	public void setTestingInstances(Instances ti){
 		testInstances = ti;
@@ -508,6 +545,9 @@ public class InstancesBuilder extends Engine {
 		return ps.getAllTrainDocs();
 	}
 	
+	/**
+	 * @return the list of testing documents
+	 */
 	public List<Document> getTestDocs(){
 		return ps.getAllTestDocs();
 	}
