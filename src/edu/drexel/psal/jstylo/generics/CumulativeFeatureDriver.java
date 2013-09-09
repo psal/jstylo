@@ -115,7 +115,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	 * 		List of all event sets extracted per each event driver.
 	 * @throws Exception 
 	 */
-	public List<EventSet> createEventSets(Document doc) throws Exception {
+	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
 		List<EventSet> esl = new ArrayList<EventSet>();
 		for (int i=0; i<features.size(); i++) {
 			EventDriver ed = features.get(i).getUnderlyingEventDriver();
@@ -123,6 +123,9 @@ public class CumulativeFeatureDriver implements Serializable {
 					new StringDocument((StringDocument) doc) :
 					new Document(doc.getFilePath(),doc.getAuthor(),doc.getTitle());
 			
+			if (loadDocContents)
+				currDoc.readStringText(String.copyValueOf(doc.getProcessedText()));
+					
 			// apply canonicizers
 			try {
 				for (Canonicizer c: features.get(i).getCanonicizers())
@@ -130,10 +133,13 @@ public class CumulativeFeatureDriver implements Serializable {
 			} catch (NullPointerException e) {
 				// no canonicizers
 			}
-			currDoc.load();
-			currDoc.processCanonicizers();
 			
-			//TODO maybe just check what type ir is before hand? isn't there a features.get(i).isCalcHist() or something?
+			if (!loadDocContents){
+				currDoc.load();
+			}
+			
+			currDoc.processCanonicizers();
+			//TODO maybe just check what type is is before hand? isn't there a features.get(i).isCalcHist() or something?
 			
 			// extract event set
 			String prefix = features.get(i).displayName().replace(" ", "-");

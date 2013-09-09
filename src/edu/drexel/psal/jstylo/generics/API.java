@@ -30,10 +30,11 @@ public interface API {
 	 * Extracts the List of EventSets from a document using the provided CumulativeFeatureDriver
 	 * @param document the document to have features extracted and made into event sets
 	 * @param cumulativeFeatureDriver the driver containing the features to be extracted and the functionality to do so
+	 * @param loadDocContents whether or not the document contents are already loaded into the object
 	 * @return the List\<EventSet\> for the document
 	 */ 
 	public List<EventSet> extractEventSets(Document document,
-			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception;
+			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception;
 	
 	/**
 	 * Determines which EventSets to use for the given documents

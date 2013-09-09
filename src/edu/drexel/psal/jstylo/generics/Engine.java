@@ -48,10 +48,10 @@ public class Engine implements API {
 	// Done
 	@Override
 	public List<EventSet> extractEventSets(Document document,
-			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
+			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
 		
 		//Extract the Events from the documents
-		List<EventSet> generatedEvents = cumulativeFeatureDriver.createEventSets(document);
+		List<EventSet> generatedEvents = cumulativeFeatureDriver.createEventSets(document,loadDocContents);
 		
 		//create metadata event to store document information
 		EventSet documentInfo = new EventSet();
@@ -79,7 +79,8 @@ public class Engine implements API {
 				Document doc = null;
 				SingleNumericEventDriver counter = new SentenceCounterEventDriver();
 				doc = document;
-				doc.load();
+				if (!loadDocContents)
+					doc.load();
 				Event tempEvent = new Event(""+(int) counter.getValue(doc));
 				documentInfo.addEvent(tempEvent);
 			}
@@ -89,7 +90,8 @@ public class Engine implements API {
 				Document doc = null;
 				SingleNumericEventDriver counter = new WordCounterEventDriver();
 				doc = document;
-				doc.load();
+				if (!loadDocContents)
+					doc.load();
 				Event tempEvent = new Event(""+(int) counter.getValue(doc));
 				documentInfo.addEvent(tempEvent);
 			}
@@ -99,7 +101,8 @@ public class Engine implements API {
 				Document doc = null;
 				SingleNumericEventDriver counter = new CharCounterEventDriver();
 				doc = document;
-				doc.load();
+				if (!loadDocContents)
+					doc.load();
 				Event tempEvent = new Event(""+(int) counter.getValue(doc));
 				documentInfo.addEvent(tempEvent);
 			}
@@ -109,7 +112,8 @@ public class Engine implements API {
 				Document doc = null;
 				SingleNumericEventDriver counter = new LetterCounterEventDriver();
 				doc = document;
-				doc.load();
+				if (!loadDocContents)
+					doc.load();
 				Event tempEvent = new Event(""+(int) counter.getValue(doc));
 				documentInfo.addEvent(tempEvent);
 			}

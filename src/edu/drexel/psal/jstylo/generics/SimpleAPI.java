@@ -50,6 +50,7 @@ public class SimpleAPI {
 		private analysisType type = analysisType.CROSS_VALIDATION;
 		private boolean useDocTitles = false;
 		private boolean isSparse = true;
+		private boolean loadDocContents = false;
 		
 		public Builder(){
 			
@@ -110,6 +111,11 @@ public class SimpleAPI {
 			return this;
 		}
 		
+		public Builder loadDocContents(boolean ldc){
+			loadDocContents = ldc;
+			return this;
+		}
+		
 		public SimpleAPI build(){
 			return new SimpleAPI(this);
 		}
@@ -140,15 +146,14 @@ public class SimpleAPI {
 	private SimpleAPI(Builder b){
 		ib = new InstancesBuilder();
 		
-		if (b.psXMLPath==null){
+		if (b.psXMLPath==null)
 			ib.setProblemSet(b.probSet);
-		} else {
-			ib.setProblemSet(new ProblemSet(b.psXMLPath));
-		}
+		else 
+			ib.setProblemSet(new ProblemSet(b.psXMLPath,b.loadDocContents));
 		
-		if (b.cfdXMLPath==null){
+		if (b.cfdXMLPath==null)
 			ib.setCumulativeFeatureDriver(b.cfd);
-		} else {
+		else {
 			try {
 				ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(b.cfdXMLPath));
 			} catch (Exception e) {
@@ -163,6 +168,7 @@ public class SimpleAPI {
 			classifierPath = b.classifierPath;
 		}
 		
+		ib.setLoadDocContents(b.loadDocContents);
 		ib.setNumThreads(b.numThreads);
 		selected = b.type;
 		numFolds = b.numFolds;
@@ -464,7 +470,7 @@ public class SimpleAPI {
 
 		SimpleAPI test = new SimpleAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
 				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml").classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(8).analysisType(analysisType.TRAIN_TEST_KNOWN).build();
+				.numThreads(8).analysisType(analysisType.TRAIN_TEST_KNOWN).loadDocContents(true).build();
 
 		test.prepareInstances();
 		test.calcInfoGain();

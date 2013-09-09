@@ -660,6 +660,7 @@ public class AnalysisTabDriver {
 			main.ib.reset();
 			main.ib = tempBuilder;
 			main.ib.setProblemSet(main.ps);
+			main.ib.setLoadDocContents(false);
 			main.ib.setCumulativeFeatureDriver(main.cfd);
 			main.ib.setUseSparse(main.analysisSparseInstancesJCheckBox.isSelected());
 			// training set

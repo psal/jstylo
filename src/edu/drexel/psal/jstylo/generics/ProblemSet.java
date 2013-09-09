@@ -40,6 +40,8 @@ public class ProblemSet implements Serializable {
 	// or the default - an arbitrary author name from the training authors
 	private boolean useDummyAuthor = false;
 	
+	private boolean loadDocContents = false;
+	
 	/* ============
 	 * constructors
 	 * ============
@@ -105,13 +107,22 @@ public class ProblemSet implements Serializable {
 	 * @throws Exception
 	 */
 	public ProblemSet(String filename) {
-		XMLParser parser = new XMLParser(filename);
+		XMLParser parser = new XMLParser(filename,loadDocContents);
 		ProblemSet generated = parser.problemSet;
 		trainCorpusName = generated.trainCorpusName;
 		trainDocsMap = generated.trainDocsMap;
 		testDocsMap = generated.testDocsMap;
 	}
 
+	public ProblemSet(String filename, boolean ldc){
+		loadDocContents = ldc;
+		XMLParser parser = new XMLParser(filename,loadDocContents);
+		ProblemSet generated = parser.problemSet;
+		trainCorpusName = generated.trainCorpusName;
+		trainDocsMap = generated.trainDocsMap;
+		testDocsMap = generated.testDocsMap;
+	}
+	
 	/**
 	 * Copy constructor for ProblemSet.
 	 * @param other
@@ -129,6 +140,7 @@ public class ProblemSet implements Serializable {
 			docs = new LinkedList<Document>();
 			for (Document doc: other.trainDocsMap.get(author)) {
 				newDoc = new Document(doc.getFilePath(),doc.getAuthor(),doc.getTitle());
+				newDoc.readStringText(String.copyValueOf(doc.getProcessedText()));
 				docs.add(newDoc);
 			}
 			this.trainDocsMap.put(author, docs);
@@ -466,6 +478,13 @@ public class ProblemSet implements Serializable {
 		this.useDummyAuthor = useDummyAuthor;
 	}
 	
+	/**
+	 * Sets whether or not to save the contents of the document when the problem set is created
+	 * @param ldc
+	 */
+	public void setLoadDocContents(boolean ldc){
+		this.loadDocContents = ldc;
+	}
 	
 	/* =======
 	 * getters
@@ -546,10 +565,18 @@ public class ProblemSet implements Serializable {
 		for (String key: trainDocsMap.keySet()){
 			for (Document d:trainDocsMap.get(key)){
 				try {
-					if (d instanceof StringDocument)
-						allTrainDocs.add(new StringDocument((StringDocument)d));
-					else
-						allTrainDocs.add(new Document(d.getFilePath(),key,d.getTitle()));
+					if (d instanceof StringDocument){
+						StringDocument sd = new StringDocument((StringDocument)d);
+						if (loadDocContents)
+							sd.readStringText(String.copyValueOf(d.getProcessedText()));
+						allTrainDocs.add(sd);
+					}
+					else{
+						Document sd = new Document(d.getFilePath(),key,d.getTitle());
+						if (loadDocContents)
+							sd.readStringText(String.copyValueOf(d.getProcessedText()));
+						allTrainDocs.add(sd);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -688,13 +715,23 @@ public class ProblemSet implements Serializable {
 		for (String key: testDocsMap.keySet()){
 			for (Document d:testDocsMap.get(key)){
 				try {
-					allTestDocs.add(new Document(d.getFilePath(),key,d.getTitle()));
+					Document sd = new Document(d.getFilePath(),key,d.getTitle());
+					if (loadDocContents)
+						sd.readStringText(String.copyValueOf(d.getProcessedText()));
+					allTestDocs.add(sd);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		}
 		return allTestDocs;
+	}
+	
+	/**
+	 * @return whether or not we're loading the contents of the document
+	 */
+	public boolean getLoadDocContents(){
+		return loadDocContents;
 	}
 	
 	// stringifiers
@@ -811,11 +848,11 @@ public class ProblemSet implements Serializable {
 		 * constructors
 		 * ============
 		 */
-		public XMLParser(String filename){
+		public XMLParser(String filename, boolean ldc){
 			problemSet = new ProblemSet();
 			this.filename = filename;
 			try { 
-				parse();
+				parse(ldc);
 			} catch (ParserConfigurationException pce){
 				Logger.logln("Encountered a Parser Configuration problem in the XMLParser constructor.",LogOut.STDERR);
 				pce.printStackTrace();
@@ -842,7 +879,7 @@ public class ProblemSet implements Serializable {
 		 * @throws Exception
 		 * 		SAXException, ParserConfigurationException, IOException
 		 */
-		public void parse() throws ParserConfigurationException, IOException, SAXException , Exception{
+		public void parse(boolean ldc) throws ParserConfigurationException, IOException, SAXException , Exception{
 			
 			//intialize the parser, parse the document, and build the tree
 			DocumentBuilderFactory builder = DocumentBuilderFactory.newInstance();
@@ -860,6 +897,8 @@ public class ProblemSet implements Serializable {
 					String filePath = testPath.toAbsolutePath().toString().replaceAll("\\\\","/");
 					filePath = filePath.replace("/./","/");
 					Document testDoc = new Document(filePath,"_Unknown_");
+					if (ldc)
+						testDoc.load();
 					problemSet.addTestDoc("_Unknown_",testDoc);
 					
 					//Training document
@@ -869,8 +908,10 @@ public class ProblemSet implements Serializable {
 					String filePath = trainPath.toAbsolutePath().toString().replaceAll("\\\\","/");
 					filePath = filePath.replace("/./","/");
 					Document trainDoc = new Document(filePath,parent.getAttribute("name"));
+					if (ldc)
+						trainDoc.load();
 					problemSet.addTrainDoc(parent.getAttribute("name"),trainDoc);
-					
+				
 					//test document (new format)
 				} else if (current.getParentNode().getParentNode().getNodeName().equals("test")){
 					Element parent = (Element) xmlDoc.importNode(current.getParentNode(),false);
@@ -878,7 +919,10 @@ public class ProblemSet implements Serializable {
 					String filePath = testPath.toAbsolutePath().toString().replaceAll("\\\\","/");
 					filePath = filePath.replace("/./","/");
 					Document testDoc = new Document(filePath,parent.getAttribute("name"));
+					if (ldc)
+						testDoc.load();
 					problemSet.addTestDoc(parent.getAttribute("name"),testDoc);
+					
 				} else {
 					Logger.logln("Error loading document file. Incorrectly formatted XML: "+current.getNodeValue());
 				}

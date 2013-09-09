@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
 
 import com.jgaap.generics.Document;
 import com.jgaap.generics.EventSet;
@@ -34,6 +33,7 @@ public class InstancesBuilder extends Engine {
 	// throughout the entire process
 	private boolean isSparse;	//sparse instances if true, dense if false
 	private boolean useDocTitles;	//use doc titles as a feature? Not yet implemented
+	private boolean loadDocContents; 
 	private int numThreads;	//number of calc threads to use during parallelization
 
 	// persistant data stored as we create it
@@ -72,6 +72,7 @@ public class InstancesBuilder extends Engine {
 		private CumulativeFeatureDriver cfd;
 		private boolean isSparse = false;
 		private boolean useDocTitles = false;
+		private boolean loadDocContents = false;
 		private int numThreads = 4;
 		
 		public Builder psPath(String psp){
@@ -101,6 +102,11 @@ public class InstancesBuilder extends Engine {
 		
 		public Builder useDocTitles(boolean udt){
 			useDocTitles = udt;
+			return this;
+		}
+		
+		public Builder loadDocContents(boolean ldc){
+			loadDocContents = ldc;
 			return this;
 		}
 		
@@ -135,7 +141,7 @@ public class InstancesBuilder extends Engine {
 		if (b.psPath==null)
 			ps = b.ps;
 		else
-			ps = new ProblemSet(b.psPath);
+			ps = new ProblemSet(b.psPath,b.loadDocContents);
 		
 		if (b.cfdPath==null)
 			cfd = b.cfd;
@@ -151,6 +157,7 @@ public class InstancesBuilder extends Engine {
 		isSparse = b.isSparse;
 		useDocTitles = b.useDocTitles;
 		numThreads = b.numThreads;
+		loadDocContents = b.loadDocContents;
 	}
 	
 	/**
@@ -163,6 +170,7 @@ public class InstancesBuilder extends Engine {
 		isSparse = oib.getIsSparse();
 		useDocTitles = oib.getUseDocTitles();
 		numThreads = oib.getNumThreads();
+		loadDocContents = oib.getLoadDocContents();
 	}
 	
 	//////////////////////////////////////////// Methods
@@ -424,6 +432,13 @@ public class InstancesBuilder extends Engine {
 	}
 	
 	/**
+	 * @param ldc whether or not we should load doc contents
+	 */
+	public void setLoadDocContents(boolean ldc){
+		loadDocContents = ldc;
+	}
+	
+	/**
 	 * @return Returns the problem set used by the InstancesBuilder
 	 */
 	public ProblemSet getProblemSet(){
@@ -449,7 +464,6 @@ public class InstancesBuilder extends Engine {
 	}
 	
 	/**
-	 * 
 	 * @return The Instances object representing the training documents
 	 */
 	public Instances getTrainingInstances() {
@@ -457,7 +471,6 @@ public class InstancesBuilder extends Engine {
 	}
 
 	/**
-	 * 
 	 * @return The Instances object representing the test document(s)
 	 */
 	public Instances getTestInstances() {
@@ -552,6 +565,13 @@ public class InstancesBuilder extends Engine {
 		return ps.getAllTestDocs();
 	}
 
+	/**
+	 * @return whether or not we are pre-loading doc contents
+	 */
+	public boolean getLoadDocContents(){
+		return loadDocContents;
+	}
+	
 	//////////////////////////////////////////// Utilities
 	/**
 	 * Writes the given Instances set into an ARFF file in the given filename.
@@ -692,7 +712,7 @@ public class InstancesBuilder extends Engine {
 					//grab the document
 					Document doc = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd);
+					List<EventSet> events = extractEventSets(doc, cfd,loadDocContents);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance
@@ -819,7 +839,7 @@ public class InstancesBuilder extends Engine {
 					* (threadId + 1)); i++){
 				try {
 					//try to extract the events
-					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd);
+					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadDocContents);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("Error extracting features!", LogOut.STDERR);
