@@ -117,6 +117,7 @@ public class SimpleAPI {
 	}
 	
 	///////////////////////////////// Data
+	
 	//which evaluation to perform enumeration
 	public static enum analysisType {CROSS_VALIDATION,TRAIN_TEST_UNKNOWN,TRAIN_TEST_KNOWN};
 	
@@ -129,10 +130,9 @@ public class SimpleAPI {
 	
 	//Result Data
 	Map<String,Map<String, Double>> trainTestResults;
-	Evaluation trainTestEval;
-	Evaluation crossValResults;
+	Evaluation resultsEvaluation;
 	
-	///////////////////////////////// Constructors
+	///////////////////////////////// Constructor
 	private SimpleAPI(Builder b){
 		ib = new InstancesBuilder();
 		
@@ -188,7 +188,8 @@ public class SimpleAPI {
 	}
 
 	/**
-	 * Prepares the analyzer for classification
+	 * Prepares the analyzer for classification.<br>
+	 * Only use this if you are not passing in a pre-built classifier!
 	 */
 	public void prepareAnalyzer() {
 		try {
@@ -212,7 +213,7 @@ public class SimpleAPI {
 	 */
 	public void calcInfoGain(){
 		try {
-			ib.calculateInfoGain();
+			ib.calculateInfoGain(); //delegate to underlying Instances Builder
 		} catch (Exception e) {
 			Logger.logln("Failed to calculate infoGain",LogOut.STDERR);
 			e.printStackTrace();
@@ -242,7 +243,7 @@ public class SimpleAPI {
 	
 		//do a cross val
 		case CROSS_VALIDATION:
-			crossValResults = analysisDriver.runCrossValidation(ib.getTrainingInstances(), numFolds, 0);
+			resultsEvaluation = analysisDriver.runCrossValidation(ib.getTrainingInstances(), numFolds, 0);
 			break;
 
 		// do a train/test
@@ -258,7 +259,7 @@ public class SimpleAPI {
 				Instances test = ib.getTestInstances();
 				test.setClassIndex(test.numAttributes()-1);
 				train.setClassIndex(train.numAttributes()-1);
-				trainTestEval = analysisDriver.getTrainTestEval(train,test);
+				resultsEvaluation = analysisDriver.getTrainTestEval(train,test);
 			} catch (Exception e) {
 				Logger.logln("Failed to build trainTest Evaluation");
 				e.printStackTrace();
@@ -275,13 +276,15 @@ public class SimpleAPI {
 	///////////////////////////////// Setters/Getters
 	
 	/**
-	 * 
-	 * @param useDocTitles
+	 * @param useDocTitles boolean value. Whether or not to set 1st attribute to the document title
 	 */
 	public void setUseDocTitles(boolean useDocTitles){
 		ib.setUseDocTitles(useDocTitles);
 	}
 	
+	/**
+	 * @param sparse boolean value. Whether or not to use sparse instances
+	 */
 	public void setUseSparse(boolean sparse){
 		ib.setUseSparse(sparse);
 	}
@@ -347,10 +350,16 @@ public class SimpleAPI {
 		return ib.getInfoGain();
 	}
 	
+	/**
+	 * @return the problem set being evaluated
+	 */
 	public ProblemSet getProblemSet(){
 		return ib.getProblemSet();
 	}
 	
+	/**
+	 * @return the InstancesBuilder which is responsible for the feature extraction
+	 */
 	public InstancesBuilder getUnderlyingInstancesBuilder(){
 		return ib;
 	}
@@ -361,18 +370,23 @@ public class SimpleAPI {
 	 * @return the string representing the infoGain
 	 */
 	public String getReadableInfoGain(boolean showZeroes){
+		
+		//initialize the string and infoGain
 		String infoString = ">-----InfoGain information: \n\n";
 		Instances trainingInstances = ib.getTrainingInstances();
 		double[][] infoGain = ib.getInfoGain();
+		
 		for (int i = 0; i<infoGain.length; i++){
 			if (!showZeroes && (infoGain[i][0]==0))
 				break;
 			
+			//match the index to the name and add it to the string
 			infoString+=String.format("> %-50s   %f\n",
 					trainingInstances.attribute((int)infoGain[i][1]).name(),
 					infoGain[i][0]);
 		}
 		
+		//return the result
 		return infoString;
 	}
 	
@@ -383,29 +397,17 @@ public class SimpleAPI {
 		return trainTestResults;
 	}
 	
+	/**
+	 * @return the evaluation object containing the classification data
+	 */
 	public Evaluation getEvaluation(){
-		if (selected == analysisType.CROSS_VALIDATION)
-			return crossValResults;
-		else if (selected== analysisType.TRAIN_TEST_KNOWN)
-			return trainTestEval;
-		else
-			return null;
-			
-	}
-	
-	public String getStatString(){
-		if (selected == analysisType.CROSS_VALIDATION)
-			return getCrossValStatString();
-		else if (selected ==analysisType.TRAIN_TEST_KNOWN)
-			return getTrainTestStatString();
-		else 
-			return "No stat string available for Train/Test Unknown classification";	
+		return resultsEvaluation;
 	}
 	
 	/**
-	 * @return String containing accuracy, metrics, and confusion matrix from cross validation
+	 * @return String containing accuracy, metrics, and confusion matrix from the evaluation
 	 */
-	private String getCrossValStatString() {
+	public String getStatString() {
 		
 		try {
 			Evaluation eval = getEvaluation();
@@ -416,25 +418,9 @@ public class SimpleAPI {
 			return resultsString;
 		
 		} catch (Exception e) {
-			System.out
-					.println("Failed to get cross validation statistics string");
+			System.out.println("Failed to get statistics string");
 			e.printStackTrace();
 			return "";
-		}
-	}
-	
-	/**
-	 * @return String containing accuracy and confusion matrix from train/test.
-	 * @throws Exception 
-	 */
-	private String getTrainTestStatString() {
-		
-		Evaluation eval = getEvaluation();
-		try {
-			return eval.toSummaryString() + "\n" + eval.toClassDetailsString() + "\n" + eval.toMatrixString();
-		} catch (Exception e) {
-			Logger.logln("Failed to generate stat string!", LogOut.STDERR);
-			return null;
 		}
 	}
 	
@@ -444,53 +430,38 @@ public class SimpleAPI {
 	public String getClassificationAccuracy(){
 		String results = "";
 		
-		if (selected == analysisType.CROSS_VALIDATION){
-			
-			Evaluation crossEval = getEvaluation();
-			String summary = crossEval.toSummaryString();
-			int start = summary.indexOf("Correctly Classified Instances");
-			int end = summary.indexOf("%");
-			results+=summary.substring(start,end+1)+"\n";
-			
-		} else if (selected == analysisType.TRAIN_TEST_KNOWN ){
-			String source = getTrainTestStatString();
-					
-			int start = source.indexOf("Correctly Classified");
-			int end = source.indexOf("%");
-
-			results += source.substring(start,end+1);
-			
-		}
+		String source = getStatString();
+		int start = source.indexOf("Correctly Classified");
+		int end = source.indexOf("%");
+		results += source.substring(start,end+1);
 		
 		return results;
 	}
 	
 	/**
-	 * @return the weka clsasifier being used by the analyzer. Will break something if you try to call it on a non-weka analyzer
+	 * @return the weka classifier being used by the analyzer. Will break something if you try to call it on a non-weka analyzer
 	 */
 	public Classifier getUnderlyingClassifier(){
 		return analysisDriver.getClassifier();
 	}
 	
-	public void writeArff(String path, Instances insts){
+	/**
+	 * Write an Instances object to a particular file as an arff
+	 * @param path where to save the file
+	 * @param insts the instances object to be saved
+	 */
+	public static void writeArff(String path, Instances insts){
 		InstancesBuilder.writeToARFF(path,insts);
 	}
-	
 	
 	///////////////////////////////// Main method for testing purposes
 	
 	public static void main(String[] args){
-	/*	
-		SimpleAPI test = new SimpleAPI(
-				"C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml",
-				//"./jsan_resources/feature_sets/writeprints_feature_set_limited.xml",
-				"C:/Users/Mordio/workspace/research/featureSets/featureTests/WLN.xml",
-				8, "weka.classifiers.functions.SMO",
-				analysisType.TRAIN_TEST_KNOWN);
- */
+
 		SimpleAPI test = new SimpleAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
 				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml").classPath("weka.classifiers.functions.SMO")
 				.numThreads(8).type(analysisType.TRAIN_TEST_KNOWN).build();
+
 		test.prepareInstances();
 		test.calcInfoGain();
 		test.applyInfoGain(1500);
