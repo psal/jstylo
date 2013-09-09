@@ -65,7 +65,7 @@ public class SimpleAPI {
 			return this;
 		}
 		
-		public Builder classPath(String cPath){
+		public Builder classifierPath(String cPath){
 			classifierPath = cPath;
 			return this;
 		}
@@ -75,7 +75,7 @@ public class SimpleAPI {
 			return this;
 		}
 		
-		public Builder cFeatDriver(CumulativeFeatureDriver cFeatDriver){
+		public Builder cfd(CumulativeFeatureDriver cFeatDriver){
 			cfd = cFeatDriver;
 			return this;
 		}
@@ -95,7 +95,7 @@ public class SimpleAPI {
 			return this;
 		}
 		
-		public Builder type(analysisType at){
+		public Builder analysisType(analysisType at){
 			type = at;
 			return this;
 		}
