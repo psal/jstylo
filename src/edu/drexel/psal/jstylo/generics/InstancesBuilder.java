@@ -53,6 +53,56 @@ public class InstancesBuilder extends Engine {
 	private Instances testInstances;	//testDoc Instances
 	private double[][] infoGain;	//infoGain scores for all features
 
+	///
+	public static class Builder{
+		private String psPath;
+		private String cfdPath;
+		private ProblemSet ps;
+		private CumulativeFeatureDriver cfd;
+		private boolean isSparse = false;
+		private boolean useDocTitles = false;
+		private int numThreads = 4;
+		
+		public Builder psPath(String psp){
+			psPath = psp;
+			return this;
+		}
+		
+		public Builder cfdPath(String cfdp){
+			cfdPath = cfdp;
+			return this;
+		}
+		
+		public Builder ps(ProblemSet pset){
+			ps = pset;
+			return this;
+		}
+		
+		public Builder cfd(CumulativeFeatureDriver cfdr){
+			cfd = cfdr;
+			return this;
+		}
+		
+		public Builder isSparse(boolean is){
+			isSparse = is;
+			return this;
+		}
+		
+		public Builder useDocTitles(boolean udt){
+			useDocTitles = udt;
+			return this;
+		}
+		
+		public Builder numThreads(int nt){
+			numThreads = nt;
+			return this;
+		}
+		
+		public InstancesBuilder build(){
+			return new InstancesBuilder(this);
+		}
+		
+	}
 	//////////////////////////////////////////// Constructors
 	
 	/**
@@ -63,146 +113,29 @@ public class InstancesBuilder extends Engine {
 	 */
 	public InstancesBuilder() {
 
-	}
-
-	/**
-	 * Full path constructor (creates pset and cfd from strings)
-	 * 
-	 * @param probSetPath
-	 *            the path to the XML file to read the ProblemSet from
-	 * @param cfdPath
-	 *            the path to the XML file to read the cumulativeFeatureDriver
-	 *            from
-	 * @param sparse
-	 *            if sparse instances should be produced. If false, dense
-	 *            instances will be produced
-	 * @param udt
-	 *            if document titles should be considered a part of
-	 *            classification
-	 * @param nt
-	 *            number of threads to use whenever multithreading is possible
-	 */
-	public InstancesBuilder(String probSetPath, String cfdPath, boolean sparse,
-			boolean udt, int nt) {
-
-		// create the problemSet and cfd from files
-		ps = null;
-		cfd = null;
-		try {
-			ps = new ProblemSet(probSetPath);
-			cfd = new CumulativeFeatureDriver(cfdPath);
-		} catch (Exception e) {
-			Logger.logln(
-					"Failure loading ProblemSet and CumulativeFeatureDriver!",
-					LogOut.STDERR);
-			e.printStackTrace();
-		}
-
-		// read/initialize global variables
-		isSparse = sparse;
-		useDocTitles = udt;
-		numThreads = nt;
-	}
-
-	/**
-	 * Partial path constructor <br>
-	 * booleans will be initialized to true and false, respectively
-	 * 
-	 * @param probSetPath
-	 *            the path to the XML file to read the ProblemSet from
-	 * @param cfdPath
-	 *            the path to the XML file to read the cumulativeFeatureDriver
-	 *            from
-	 * @param nt
-	 *            number of threads to use whenever multithreading is possible
-	 */
-	public InstancesBuilder(String probSetPath, String cfdPath, int nt) {
-
-		// create the problemSet and cfd from files
-		ps = null;
-		cfd = null;
-		try {
-			ps = new ProblemSet(probSetPath);
-			cfd = new CumulativeFeatureDriver(cfdPath);
-		} catch (Exception e) {
-			Logger.logln(
-					"Failure loading ProblemSet and CumulativeFeatureDriver!",
-					LogOut.STDERR);
-			e.printStackTrace();
-		}
-
-		// read/initialize global variables
-		isSparse = true;
-		useDocTitles = false;
-		numThreads = nt;
-
-	}
-
-	/**
-	 * Full object constructor (Takes a pre-made problemSet and cfd)
-	 * 
-	 * @param probSetPath
-	 *            the path to the XML file to read the ProblemSet from
-	 * @param cfdPath
-	 *            the path to the XML file to read the cumulativeFeatureDriver
-	 *            from
-	 * @param sparse
-	 *            if sparse instances should be produced. If false, dense
-	 *            instances will be produced
-	 * @param udt
-	 *            if document titles should be considered a part of
-	 *            classification
-	 * @param nt
-	 *            number of threads to use whenever multithreading is possible
-	 */
-	public InstancesBuilder(ProblemSet probSet,
-			CumulativeFeatureDriver cumulativeFeatureDriver, boolean sparse,
-			boolean udt, int nt) {
-
-		// copy the cfd and prob set
-		ps = probSet;
-		cfd = cumulativeFeatureDriver;
-
-		// read/initialize global variables
-		isSparse = sparse;
-		useDocTitles = udt;
-		numThreads = nt;
-
-	}
-
-	/**
-	 * Partial object constructor <br>
-	 * booleans will be initialized to true and false, respectively
-	 * 
-	 * @param probSetPath
-	 *            the path to the XML file to read the ProblemSet from
-	 * @param cfdPath
-	 *            the path to the XML file to read the cumulativeFeatureDriver
-	 *            from
-	 * @param nt
-	 *            number of threads to use whenever multithreading is possible
-	 */
-	public InstancesBuilder(ProblemSet probSet,
-			CumulativeFeatureDriver cumulativeFeatureDriver, int nt) {
-
-		// copy the cfd and prob set
-		ps = probSet;
-		cfd = cumulativeFeatureDriver;
-
-		// read/initialize global variables
-		isSparse = true;
-		useDocTitles = false;
-		numThreads = nt;
-
-	}
-
-	public InstancesBuilder(ProblemSet probSet, CumulativeFeatureDriver cumulativeFD){
-		ps = probSet;
-		cfd = cumulativeFD;
 		
-		isSparse = false;
-		useDocTitles = false;
-		numThreads = DEFAULT_THREADS;
+	}
+
+	public InstancesBuilder(Builder b){
+		if (b.psPath==null)
+			ps = b.ps;
+		else
+			ps = new ProblemSet(b.psPath);
+		
+		if (b.cfdPath==null)
+			cfd = b.cfd;
+		else {
+			try {
+				cfd = new CumulativeFeatureDriver(b.cfdPath);
+			} catch (Exception e) {
+				System.out.println("Failed to build cfd");
+				e.printStackTrace();
+			}
+		}
+		
+		isSparse = b.isSparse;
+		useDocTitles = b.useDocTitles;
+		numThreads = b.numThreads;
 	}
 	
 	/**
@@ -215,7 +148,6 @@ public class InstancesBuilder extends Engine {
 		isSparse = oib.getIsSparse();
 		useDocTitles = oib.getUseDocTitles();
 		numThreads = oib.getNumThreads();
-		
 	}
 	
 	//////////////////////////////////////////// Methods

@@ -459,8 +459,8 @@ public class SimpleAPI {
 	public static void main(String[] args){
 
 		SimpleAPI test = new SimpleAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml").classPath("weka.classifiers.functions.SMO")
-				.numThreads(8).type(analysisType.TRAIN_TEST_KNOWN).build();
+				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml").classifierPath("weka.classifiers.functions.SMO")
+				.numThreads(8).analysisType(analysisType.TRAIN_TEST_KNOWN).build();
 
 		test.prepareInstances();
 		test.calcInfoGain();
