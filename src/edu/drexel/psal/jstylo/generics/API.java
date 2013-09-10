@@ -7,25 +7,17 @@ import weka.core.*;
 
 import com.jgaap.generics.*;
 
-
+/**
+ * 
+ * @author Travis Dutko
+ * 
+ * Interface for the JStylo feature extraction methods.<br>
+ * Low-level methods that are used to extract and process features, <br>
+ * and to create Instances from those features.<br>
+ * 
+ */
 public interface API {
 
-	/*
-	
-	public void prepareTrainingSet(List<Document> knownDocs, CumulativeFeatureDriver cfd)
-	public void prepareTestSet(List<Document> unknownDocs)
-	public String applyInfoGain(boolean changeAttributes, int N)
-	private void normInstances(Instances insts)
-	
-	 */
-	
-	//Note for version 2
-		//try to reduce amount of data being passed around
-		//ex by creating a method (or adding the functionality to a current method) to strip 
-			//normalization baselines from a document so that the doc doesn't need to be carried
-	
-	// feature extraction - training set
-	
 	/**
 	 * Extracts the List of EventSets from a document using the provided CumulativeFeatureDriver
 	 * @param document the document to have features extracted and made into event sets
@@ -56,7 +48,6 @@ public interface API {
 	 */
 	public List<EventSet> getRelevantEvents(List<List<EventSet>> culledEventSets,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception;
-	//Any time there is a single numeric value, use "null"
 	
 	/**
 	 * Generates the List\<Attributes\> from the List\<List\<EventSet\>\> that will be used to create the Instances object.
@@ -79,9 +70,7 @@ public interface API {
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,
 			List<EventSet> documentData,
-		/*	Document document, */
 			boolean isSparse, boolean hasDocTitles) throws Exception;
-	//create and use histograms here
 	
 	/**
 	 * Normalizes all of the features of the specified instance.
@@ -92,8 +81,6 @@ public interface API {
 	 */
 	public void normInstance(CumulativeFeatureDriver cumulativeFeatureDriver,
 			Instance instance, List<EventSet> documentData, boolean hasDocTitles, List<Attribute> attributes) throws Exception;
-	
-	// the full training Instances object is generated
 	
 	/**
 	 * Calculates InfoGain on the instances to provide information on how useful each feature was to identifying the documents.
@@ -121,10 +108,7 @@ public interface API {
 	 * @throws Exception
 	 */
 	public void applyInfoGain(double[][] sortedFeatures, Instance inst, int n) throws Exception;
-	// feature extraction - test set
-	
-	// extractEventSets - same as for training documents
-	
+
 	/**
 	 * Culls the test set using the List\<EventSet\> of the training set
 	 * @param relevantEvents the features from the EventSets which are going to be evaluated
@@ -137,9 +121,4 @@ public interface API {
 			CumulativeFeatureDriver cumulativeFeatureDriver)
 			throws Exception;
 	
-	// createInstance - same as for training documents
-	
-	// normInstance - same as for training documents
-	
-	// applyInfoGain - same as for training documents
 }
