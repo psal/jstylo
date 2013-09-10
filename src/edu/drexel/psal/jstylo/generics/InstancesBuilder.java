@@ -162,7 +162,7 @@ public class InstancesBuilder extends Engine {
 	
 	/**
 	 * Copy constructor
-	 * @param oib
+	 * @param oib original instances builder
 	 */
 	public InstancesBuilder(InstancesBuilder oib){
 		ps = oib.getProblemSet();
@@ -403,7 +403,7 @@ public class InstancesBuilder extends Engine {
 	}
 	
 	/**
-	 * @return Returns the infoGain value and stores it locally incase we decide
+	 * @return Returns the infoGain value and stores it locally in case we decide
 	 *         to apply it
 	 */
 	public double[][] getInfoGain() {
@@ -447,7 +447,6 @@ public class InstancesBuilder extends Engine {
 	
 	/**
 	 * A niche method for when you already have a training Instances object
-	 * 
 	 * @param ti training Instances object
 	 */
 	public void setTrainingInstances(Instances ti) {
@@ -456,7 +455,6 @@ public class InstancesBuilder extends Engine {
 	
 	/**
 	 * A niche method for when you already have a testing Instances object
-	 * 
 	 * @param ti testing Instances object
 	 */
 	public void setTestingInstances(Instances ti){
@@ -479,9 +477,7 @@ public class InstancesBuilder extends Engine {
 
 	/**
 	 * Sets the number of calculation threads to use for feature extraction.
-	 * 
-	 * @param nct
-	 *            number of calculation threads to use.
+	 * @param nct number of calculation threads to use.
 	 */
 	public void setNumThreads(int nct) {
 		numThreads = nct;
@@ -520,6 +516,7 @@ public class InstancesBuilder extends Engine {
 				writer.close();
 
 			} catch (FileNotFoundException e) {
+				//TODO gen new props file?
 				Logger.logln(
 						"Failed to read properties file! numCalcThreads defaulting to 1! Generating new prop file...",
 						Logger.LogOut.STDERR);
@@ -531,6 +528,7 @@ public class InstancesBuilder extends Engine {
 						Logger.LogOut.STDERR);
 				e.printStackTrace();
 				numThreads = 1;
+				//TODO gen new props file?
 			}
 		} else {
 			numThreads = 1;
@@ -635,6 +633,7 @@ public class InstancesBuilder extends Engine {
 	 */
 	public void killThreads() {
 		
+		//feature extraction threads
 		if (!(featThreads==null)){
 			for (int i=0; i<featThreads.length; i++){
 				featThreads[i].stop();
@@ -645,6 +644,7 @@ public class InstancesBuilder extends Engine {
 			featThreads=null;
 		}
 		
+		//training instances threads
 		if (!(trainThreads==null)){
 			for (int i=0; i<trainThreads.length; i++){
 				trainThreads[i].stop();
@@ -655,6 +655,7 @@ public class InstancesBuilder extends Engine {
 			trainThreads=null;
 		}
 		
+		//testing instances threads
 		if (!(testThreads==null)){
 			for (int i=0; i<testThreads.length; i++){
 				testThreads[i].stop();
