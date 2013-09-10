@@ -8,11 +8,20 @@ import javax.swing.JTextField;
 
 import edu.drexel.psal.jstylo.GUI.ClassWizard.Argument;
 
+/**
+ * Provides the Listeners used in the Class Wizard/Editor.<br>
+ * Used for editing arguments.<br>
+ * 
+ * @author Travis Dutko
+ */
 public class ClassWizardDriver {
 
 	public static void initListeners(final ClassWizard cw){
 		
-		//Apply changes
+		/**
+		 * Apply changes via this button.<br>
+		 * This builds the arg string, then the arg array, and passes it to the classifier.<br>
+		 */
 		cw.applyJButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -48,7 +57,9 @@ public class ClassWizardDriver {
 			}		
 		});
 		
-		//Cancel changes
+		/**
+		 * Cancel changes by using this button
+		 */
 		cw.cancelJButton.addActionListener(new ActionListener(){
 
 			@Override
