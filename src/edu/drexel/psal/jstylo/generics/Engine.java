@@ -31,21 +31,6 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 
 public class Engine implements API {
 
-	
-	/*
-	 * Metadata Event format:
-	 * 
-	 * EventSetID: "<DOCUMENT METADATA>"
-	 * Event at Index:
-	 * 		0 : author
-	 * 		1 : title
-	 * 		2 : Sentences in document
-	 * 		3 : Words in document
-	 * 		4 : Characters in document
-	 * 		5 : Letters in document
-	 */	
-	
-	// Done
 	@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
@@ -57,6 +42,19 @@ public class Engine implements API {
 		EventSet documentInfo = new EventSet();
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
 		
+		/*
+		 * Metadata Event format:
+		 * 
+		 * EventSetID: "<DOCUMENT METADATA>"
+		 * Event at Index:
+		 * 		0 : author
+		 * 		1 : title
+		 * 		2 : Sentences in document
+		 * 		3 : Words in document
+		 * 		4 : Characters in document
+		 * 		5 : Letters in document
+		 */	
+		
 		//Extract document title and author
 		Event authorEvent = new Event(document.getAuthor());
 		Event titleEvent = new Event(document.getTitle());
@@ -64,16 +62,6 @@ public class Engine implements API {
 		documentInfo.addEvent(titleEvent);
 		
 		//Extract normalization baselines
-		// initialize normalization baselines
-		
-			//Feature Class in Doc //Dunno if we actually want this or not. Makes everything more complicated
-			/*	int sum = 0;
-				featureClassPerInst.put(instance, new int[numOfFeatureClasses]);
-				for (k = start; k < end; k++)
-					sum += instance.value(k);
-				featureClassPerInst.get(instance)[i] = sum;
-					*/
-		
 			//Sentences in doc
 			{
 				Document doc = null;
@@ -125,7 +113,7 @@ public class Engine implements API {
 		return generatedEvents;
 	}
 
-	// Done
+
 	@Override
 	public List<List<EventSet>> cull(List<List<EventSet>> eventSets,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception {
@@ -167,7 +155,6 @@ public class Engine implements API {
 		return culledEventSets;
 	}
 
-	// Done.
 	@Override
 	public List<EventSet> getRelevantEvents(
 			List<List<EventSet>> culledEventSets,
@@ -179,6 +166,7 @@ public class Engine implements API {
 			docMetaData.add(les.remove(les.size()-1));
 		}
 		
+		//initialize the EventSet list
 		List<EventSet> relevantEvents = new LinkedList<EventSet>();
 
 		// iterate over the List of Lists
@@ -204,14 +192,17 @@ public class Engine implements API {
 					EventSet temp = new EventSet();
 					temp.setEventSetID(esToAdd.getEventSetID());
 
+					//for all of the events
 					for (Event e : esToAdd) {
 						boolean absent = true;
+						//check to see if it's been added yet or not
 						for (Event ae : temp) {
 							if (ae.getEvent().equals(e.getEvent())) {
 								absent = false;
 								break;
 							}
 						}
+						//if it has not been added, add it
 						if (absent) {
 							if (!cumulativeFeatureDriver.featureDriverAt(
 									featureIndex).isCalcHist())
@@ -229,13 +220,15 @@ public class Engine implements API {
 							.isCalcHist()) {
 						for (Event e : esToAdd) {
 							boolean toAdd = true;
-
+							//for all events in the relecant list
 							for (Event re : relevantEvents.get(featureIndex)) {
+								//if it's already there, don't add it
 								if (e.getEvent().equals(re.getEvent())) {
 									toAdd = false;
 									break;
 								}
 							}
+							//add it if it isn't there
 							if (toAdd) {
 								relevantEvents.get(featureIndex).addEvent(e);
 							}
@@ -256,7 +249,6 @@ public class Engine implements API {
 		return relevantEvents;
 	}
 
-	// Done
 	@Override
 	public ArrayList<Attribute> getAttributeList(
 			List<List<EventSet>> culledEventSets,
@@ -270,8 +262,8 @@ public class Engine implements API {
 			docMetaData.add(les.remove(les.size()-1));
 		}
 		
+		//initialize useful things
 		int numOfFeatureClasses = relevantEvents.size();
-
 		int numOfVectors = culledEventSets.size();
 		List<EventSet> list;
 
@@ -302,7 +294,8 @@ public class Engine implements API {
 			list = new ArrayList<EventSet>();
 			for (int i = 0; i < numOfFeatureClasses; i++)
 				list.add(relevantEvents.get(i));
-
+			
+			//initialize eventSet
 			EventSet events = new EventSet();
 			events.setEventSetID(relevantEvents.get(currEventSet)
 					.getEventSetID());
@@ -333,15 +326,18 @@ public class Engine implements API {
 			if (cumulativeFeatureDriver.featureDriverAt(featureIndex)
 					.isCalcHist()) {
 				if (iterator.hasNext()){
+					//grab first event; there should be at least one
 					Event nextEvent = (Event) iterator.next();
+					//get and add all middle events if they exist
 					while (iterator.hasNext()) {
 						attributeList.addElement(nextEvent);
 						nextEvent = (Event) iterator.next();
 					}
+					//add the last event
 					attributeList.addElement(nextEvent);
 				}
 			} else {
-				attributeList.addElement(es);
+				attributeList.addElement(es); //add the non-hist feature
 			}
 			featureIndex++;
 		}
@@ -363,32 +359,35 @@ public class Engine implements API {
 			int index = -1;
 			String eventString = "";
 
+			//we have to determine dynamically if it is an EventSet or Event
 			Object temp = (Object) attributeList.elementAt(i);
 			if (temp instanceof EventSet) {
+				//If EventSet
 				int tempIndex = 0;
 				EventSet nonHist = (EventSet) attributeList.elementAt(i);
-
 				boolean found = false;
 
+				//for all of the EventSets in relecvant events
 				for (EventSet es : relevantEvents) {
 
 					boolean hasInner = false;
 
+					//increment the index if it is not this event 
 					if (nonHist.getEventSetID().equals(es.getEventSetID())) {
 						found = true;
 						index = tempIndex;
 						break;
 					}
-
 					for (Event e : es) {
 						hasInner = true;
 						tempIndex++;
 					}
-
+					//if there is no inner feature, it was a non-hist event; incrememner by one
 					if (!hasInner)
 						tempIndex++;
 				}
 
+				//if it is relevant, add to attributes
 				if (found) {
 					attributes
 							.add(new Attribute(nonHist.getEventSetID(), index));
@@ -454,8 +453,8 @@ public class Engine implements API {
 		attributes.add(authorNameAttribute);
 		return attributes;
 	}
+	
 
-	// Done
 	@Override
 	public Instance createInstance(List<Attribute> attributes,
 			List<EventSet> relevantEvents,
@@ -466,10 +465,7 @@ public class Engine implements API {
 		// initialize vector size (including authorName and title if required)
 		// and first indices of feature classes array
 		int vectorSize = attributes.size();
-		/*
-		if (hasDocTitles)
-			vectorSize++;
-		 */
+		
 		// generate training instances
 		Instance inst = null;
 		if (isSparse)
@@ -502,15 +498,19 @@ public class Engine implements API {
 		//go through all eventSets in the document
 		for (EventSet es: documentData){
 			
+			//initialize relevant information
 			ArrayList<Integer> indices = new ArrayList<Integer>();
 			ArrayList<Event> events = new ArrayList<Event>();
 			EventHistogram currHistogram = new EventHistogram();
 			
+			//whether or not we actually need this eventSet
 			boolean eventSetIsRelevant = false;
 			
+			//find out if it is a histogram ot not
 			if (cumulativeFeatureDriver.featureDriverAt(
 					documentData.indexOf(es)).isCalcHist()) {
 				
+				//find the event set in the list of relevant events
 				for (EventSet res : relevantEvents) {
 					if (es.getEventSetID().equals(res.getEventSetID())) {
 						eventSetIsRelevant = true;
@@ -518,6 +518,7 @@ public class Engine implements API {
 					}
 				}
 				
+				//if it is relevant
 				if (eventSetIsRelevant) {
 
 					// find the indices of the events
@@ -529,6 +530,7 @@ public class Engine implements API {
 						}
 						boolean hasInner = false;
 
+						//for the events n the set
 						for (EventSet res : relevantEvents) {
 							boolean found = false;
 							for (Event re : res) {
@@ -561,6 +563,9 @@ public class Engine implements API {
 							if (found){
 								break;
 							}
+							
+							//if there's no inner, it was a non-hist feature.
+							//increment by one
 							if (!hasInner){
 								currIndex++;
 							}
@@ -576,6 +581,7 @@ public class Engine implements API {
 				}
 			} else { //non histogram feature
 				
+				//initialize the index
 				int nonHistIndex = 0;
 				if (hasDocTitles){
 					nonHistIndex=1;
@@ -589,12 +595,14 @@ public class Engine implements API {
 						break;
 					}
 					
+					//count to find the index
 					boolean hasInner = false;
 					for (Event re : res) {
 						hasInner = true;
 						nonHistIndex++;
 					}
 					
+					//if ther's no inner feature, incrememnt by one; we just passed a non-histogram
 					if (!hasInner)
 						nonHistIndex++;
 				}
@@ -615,7 +623,7 @@ public class Engine implements API {
 		return inst;
 	}
 
-	// Done
+	
 	@Override
 	public void normInstance(CumulativeFeatureDriver cfd, Instance instance,
 			List<EventSet> documentData, boolean hasDocTitles, List<Attribute> attributes) throws Exception {
@@ -630,6 +638,7 @@ public class Engine implements API {
 		int charsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(4).getEvent());
 		int lettersPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(5).getEvent());
 		int[] featureClassAttrsFirstIndex = new int[numOfFeatureClasses + 1];
+		
 		// initialize vector size (including authorName and title if required)
 		// and first indices of feature classes array
 		int vectorSize = (hasDocTitles ? 1 : 0);
@@ -658,22 +667,6 @@ public class Engine implements API {
 			double factor = cfd.featureDriverAt(i).getNormFactor();
 			int start = featureClassAttrsFirstIndex[i], end = featureClassAttrsFirstIndex[i + 1], k;
 
-		/*	if (norm == NormBaselineEnum.FEATURE_CLASS_IN_DOC) { //TODO decide if we want to keep this or remove it
-				
-				// use featureClassPerDoc
-				if (!cfd.featureDriverAt(i).isCalcHist()) {
-					instance.setValue(start, instance.value(start) * factor
-							/ ((double) featureClassPerInst.get(instance)[i]));
-				} else {
-					for (k = start; k < end; k++)
-						instance.setValue(
-								k,
-								instance.value(k)
-										* factor
-										/ ((double) featureClassPerInst
-												.get(instance)[i]));
-				}
-			} else */
 			if (norm == NormBaselineEnum.SENTENCES_IN_DOC) {
 				// use wordsInDoc
 				if (!cfd.featureDriverAt(i).isCalcHist()) {
@@ -720,7 +713,7 @@ public class Engine implements API {
 		}
 	}
 
-	// Done
+
 	@Override
 	public double[][] calcInfoGain(Instances insts) throws Exception {
 
@@ -757,7 +750,7 @@ public class Engine implements API {
 		return infoArr;
 	}
 
-	// Done
+
 	@Override 
 	public double[][] applyInfoGain(double[][] sortedFeatures, Instances insts, int n)
 			throws Exception {
@@ -815,7 +808,7 @@ public class Engine implements API {
 		return keepArray;
 	}
 
-	// Done
+
 	@Override 
 	public void applyInfoGain(double[][] sortedFeatures, Instance inst, int n)
 			throws Exception {
@@ -860,7 +853,7 @@ public class Engine implements API {
 		}
 	}
 	
-	// Done
+	
 	@Override
 	public List<EventSet> cullWithRespectToTraining(
 			List<EventSet> relevantEvents, List<EventSet> eventSetsToCull,
@@ -897,28 +890,36 @@ public class Engine implements API {
 				// have any semi-colons)
 				if (iterator.hasNext())
 					next = (Event) iterator.next();
-
+				
+				//while it has more of a feature
 				while (iterator.hasNext()) {
+					//copy the feature
 					e = next;
 					boolean remove = true;
 
+					//check to see if the feature is relevant
 					for (int l = 0; l < unknown.size(); l++) {
 						try {
 							if (e.equals(relevantEvents.get(i).eventAt(l))) {
-								remove = false;
+								remove = false; //if it is, break 
 								break;
 							}
 						} catch (IndexOutOfBoundsException iobe) {
-							remove = true;
+							remove = true; //it is not relevant if we reach this point.
 							break;
 						}
 					}
 
+					//remove the feature if it isn't relevant
 					if (remove) {
 						iterator.remove();
 					}
+					
+					//grab the next feature
 					next = iterator.next();
 				}
+				
+				//add the culled event set
 				culledUnknownEventSets.add(unknown);
 
 			} else { // one unique numeric event
@@ -937,11 +938,9 @@ public class Engine implements API {
 					culledUnknownEventSets.add(eventSetsToCull.get(i));
 			}
 		}
-		
 		eventSetsToCull.add(metadata);
 		culledUnknownEventSets.add(metadata);
 		
 		return culledUnknownEventSets;
 	}
-
 }
