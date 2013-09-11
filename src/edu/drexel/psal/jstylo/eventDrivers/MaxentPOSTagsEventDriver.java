@@ -7,6 +7,7 @@ import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger; 
+import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 import java.io.*;
 import java.util.*;
@@ -78,7 +79,8 @@ public class MaxentPOSTagsEventDriver extends EventDriver {
 		try {
 			//tagger = new MaxentTagger();
 			
-			t = new MaxentTagger(taggerPath);
+			t = new MaxentTagger(taggerPath,new TaggerConfig("-model", taggerPath),false);
+			
 		} catch (Exception e) {
 			Logger.logln("MaxentTagger failed to load tagger from ",LogOut.STDERR);
 			e.printStackTrace();

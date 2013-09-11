@@ -477,7 +477,7 @@ public class SimpleAPI {
 		test.applyInfoGain(1500);
 		test.prepareAnalyzer();
 		test.run();
-		System.out.println("test: "+test.getStatString());
+		System.out.println(test.getStatString());
 		
 	}
 }
