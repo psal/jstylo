@@ -21,7 +21,7 @@ public interface API {
 	 * @param document the document to have features extracted and made into event sets
 	 * @param cumulativeFeatureDriver the driver containing the features to be extracted and the functionality to do so
 	 * @param loadDocContents whether or not the document contents are already loaded into the object
-	 * @return the List\<EventSet\> for the document
+	 * @return the List of EventSets for the document
 	 */ 
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception;
@@ -30,18 +30,18 @@ public interface API {
 	 * Determines which EventSets to use for the given documents based on the chosen cullers.<br>
 	 * @param eventSets A List which contains Lists of EventSets (represents a list of documents' EventSets0
 	 * @param cumulativeFeatureDriver the driver with the culling functionality
-	 * @return The culled List\<List\<EventSet\>\> created from eventSets
+	 * @return The culled List of Lists of EventSets created from eventSets
 	 * @throws Exception
 	 */
 	public List<List<EventSet>> cull(List<List<EventSet>> eventSets,
 			CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception;
 	
 	/**
-	 * Goes over the culled List<List<EventSet>> and determines which events are histograms and which have a single
+	 * Goes over the culled List of Lists of EventSets and determines which events are histograms and which have a single
 	 * numerical value.<br> Uses the information to prepare a List of EventSets to extract from the test document(s).
-	 * @param culledEventSets The culled List<List<EventSet>>
+	 * @param culledEventSets The culled List of Lists of EventSets
 	 * @param cumulativeFeatureDriver The driver used to extract the EventSets
-	 * @return The List\<EventSet\> to extract from the test document(s) 
+	 * @return The List of EventSet to extract from the test document(s) 
 	 * @throws Exception
 	 */
 	public List<EventSet> getRelevantEvents(List<List<EventSet>> culledEventSets,
@@ -50,7 +50,7 @@ public interface API {
 	/**
 	 * Generates the List of Attributes from the List of Lists of EventSets that will be used to create the Instances object.<br>
 	 * @param culledEventSets The culled list of EventSets that have been gathered from the document set
-	 * @return A List\<Attribute\> which will be used to create the Instances object 
+	 * @return A List of Attribute which will be used to create the Instances object 
 	 * @throws Exception
 	 */
 	public ArrayList<Attribute> getAttributeList(
