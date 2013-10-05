@@ -29,6 +29,12 @@ import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SingleNumericEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 
+/**
+ * Provides the implementation for the API.<br>
+ * Operations are limited to a single document whenever possible so as to increase
+ * the ease with which the code can be parallelized.<br>
+ * @author Travis Dutko
+ */
 public class Engine implements API {
 
 	@Override
