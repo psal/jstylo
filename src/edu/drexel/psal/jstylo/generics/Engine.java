@@ -353,7 +353,6 @@ public class Engine implements API {
 		
 		// Add the attribute for document title if enabled
 		if (hasDocTitles) {
-			System.out.println("TRUE");
 			Attribute docTitle = new Attribute("Document Title", (FastVector) null);
 			attributes.add(docTitle);
 		}
