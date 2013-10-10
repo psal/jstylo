@@ -168,6 +168,7 @@ public class SimpleAPI {
 			classifierPath = b.classifierPath;
 		}
 		
+		ib.setUseDocTitles(b.useDocTitles);
 		ib.setLoadDocContents(b.loadDocContents);
 		ib.setNumThreads(b.numThreads);
 		selected = b.type;
@@ -469,15 +470,18 @@ public class SimpleAPI {
 	public static void main(String[] args){
 
 		SimpleAPI test = new SimpleAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml").classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(8).analysisType(analysisType.TRAIN_TEST_KNOWN).loadDocContents(true).build();
+				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/test.xml").classifierPath("weka.classifiers.functions.SMO")
+				.numThreads(8).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(true).build();
 
+		System.out.println("start");
 		test.prepareInstances();
-		test.calcInfoGain();
-		test.applyInfoGain(1500);
-		test.prepareAnalyzer();
-		test.run();
-		System.out.println(test.getStatString());
+		Instances train = test.getTrainingInstances();
+		System.out.println(train.toSummaryString());
+		//test.calcInfoGain();
+		//test.applyInfoGain(1500);
+		//test.prepareAnalyzer();
+		//test.run();
+		//System.out.println(test.getStatString());
 		
 	}
 }

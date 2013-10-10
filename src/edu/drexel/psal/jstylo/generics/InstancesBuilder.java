@@ -32,7 +32,7 @@ public class InstancesBuilder extends Engine {
 	// These vars should be initialized in the constructor and stay the same
 	// throughout the entire process
 	private boolean isSparse;	//sparse instances if true, dense if false
-	private boolean useDocTitles;	//use doc titles as a feature? Not yet implemented
+	private boolean useDocTitles;	//use doc titles as a feature?
 	private boolean loadDocContents; 
 	private int numThreads;	//number of calc threads to use during parallelization
 
