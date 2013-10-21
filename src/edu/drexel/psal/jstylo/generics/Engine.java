@@ -63,8 +63,8 @@ public class Engine implements API {
 		
 		//Extract document title and author
 		Event authorEvent = new Event(document.getAuthor());
-		Event titleEvent = new Event(document.getFilePath());
-		//Event titleEvent = new Event(document.getTitle());
+		//Event titleEvent = new Event(document.getFilePath());
+		Event titleEvent = new Event(document.getTitle());
 		documentInfo.addEvent(authorEvent);
 		documentInfo.addEvent(titleEvent);
 		
