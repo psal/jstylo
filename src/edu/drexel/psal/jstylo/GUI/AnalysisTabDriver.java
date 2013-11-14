@@ -3,9 +3,13 @@ package edu.drexel.psal.jstylo.GUI;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Analyzer;
+import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.InstancesBuilder;
 import edu.drexel.psal.jstylo.generics.Logger;
+import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+import edu.drexel.psal.jstylo.generics.SimpleAPI;
+import edu.drexel.psal.jstylo.generics.SimpleAPI.analysisType;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -15,8 +19,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
@@ -26,6 +33,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import com.jgaap.generics.Document;
 
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
@@ -267,8 +276,9 @@ public class AnalysisTabDriver {
 				
 				boolean selected = main.analysisTrainCVJRadioButton.isSelected();
 				if (selected){
-					main.analysisKFoldJTextField.setEnabled(true);					
-					main.analysisRelaxJTextField.setEnabled(true);
+					main.analysisKFoldJTextField.setEnabled(true);	
+					main.analysisRebuildInstancesJCheckBox.setEnabled(true);
+			//		main.analysisRelaxJTextField.setEnabled(true);
 				}			
 			}		
 		});
@@ -282,7 +292,8 @@ public class AnalysisTabDriver {
 				boolean selected = main.analysisClassTestUnknownJRadioButton.isSelected();
 				if (selected){
 					main.analysisKFoldJTextField.setEnabled(false);
-					main.analysisRelaxJTextField.setEnabled(false);
+					main.analysisRebuildInstancesJCheckBox.setEnabled(false);
+			//		main.analysisRelaxJTextField.setEnabled(false);
 				}			
 			}		
 		});
@@ -296,7 +307,8 @@ public class AnalysisTabDriver {
 				boolean selected = main.analysisClassTestKnownJRadioButton.isSelected();
 				if (selected){
 					main.analysisKFoldJTextField.setEnabled(false);
-					main.analysisRelaxJTextField.setEnabled(false);
+					main.analysisRebuildInstancesJCheckBox.setEnabled(false);
+			//		main.analysisRelaxJTextField.setEnabled(false);
 				}			
 			}		
 		});
@@ -545,10 +557,12 @@ public class AnalysisTabDriver {
 		
 		if (main.analysisTrainCVJRadioButton.isSelected()){
 			main.analysisKFoldJTextField.setEnabled(!lock);
-			main.analysisRelaxJTextField.setEnabled(!lock);
+			main.analysisRebuildInstancesJCheckBox.setEnabled(!lock);
+	//		main.analysisRelaxJTextField.setEnabled(!lock);
 		}
 
-		main.analysisRelaxJLabel.setEnabled(!lock);
+		main.analysisRebuildInstancesJLabel.setEnabled(!lock);
+//		main.analysisRelaxJLabel.setEnabled(!lock);
 		main.analysisKFoldJLabel.setEnabled(!lock);
 		main.analysisNThreadJLabel.setEnabled(!lock);
 		main.analysisNThreadJTextField.setEnabled(!lock);
@@ -606,381 +620,433 @@ public class AnalysisTabDriver {
 			content = "";
 			boolean classifyTestDocs = main.analysisClassTestUnknownJRadioButton.isSelected()||main.analysisClassTestKnownJRadioButton.isSelected();
 
-			// update header
-			// -------------
-			content +=
-					"============================ JStylo Analysis Output ============================\n" +
-					"Started analysis on "+getTimestamp()+"\n" +
-					(classifyTestDocs ? "Running test documents classification" : "Running 10-folds cross validation on training corpus")+"\n"+
-					"\n";
-			
-			// training set
-			content += "Training corpus:\n";
-			Enumeration<DefaultMutableTreeNode> authors = ((DefaultMutableTreeNode) main.trainCorpusJTree.getModel().getRoot()).children();
-			DefaultMutableTreeNode author;
-			while (authors.hasMoreElements()) {
-				author = authors.nextElement();
-				content += "> "+author.getUserObject().toString()+" ("+author.getChildCount()+" documents)\n";
-			}
-			content += "\n";
-			
-			// test set
-			if (classifyTestDocs) {
-				content += "Test documents:\n";
-				Enumeration<DefaultMutableTreeNode> testAuthors = ((DefaultMutableTreeNode) main.testDocsJTree.getModel().getRoot()).children();
-				DefaultMutableTreeNode testAuthor;
-				while (testAuthors.hasMoreElements()) {
-					testAuthor = testAuthors.nextElement();
-					content += "> "+testAuthor.getUserObject().toString()+" ("+testAuthor.getChildCount()+" documents)\n";
+			if (main.analysisRebuildInstancesJCheckBox.isSelected() && main.analysisTrainCVJRadioButton.isSelected()) {
+				// FIXME this is a hacky way of doing this. Stop it.
+				int numFolds = Integer.parseInt(main.analysisKFoldJTextField.getText());
+
+				List<Document> documents = main.ps.getAllTrainDocs();
+				Collections.shuffle(documents);
+				int docsPerFold = documents.size() / numFolds;
+				double cumulativeAccuracy = 0.0;
+
+				for (int j = 0; j < numFolds; j++) {
+
+					List<Document> trainDocs = new ArrayList<Document>();
+					List<Document> testDocs = new ArrayList<Document>();
+
+					if (j == numFolds - 1) {
+						trainDocs = documents.subList(0, docsPerFold * j);
+						testDocs = documents.subList(docsPerFold * j, documents.size());
+					} else if (j == 0) {
+
+						trainDocs = documents.subList(docsPerFold, documents.size());
+						testDocs = documents.subList(0, docsPerFold);
+
+					} else {
+						List<Document> sublistA = documents.subList(0, docsPerFold * j);
+						List<Document> sublistB = documents.subList(docsPerFold * (j+1) + docsPerFold, documents.size());
+						trainDocs.addAll(sublistA);
+						trainDocs.addAll(sublistB);
+						testDocs = documents.subList(docsPerFold * j, docsPerFold * (j+1));
+					}
+
+					ProblemSet probSet = new ProblemSet();
+					for (Document d : trainDocs) {
+						probSet.addTrainDoc(d.getAuthor(), d);
+					}
+					for (Document d : testDocs) {
+						probSet.addTestDoc(d.getAuthor(), d);
+					}
+
+					SimpleAPI jstylo;
+					try {
+						jstylo = new SimpleAPI.Builder().cfd(new CumulativeFeatureDriver(main.cfd))
+								.classifier(main.analyzers.get(0).getClassifier()).useDocTitles(false).ps(probSet)
+								.analysisType(analysisType.TRAIN_TEST_KNOWN)
+								.numThreads(Integer.parseInt(main.analysisNThreadJTextField.getText())).build();
+						jstylo.prepareInstances();
+						jstylo.run();
+						cumulativeAccuracy += Double.parseDouble(jstylo.getClassificationAccuracy());
+						System.out.println("Acurracy for "+j+" is "+cumulativeAccuracy);
+					} catch (NumberFormatException e) {
+						e.printStackTrace();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				cumulativeAccuracy = cumulativeAccuracy / numFolds;
+				System.out.println(String.format("\nCumulative Accuracy: %.4f \n", cumulativeAccuracy));
+				content += String.format("\nCumulative Accuracy: %.4f \n", cumulativeAccuracy);
+				updateResultsView();
+			} else {
+
+				// update header
+				// -------------
+				content += "============================ JStylo Analysis Output ============================\n"
+						+ "Started analysis on "
+						+ getTimestamp()
+						+ "\n"
+						+ (classifyTestDocs ? "Running test documents classification"
+								: "Running 10-folds cross validation on training corpus") + "\n" + "\n";
+
+				// training set
+				content += "Training corpus:\n";
+				Enumeration<DefaultMutableTreeNode> authors = ((DefaultMutableTreeNode) main.trainCorpusJTree
+						.getModel().getRoot()).children();
+				DefaultMutableTreeNode author;
+				while (authors.hasMoreElements()) {
+					author = authors.nextElement();
+					content += "> " + author.getUserObject().toString() + " (" + author.getChildCount()
+							+ " documents)\n";
 				}
 				content += "\n";
-			}
-			
-			// feature set
-			content += "Feature set: "+main.cfd.getName()+":\n";
-			for (int i=0; i<main.cfd.numOfFeatureDrivers(); i++) {
-				content += "> "+main.cfd.featureDriverAt(i).getName()+"\n";
-			}
-			content += "\n";
-			
-			// classifiers
-			content += "Analyzers used:\n";
-			for (Analyzer a: main.analyzers) {
-				content += "> "+String.format("%-50s", a.getClass().getName())+"\t"+ClassTabDriver.getOptionsStr(a.getOptions())+"\n";
-			}
 
-			content +=
-					"\n"+
-					"================================================================================\n"+
-					"\n";
-			
-			contentJTextArea.setText(content);
-
-			InstancesBuilder tempBuilder = new InstancesBuilder(main.ib);
-			main.ib.reset();
-			main.ib = tempBuilder;
-			main.ib.setProblemSet(main.ps);
-			main.ib.setLoadDocContents(false);
-			main.ib.setCumulativeFeatureDriver(main.cfd);
-			main.ib.setUseSparse(main.analysisSparseInstancesJCheckBox.isSelected());
-			// training set
-			
-			content += getTimestamp()+" Extracting features from training corpus ("+(main.ib.isSparse() ? "" : "not ")+"using sparse representation)...\n";
-			updateResultsView();
-			try {
-				main.ib.extractEventsThreaded();
-			} catch (Exception e) {
-				Logger.logln("Could not extract features from training corpus!",LogOut.STDERR);
-				e.printStackTrace();
-				
-				JOptionPane.showMessageDialog(main,
-						"Could not extract features from training corpus:\n"+e.getMessage()+"\n"+"Aborting analysis.",
-						"Analysis Error",
-						JOptionPane.ERROR_MESSAGE);
-				updateBeforeStop();
-				Thread.currentThread().stop();
-			}
-			content += getTimestamp()+" done!\n\n";
-			updateResultsView();
-			content += getTimestamp()+" Building relevant event set...";
-			updateResultsView();
-			try {
-				main.ib.initializeRelevantEvents();
-			} catch (Exception e1) {
-				Logger.logln("Could not extract relevant events from training corpus!",LogOut.STDERR);
-				e1.printStackTrace();
-				
-				JOptionPane.showMessageDialog(main,
-						"Could not extract relevant events from training corpus:\n"+e1.getMessage()+"\n"+"Aborting analysis.",
-						"Analysis Error",
-						JOptionPane.ERROR_MESSAGE);
-				updateBeforeStop();
-				Thread.currentThread().stop();
-			}
-			content += getTimestamp()+" done!\n\n";
-			updateResultsView();
-			content += getTimestamp()+" Building attributes list...";
-			updateResultsView();
-			try {
-				main.ib.initializeAttributes();
-			} catch (Exception e1) {
-				Logger.logln("Could not create attributes from training corpus!",LogOut.STDERR);
-				e1.printStackTrace();
-				
-				JOptionPane.showMessageDialog(main,
-						"Could not create attributes from training corpus:\n"+e1.getMessage()+"\n"+"Aborting analysis.",
-						"Analysis Error",
-						JOptionPane.ERROR_MESSAGE);
-				updateBeforeStop();
-				Thread.currentThread().stop();
-			}
-			content += getTimestamp()+" done!\n\n";
-			updateResultsView();
-			content += getTimestamp()+" Creating training instances...";
-			updateResultsView();
-			try {
-				main.ib.createTrainingInstancesThreaded();
-			} catch (Exception e){
-				Logger.logln("Could not create instances from training corpus!",LogOut.STDERR);
-				e.printStackTrace();
-				
-				JOptionPane.showMessageDialog(main,
-						"Could not create instances from training corpus:\n"+e.getMessage()+"\n"+"Aborting analysis.",
-						"Analysis Error",
-						JOptionPane.ERROR_MESSAGE);
-				updateBeforeStop();
-				Thread.currentThread().stop();
-			}
-			
-			content += getTimestamp()+" done!\n\n";
-			
-			if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
-				content +=
-						"Training corpus features (ARFF):\n" +
-						"================================\n" +
-						main.ib.getTrainingInstances().toString()+"\n\n";
-				updateResultsView();
-			}
-
-			// test set
-			if (classifyTestDocs) {
-				Logger.logln("Extracting features from test documents...");
-				
-				content += getTimestamp()+" Extracting features from test documents ("+(main.ib.isSparse() ? "" : "not ")+"using sparse representation)...\n";
-				updateResultsView();
-				
-				if (main.analysisClassTestKnownJRadioButton.isSelected()){
-					main.ib.getProblemSet().removeAuthor("_Unknown_");
+				// test set
+				if (classifyTestDocs) {
+					content += "Test documents:\n";
+					Enumeration<DefaultMutableTreeNode> testAuthors = ((DefaultMutableTreeNode) main.testDocsJTree
+							.getModel().getRoot()).children();
+					DefaultMutableTreeNode testAuthor;
+					while (testAuthors.hasMoreElements()) {
+						testAuthor = testAuthors.nextElement();
+						content += "> " + testAuthor.getUserObject().toString() + " (" + testAuthor.getChildCount()
+								+ " documents)\n";
+					}
+					content += "\n";
 				}
-				
+
+				// feature set
+				content += "Feature set: " + main.cfd.getName() + ":\n";
+				for (int i = 0; i < main.cfd.numOfFeatureDrivers(); i++) {
+					content += "> " + main.cfd.featureDriverAt(i).getName() + "\n";
+				}
+				content += "\n";
+
+				// classifiers
+				content += "Analyzers used:\n";
+				for (Analyzer a : main.analyzers) {
+					content += "> " + String.format("%-50s", a.getClass().getName()) + "\t"
+							+ ClassTabDriver.getOptionsStr(a.getOptions()) + "\n";
+				}
+
+				content += "\n" + "================================================================================\n"
+						+ "\n";
+
+				contentJTextArea.setText(content);
+
+				InstancesBuilder tempBuilder = new InstancesBuilder(main.ib);
+				main.ib.reset();
+				main.ib = tempBuilder;
+				main.ib.setProblemSet(main.ps);
+				main.ib.setLoadDocContents(false);
 				try {
-					main.ib.createTestInstancesThreaded();
+					main.ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(main.cfd));
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+				main.ib.setUseSparse(main.analysisSparseInstancesJCheckBox.isSelected());
+				// training set
+
+				content += getTimestamp() + " Extracting features from training corpus ("
+						+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
+				updateResultsView();
+				try {
+					main.ib.extractEventsThreaded();
 				} catch (Exception e) {
-					Logger.logln("Could not create instances from test documents!",LogOut.STDERR);
+					Logger.logln("Could not extract features from training corpus!", LogOut.STDERR);
 					e.printStackTrace();
 
 					JOptionPane.showMessageDialog(main,
-							"Could not create instances from test documents:\n"+e.getMessage()+"\n"+"Aborting analysis.",
-							"Analysis Error",
+							"Could not extract features from training corpus:\n" + e.getMessage() + "\n"
+									+ "Aborting analysis.", "Analysis Error", JOptionPane.ERROR_MESSAGE);
+					updateBeforeStop();
+					Thread.currentThread().stop();
+				}
+				content += getTimestamp() + " done!\n\n";
+				updateResultsView();
+				content += getTimestamp() + " Building relevant event set...";
+				updateResultsView();
+				try {
+					main.ib.initializeRelevantEvents();
+				} catch (Exception e1) {
+					Logger.logln("Could not extract relevant events from training corpus!", LogOut.STDERR);
+					e1.printStackTrace();
+
+					JOptionPane.showMessageDialog(main, "Could not extract relevant events from training corpus:\n"
+							+ e1.getMessage() + "\n" + "Aborting analysis.", "Analysis Error",
 							JOptionPane.ERROR_MESSAGE);
 					updateBeforeStop();
 					Thread.currentThread().stop();
 				}
-
-				content += getTimestamp()+" done!\n\n";
+				content += getTimestamp() + " done!\n\n";
 				updateResultsView();
-				if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
-					content +=
-							"Test documents features (ARFF):\n" +
-							"===============================\n" +
-							main.ib.getTestInstances().toString()+"\n\n";
-					updateResultsView();
-				}
-			}
-			
-			// running InfoGain
-			// ================
-			
-			if (main.analysisCalcInfoGainJCheckBox.isSelected()) {
-				
-				content += "Calculating InfoGain on the training set's features\n";
-				content += "===================================================\n";
-				
-				int igValue = -1;
+				content += getTimestamp() + " Building attributes list...";
+				updateResultsView();
 				try {
-					igValue = Integer.parseInt(main.infoGainValueJTextField.getText());
-				} catch (NumberFormatException e) {}
-				
-				try{
-					boolean apply = main.analysisApplyInfoGainJCheckBox.isSelected();
-					double[][] infoGain = main.ib.calculateInfoGain();
-					if (apply){
-						main.ib.applyInfoGain(igValue);
-						infoGain = main.ib.calculateInfoGain();
-					}
-					
-					Instances trainingInstances = new Instances(main.ib.getTrainingInstances());
-					for (int i = 0; i<infoGain.length; i++){
-/*						if (infoGain[i][0]==0){
-							break;
-						}
-	*/					
-						int index = (int)Math.round(infoGain[i][1]);
-						content+=String.format("> %-50s   %f\n",
-								trainingInstances.attribute(index).name(),
-								infoGain[i][0]);
-					}
-					updateResultsView();
-					//content+=infoGain;
-				} catch (Exception e) {
-					content += "ERROR! Could not calculate InfoGain!\n";
-					e.printStackTrace();
+					main.ib.initializeAttributes();
+				} catch (Exception e1) {
+					Logger.logln("Could not create attributes from training corpus!", LogOut.STDERR);
+					e1.printStackTrace();
+
+					JOptionPane.showMessageDialog(main,
+							"Could not create attributes from training corpus:\n" + e1.getMessage() + "\n"
+									+ "Aborting analysis.", "Analysis Error", JOptionPane.ERROR_MESSAGE);
+					updateBeforeStop();
+					Thread.currentThread().stop();
 				}
-				
-				content += "done!\n\n";
+				content += getTimestamp() + " done!\n\n";
 				updateResultsView();
+				content += getTimestamp() + " Creating training instances...";
+				updateResultsView();
+				try {
+					main.ib.createTrainingInstancesThreaded();
+				} catch (Exception e) {
+					Logger.logln("Could not create instances from training corpus!", LogOut.STDERR);
+					e.printStackTrace();
+
+					JOptionPane.showMessageDialog(main,
+							"Could not create instances from training corpus:\n" + e.getMessage() + "\n"
+									+ "Aborting analysis.", "Analysis Error", JOptionPane.ERROR_MESSAGE);
+					updateBeforeStop();
+					Thread.currentThread().stop();
+				}
+
+				content += getTimestamp() + " done!\n\n";
+
+				if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
+					content += "Training corpus features (ARFF):\n" + "================================\n"
+							+ main.ib.getTrainingInstances().toString() + "\n\n";
+					updateResultsView();
+				}
+
+				// test set
+				if (classifyTestDocs) {
+					Logger.logln("Extracting features from test documents...");
+
+					content += getTimestamp() + " Extracting features from test documents ("
+							+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
+					updateResultsView();
+
+					if (main.analysisClassTestKnownJRadioButton.isSelected()) {
+						main.ib.getProblemSet().removeAuthor("_Unknown_");
+					}
+
+					try {
+						main.ib.createTestInstancesThreaded();
+					} catch (Exception e) {
+						Logger.logln("Could not create instances from test documents!", LogOut.STDERR);
+						e.printStackTrace();
+
+						JOptionPane.showMessageDialog(main,
+								"Could not create instances from test documents:\n" + e.getMessage() + "\n"
+										+ "Aborting analysis.", "Analysis Error", JOptionPane.ERROR_MESSAGE);
+						updateBeforeStop();
+						Thread.currentThread().stop();
+					}
+
+					content += getTimestamp() + " done!\n\n";
+					updateResultsView();
+					if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
+						content += "Test documents features (ARFF):\n" + "===============================\n"
+								+ main.ib.getTestInstances().toString() + "\n\n";
+						updateResultsView();
+					}
+				}
+
+				// running InfoGain
+				// ================
+
+				if (main.analysisCalcInfoGainJCheckBox.isSelected()) {
+
+					content += "Calculating InfoGain on the training set's features\n";
+					content += "===================================================\n";
+
+					int igValue = -1;
+					try {
+						igValue = Integer.parseInt(main.infoGainValueJTextField.getText());
+					} catch (NumberFormatException e) {
+					}
+
+					try {
+						boolean apply = main.analysisApplyInfoGainJCheckBox.isSelected();
+						double[][] infoGain = main.ib.calculateInfoGain();
+						if (apply) {
+							main.ib.applyInfoGain(igValue);
+							infoGain = main.ib.calculateInfoGain();
+						}
+
+						Instances trainingInstances = new Instances(main.ib.getTrainingInstances());
+						for (int i = 0; i < infoGain.length; i++) {
+							/*
+							 * if (infoGain[i][0]==0){ break; }
+							 */
+							int index = (int) Math.round(infoGain[i][1]);
+							content += String.format("> %-50s   %f\n", trainingInstances.attribute(index).name(),
+									infoGain[i][0]);
+						}
+						updateResultsView();
+						// content+=infoGain;
+					} catch (Exception e) {
+						content += "ERROR! Could not calculate InfoGain!\n";
+						e.printStackTrace();
+					}
+
+					content += "done!\n\n";
+					updateResultsView();
+				}
+
+				// running classification
+				// ======================
+
+				if (main.analysisClassTestUnknownJRadioButton.isSelected()) {
+					// Training and testing
+					// ====================
+
+					Logger.logln("Starting training and testing phase...");
+
+					content += getTimestamp() + " Starting training and testing phase...\n";
+					content += "\n================================================================================\n\n";
+
+					Analyzer a;
+					Map<String, Map<String, Double>> results;
+					int numClass = main.analyzers.size();
+					for (int i = 0; i < numClass; i++) {
+						a = main.analyzers.get(i);
+						content += "Running analysis with Analyzer " + (i + 1) + " out of " + numClass + ":\n"
+								+ "> Classifier: " + a.getName() + "\n" + "> Options:    "
+								+ ClassTabDriver.getOptionsStr(a.getOptions()) + "\n\n";
+
+						main.analysisDriver = a;
+
+						content += getTimestamp() + " Starting classification...\n";
+						Logger.log("Starting classification...\n");
+						updateResultsView();
+
+						results = main.analysisDriver.classify(main.ib.getTrainingInstances(),
+								main.ib.getTestInstances(), main.ps.getAllTestDocs());
+
+						content += getTimestamp() + " done!\n\n";
+						Logger.logln("Done!");
+						updateResultsView();
+
+						// print out results
+						content += "Results:\n" + "========\n";
+
+						content += main.analysisDriver.getLastStringResults();
+
+						updateResultsView();
+					}
+
+				} else if (main.analysisTrainCVJRadioButton.isSelected()) {
+					// Running cross-validation on training corpus
+					// ===========================================
+
+					Logger.logln("Starting training K-folds CV phase...");
+
+					content += getTimestamp() + " Starting K-folds cross-validation on training corpus phase...\n";
+					content += "\n================================================================================\n\n";
+
+					Analyzer a;
+					int numClass = main.analyzers.size();
+					for (int i = 0; i < numClass; i++) {
+						a = (Analyzer) main.analyzers.get(i);
+						content += "Running analysis with classifier " + (i + 1) + " out of " + numClass + ":\n"
+								+ "> Classifier: " + a.getName() + "\n" + "> Options:    "
+								+ ClassTabDriver.getOptionsStr(a.getOptions()) + "\n\n";
+
+						main.analysisDriver = a;
+
+						content += getTimestamp() + " Starting cross validation...\n";
+						Logger.log("Starting cross validation...");
+						updateResultsView();
+
+						if (!main.analysisRebuildInstancesJCheckBox.isSelected()) {
+							// run
+							Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingInstances(),
+									Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
+
+							content += getTimestamp() + " done!\n\n";
+							Logger.logln("Done!");
+							updateResultsView();
+
+							if (results == null) {
+								content += "Classifier not working for this feature set, relaxation factor, or similar variable. Please stop the analysis.";
+							}
+							updateResultsView();
+
+							// print out results
+							Evaluation eval = (Evaluation) results;
+							content += eval.toSummaryString(false) + "\n";
+							try {
+								content += eval.toClassDetailsString() + "\n" + eval.toMatrixString() + "\n";
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+
+							updateResultsView();
+						}
+					}
+
+				} else {
+					Logger.logln("Starting training and testing phase...");
+
+					content += getTimestamp() + " Starting training and testing phase...\n";
+					content += "\n================================================================================\n\n";
+
+					Analyzer a;
+					int numClass = main.analyzers.size();
+					for (int i = 0; i < numClass; i++) {
+						a = main.analyzers.get(i);
+						content += "Running analysis with Analyzer " + (i + 1) + " out of " + numClass + ":\n"
+								+ "> Classifier: " + a.getName() + "\n" + "> Options:    "
+								+ ClassTabDriver.getOptionsStr(a.getOptions()) + "\n\n";
+
+						main.analysisDriver = a;
+
+						// TODO ick another instanceof. See if there's a way around using it.
+						if (a instanceof WriteprintsAnalyzer) {
+							a.classify(main.ib.getTrainingInstances(), main.ib.getTestInstances(),
+									main.ps.getAllTestDocs());
+						}
+
+						content += getTimestamp() + " Starting classification...\n";
+						Logger.log("Starting classification...\n");
+						updateResultsView();
+
+						Instances train = main.ib.getTrainingInstances();
+						Instances test = main.ib.getTestInstances();
+						test.setClassIndex(test.numAttributes() - 1);
+
+						Evaluation results = null;
+						try {
+							results = main.analysisDriver.getTrainTestEval(train, test);
+
+						} catch (Exception e) {
+							Logger.logln("Failed to build train test eval with known authors!", LogOut.STDERR);
+							content += "Failed to build train test eval with known authors!";
+							e.printStackTrace();
+						}
+
+						content += getTimestamp() + " done!\n\n";
+						Logger.logln("Done!");
+						updateResultsView();
+
+						// print out results
+						content += "Results:\n" + "========\n";
+
+						try {
+							content += results.toSummaryString() + "\n" + results.toClassDetailsString() + "\n"
+									+ results.toMatrixString() + "\n";
+						} catch (Exception e) {
+							Logger.logln("Failed to build the statistics string!", LogOut.STDERR);
+							content += "Failed to build the statistics string!";
+							e.printStackTrace();
+						}
+
+						updateResultsView();
+					}
+				}
 			}
-			
-			// running classification
-			// ======================
-			
-			if (main.analysisClassTestUnknownJRadioButton.isSelected()) {
-				// Training and testing
-				// ====================
-				
-				Logger.logln("Starting training and testing phase...");
-				
-				content += getTimestamp()+" Starting training and testing phase...\n";
-				content += "\n================================================================================\n\n";
-				
-				Analyzer a;
-				Map<String,Map<String, Double>> results;
-				int numClass = main.analyzers.size();
-				for (int i=0; i<numClass; i++) {
-					a = main.analyzers.get(i);
-					content += "Running analysis with Analyzer "+(i+1)+" out of "+numClass+":\n" +
-							"> Classifier: "+a.getName()+"\n" +
-							"> Options:    "+ClassTabDriver.getOptionsStr(a.getOptions())+"\n\n";
-					
-					main.analysisDriver = a;
-					
-					content += getTimestamp()+" Starting classification...\n";
-					Logger.log("Starting classification...\n");
-					updateResultsView();
-					
-					results = main.analysisDriver.classify(
-							main.ib.getTrainingInstances(),
-							main.ib.getTestInstances(),
-							main.ps.getAllTestDocs());
-					
-					content += getTimestamp()+" done!\n\n";
-					Logger.logln("Done!");
-					updateResultsView();
-					
-					// print out results
-					content +=
-							"Results:\n" +
-							"========\n";
-					
-					content += main.analysisDriver.getLastStringResults();
-
-					updateResultsView();
-				}
-				
-			} else if (main.analysisTrainCVJRadioButton.isSelected()) {
-				// Running cross-validation on training corpus
-				// ===========================================
-				
-				Logger.logln("Starting training K-folds CV phase...");
-				
-				content += getTimestamp()+" Starting K-folds cross-validation on training corpus phase...\n";
-				content += "\n================================================================================\n\n";
-				
-				Analyzer a;
-				int numClass = main.analyzers.size();
-				for (int i=0; i<numClass; i++) {
-					a = (Analyzer) main.analyzers.get(i);
-					content += "Running analysis with classifier "+(i+1)+" out of "+numClass+":\n" +
-							"> Classifier: "+a.getName()+"\n" +
-							"> Options:    "+ClassTabDriver.getOptionsStr(a.getOptions())+"\n\n";
-					
-					main.analysisDriver = a;
-					
-					content += getTimestamp()+" Starting cross validation...\n";
-					Logger.log("Starting cross validation...");
-					updateResultsView();
-					
-					// run
-					Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingInstances(),
-							Integer.parseInt(main.analysisKFoldJTextField.getText()),0,
-							Integer.parseInt(main.analysisRelaxJTextField.getText())); 					
-					
-					content += getTimestamp()+" done!\n\n";
-					Logger.logln("Done!");
-					updateResultsView();
-					
-					if (results==null){
-						content+="Classifier not working for this feature set, relaxation factor, or similar variable. Please stop the analysis.";
-					}
-					updateResultsView();
-					
-					// print out results
-					Evaluation eval = (Evaluation) results;
-					content += eval.toSummaryString(false)+"\n";
-					try {
-						content +=
-								eval.toClassDetailsString()+"\n" +
-									eval.toMatrixString()+"\n" ;
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-						
-					updateResultsView();
-					
-				}
-				
-			} else {
-				Logger.logln("Starting training and testing phase...");
-				
-				content += getTimestamp()+" Starting training and testing phase...\n";
-				content += "\n================================================================================\n\n";
-				
-				Analyzer a;
-				int numClass = main.analyzers.size();
-				for (int i=0; i<numClass; i++) {
-					a = main.analyzers.get(i);
-					content += "Running analysis with Analyzer "+(i+1)+" out of "+numClass+":\n" +
-							"> Classifier: "+a.getName()+"\n" +
-							"> Options:    "+ClassTabDriver.getOptionsStr(a.getOptions())+"\n\n";
-					
-					main.analysisDriver = a;
-					
-					//TODO ick another instanceof. See if there's a way around using it.
-					if (a instanceof WriteprintsAnalyzer){
-						a.classify(main.ib.getTrainingInstances(),main.ib.getTestInstances(), main.ps.getAllTestDocs());
-					}
-					
-					content += getTimestamp()+" Starting classification...\n";
-					Logger.log("Starting classification...\n");
-					updateResultsView();
-					
-					Instances train = main.ib.getTrainingInstances();
-					Instances test = main.ib.getTestInstances();
-					test.setClassIndex(test.numAttributes()-1);
-
-					Evaluation results = null;
-					try {
-						results = main.analysisDriver.getTrainTestEval(
-								train,
-								test);
-						
-					} catch (Exception e) {
-						Logger.logln("Failed to build train test eval with known authors!",LogOut.STDERR);
-						content+="Failed to build train test eval with known authors!";
-						e.printStackTrace();
-					}
-					
-					content += getTimestamp()+" done!\n\n";
-					Logger.logln("Done!");
-					updateResultsView();
-					
-					// print out results
-					content +=
-							"Results:\n" +
-							"========\n";
-					
-					try {
-						content += results.toSummaryString()+"\n"+results.toClassDetailsString()+"\n"+results.toMatrixString()+"\n";
-					} catch (Exception e) {
-						Logger.logln("Failed to build the statistics string!",LogOut.STDERR);
-						content+="Failed to build the statistics string!";
-						e.printStackTrace();
-					}
-
-					updateResultsView();
-				}
-			}
-			
 			// unlock gui and update results
 			updateBeforeStop();
 			main.results.add(content);

@@ -440,11 +440,8 @@ public class SimpleAPI {
 	 */
 	public String getClassificationAccuracy(){
 		String results = "";
-		
-		String source = getStatString();
-		int start = source.indexOf("Correctly Classified");
-		int end = source.indexOf("%");
-		results += source.substring(start,end+1);
+		Evaluation eval = getEvaluation();
+		results+= String.format("%.4f",eval.weightedTruePositiveRate()*100);
 		
 		return results;
 	}
@@ -470,17 +467,15 @@ public class SimpleAPI {
 	public static void main(String[] args){
 
 		SimpleAPI test = new SimpleAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/test.xml").classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(8).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(true).build();
+				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_presentation.xml").classifierPath("weka.classifiers.functions.SMO")
+				.numThreads(8).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 
-		System.out.println("start");
 		test.prepareInstances();
-		Instances train = test.getTrainingInstances();
-		System.out.println(train.toSummaryString());
 		//test.calcInfoGain();
 		//test.applyInfoGain(1500);
-		//test.prepareAnalyzer();
-		//test.run();
+		test.prepareAnalyzer();
+		test.run();
+		System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
 		
 	}

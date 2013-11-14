@@ -24,7 +24,6 @@ import edu.drexel.psal.jstylo.generics.ProblemSet;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.*;
 import javax.swing.tree.*;
 
 /**
@@ -215,8 +214,10 @@ public class GUIMain extends javax.swing.JFrame {
 	protected JPanel analysisTrainCVJPanel;
 	protected JPanel analysisTrainCVoptionsJPanel;
 	protected JTextPane analysisInstructionPane;
-	protected JLabel analysisRelaxJLabel;
-	protected JTextField analysisRelaxJTextField;
+	protected JLabel analysisRebuildInstancesJLabel;
+	protected JCheckBox analysisRebuildInstancesJCheckBox;
+	//protected JLabel analysisRelaxJLabel;
+	//protected JTextField analysisRelaxJTextField;
 	//protected JCheckBox analysisClassificationStatisticsJCheckBox;
 	
 	/**
@@ -1297,16 +1298,27 @@ public class GUIMain extends javax.swing.JFrame {
 									analysisKFoldJLabel = new JLabel("K Folds: ");
 									analysisKFoldJTextField.setToolTipText("The number of groups to split the documents into. Must be larger then one and can't be larger then the number of documents you have." );
 									
+									/*
 									analysisRelaxJLabel = new JLabel("     Relaxation Factor: ");
 									analysisRelaxJTextField=new JTextField("1");
 									analysisRelaxJTextField.setPreferredSize(new Dimension(25,20));
 									analysisRelaxJTextField.setToolTipText("Sets the relaxation factor. If an answer is in the top <relax factor> of predictions, it will be counted as correct.");
+									*/
+									
+									analysisRebuildInstancesJLabel = new JLabel("     Rebuild Instances: ");
+									analysisRebuildInstancesJCheckBox = new JCheckBox();
+									analysisRebuildInstancesJCheckBox.setSelected(true);
+									analysisRebuildInstancesJCheckBox.setToolTipText("Rebuilds the Instances object for each fold of the cross validation");
 									
 									analysisTrainCVoptionsJPanel.add(analysisKFoldJLabel);
 									analysisTrainCVoptionsJPanel.add(analysisKFoldJTextField);
-									
+		
+									/*
 									analysisTrainCVoptionsJPanel.add(analysisRelaxJLabel);
-									analysisTrainCVoptionsJPanel.add(analysisRelaxJTextField);									
+									analysisTrainCVoptionsJPanel.add(analysisRelaxJTextField);			
+									*/						
+									analysisTrainCVoptionsJPanel.add(analysisRebuildInstancesJLabel);
+									analysisTrainCVoptionsJPanel.add(analysisRebuildInstancesJCheckBox);
 								}
 							}
 						}

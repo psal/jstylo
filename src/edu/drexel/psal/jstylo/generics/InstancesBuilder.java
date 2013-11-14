@@ -725,7 +725,7 @@ public class InstancesBuilder extends Engine {
 					list.add(instance);
 				} catch (Exception e) {
 					Logger.logln("Error creating Test Instances!", LogOut.STDERR);
-					Logger.logln(ps.getAllTestDocs().get(i).getFilePath());
+					Logger.logln(ps.getAllTestDocs().get(i).getFilePath()+" author: "+ps.getAllTestDocs().get(i).getAuthor());
 					Logger.logln(e.getMessage(), LogOut.STDERR);
 					e.printStackTrace();
 				}
