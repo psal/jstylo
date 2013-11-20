@@ -429,9 +429,7 @@ public class SimpleAPI {
 			return resultsString;
 		
 		} catch (Exception e) {
-			System.out.println("Failed to get statistics string");
-			e.printStackTrace();
-			return "";
+			return analysisDriver.getLastStringResults();
 		}
 	}
 	
