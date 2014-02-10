@@ -171,6 +171,7 @@ public class SimpleAPI {
 		ib.setUseDocTitles(b.useDocTitles);
 		ib.setLoadDocContents(b.loadDocContents);
 		ib.setNumThreads(b.numThreads);
+		ib.setUseSparse(b.isSparse);
 		selected = b.type;
 		numFolds = b.numFolds;
 		classifierPath = b.classifierPath;
