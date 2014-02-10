@@ -40,86 +40,110 @@ public class Engine implements API {
 	@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
-		
-		//Extract the Events from the documents
-		List<EventSet> generatedEvents = cumulativeFeatureDriver.createEventSets(document,loadDocContents);
-		
-		//create metadata event to store document information
+
+		List<EventSet> generatedEvents = new ArrayList<EventSet>();
+		// Extract the Events from the documents
+		try {
+			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents);
+		} catch (Exception e) {
+			Logger.logln("Failed to extract events from documents!");
+			throw new Exception();
+		}
+		// create metadata event to store document information
 		EventSet documentInfo = new EventSet();
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
-		
+
 		/*
 		 * Metadata Event format:
 		 * 
-		 * EventSetID: "<DOCUMENT METADATA>"
-		 * Event at Index:
-		 * 		0 : author
-		 * 		1 : title
-		 * 		2 : Sentences in document
-		 * 		3 : Words in document
-		 * 		4 : Characters in document
-		 * 		5 : Letters in document
-		 */	
-		
-		//Extract document title and author
+		 * EventSetID: "<DOCUMENT METADATA>" Event at Index: 0 : author 1 : title 2 : Sentences in document 3 : Words in document 4 : Characters in
+		 * document 5 : Letters in document
+		 */
+
+		// Extract document title and author
 		Event authorEvent = new Event(document.getAuthor());
-		//Event titleEvent = new Event(document.getFilePath());
+		// Event titleEvent = new Event(document.getFilePath());
 		Event titleEvent = new Event(document.getTitle());
 		documentInfo.addEvent(authorEvent);
 		documentInfo.addEvent(titleEvent);
-		
-		//Extract normalization baselines
-			//Sentences in doc
-			{
-				Document doc = null;
-				SingleNumericEventDriver counter = new SentenceCounterEventDriver();
-				doc = document;
+
+		// Extract normalization baselines
+		// Sentences in doc
+		{
+			Document doc = null;
+			SingleNumericEventDriver counter = new SentenceCounterEventDriver();
+			doc = document;
+			Event tempEvent = null;
+
+			if (!loadDocContents)
+				try {
+					doc.load();
+					tempEvent = new Event("" + (int) counter.getValue(doc));
+				} catch (Exception e) {
+					Logger.logln("Failed to extract sentence count from document!");
+					throw new Exception();
+				}
+
+			documentInfo.addEvent(tempEvent);
+		}
+
+		// Words in doc
+		{
+			Document doc = null;
+			SingleNumericEventDriver counter = new WordCounterEventDriver();
+			doc = document;
+			Event tempEvent = null;
+			try {
 				if (!loadDocContents)
 					doc.load();
-				Event tempEvent = new Event(""+(int) counter.getValue(doc));
-				documentInfo.addEvent(tempEvent);
+				tempEvent = new Event("" + (int) counter.getValue(doc));
+			} catch (Exception e) {
+				Logger.logln("Failed to extract word count from document!");
+				throw new Exception();
 			}
-				
-			//Words in doc
-			{
-				Document doc = null;
-				SingleNumericEventDriver counter = new WordCounterEventDriver();
-				doc = document;
+			documentInfo.addEvent(tempEvent);
+		}
+
+		// Characters in doc
+		{
+			Document doc = null;
+			SingleNumericEventDriver counter = new CharCounterEventDriver();
+			doc = document;
+			Event tempEvent = null;
+			try {
 				if (!loadDocContents)
 					doc.load();
-				Event tempEvent = new Event(""+(int) counter.getValue(doc));
-				documentInfo.addEvent(tempEvent);
+				tempEvent = new Event("" + (int) counter.getValue(doc));
+			} catch (Exception e) {
+				Logger.logln("Failed to extract character count from document!");
+				throw new Exception();
 			}
-				
-			//Characters in doc
-			{
-				Document doc = null;
-				SingleNumericEventDriver counter = new CharCounterEventDriver();
-				doc = document;
+			documentInfo.addEvent(tempEvent);
+		}
+
+		// Letters in doc
+		{
+			Document doc = null;
+			SingleNumericEventDriver counter = new LetterCounterEventDriver();
+			doc = document;
+			Event tempEvent = null;
+			try {
 				if (!loadDocContents)
 					doc.load();
-				Event tempEvent = new Event(""+(int) counter.getValue(doc));
-				documentInfo.addEvent(tempEvent);
+				tempEvent = new Event("" + (int) counter.getValue(doc));
+			} catch (Exception e) {
+				Logger.logln("Failed to extract character count from document!");
+				throw new Exception();
 			}
-				
-			//Letters in doc
-			{
-				Document doc = null;
-				SingleNumericEventDriver counter = new LetterCounterEventDriver();
-				doc = document;
-				if (!loadDocContents)
-					doc.load();
-				Event tempEvent = new Event(""+(int) counter.getValue(doc));
-				documentInfo.addEvent(tempEvent);
-			}
-		
-		//add the metadata EventSet to the List<EventSet>
+			documentInfo.addEvent(tempEvent);
+		}
+
+		// add the metadata EventSet to the List<EventSet>
 		generatedEvents.add(documentInfo);
-		
-		//return the List<EventSet>
+
+		// return the List<EventSet>
 		return generatedEvents;
 	}
-
 
 	@Override
 	public List<List<EventSet>> cull(List<List<EventSet>> eventSets,

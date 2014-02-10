@@ -846,7 +846,7 @@ public class InstancesBuilder extends Engine {
 					Logger.logln("Error extracting features!", LogOut.STDERR);
 					Logger.logln("Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
 					Logger.logln(e.getMessage(), LogOut.STDERR);
-				}
+				} 
 			}
 		}
 	}

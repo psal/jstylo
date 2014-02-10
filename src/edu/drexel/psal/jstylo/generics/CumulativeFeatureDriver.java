@@ -134,16 +134,32 @@ public class CumulativeFeatureDriver implements Serializable {
 				// no canonicizers
 			}
 			
-			if (!loadDocContents){
-				currDoc.load();
+			if (!loadDocContents) {
+				try {
+					currDoc.load();
+				} catch (Exception e) {
+					Logger.logln("Failed to load document contents!");
+					throw new Exception();
+				}
 			}
 			
-			currDoc.processCanonicizers();
+			try {
+				currDoc.processCanonicizers();
+			} catch (LanguageParsingException | CanonicizationException e1) {
+				Logger.logln("Failed to canonicize the document!");
+				throw new Exception();
+			}
 			//TODO maybe just check what type is is before hand? isn't there a features.get(i).isCalcHist() or something?
 			
 			// extract event set
 			String prefix = features.get(i).displayName().replace(" ", "-");
-			EventSet tmpEs = ed.createEventSet(currDoc);
+			EventSet tmpEs = null;
+			try {
+				tmpEs = ed.createEventSet(currDoc);
+			} catch (EventGenerationException e1) {
+				Logger.logln("Failed to create EventSet!");
+				throw new Exception();
+			}
 			tmpEs.setEventSetID(features.get(i).getName()); 
 			EventSet es = new EventSet();
 			es.setAuthor(doc.getAuthor());
