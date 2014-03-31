@@ -988,6 +988,7 @@ public class AnalysisTabDriver {
 					}
 
 				} else {
+					
 					Logger.logln("Starting training and testing phase...");
 
 					content += getTimestamp() + " Starting training and testing phase...\n";

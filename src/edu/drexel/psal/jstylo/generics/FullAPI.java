@@ -45,15 +45,20 @@ public class FullAPI {
 		private CumulativeFeatureDriver cfd;
 		private String classifierPath;
 		private Classifier classifier;
-		private int numThreads = 4;
 		private int numFolds = 10;
 		private analysisType type = analysisType.CROSS_VALIDATION;
 		private boolean useDocTitles = false;
 		private boolean isSparse = true;
 		private boolean loadDocContents = false;
+		private Preferences p = null;
 		
 		public Builder(){
 			
+		}
+		
+		public Builder preferences(Preferences pref){
+			p = pref;
+			return this;
 		}
 		
 		public Builder psPath(String psXML){
@@ -87,7 +92,10 @@ public class FullAPI {
 		}
 		
 		public Builder numThreads(int nt){
-			numThreads = nt;
+			if (p == null){
+				p = Preferences.buildDefaultPreferences();
+			}
+			p.setPreference("numCalcThreads",""+nt);
 			return this;
 		}
 		
@@ -146,10 +154,17 @@ public class FullAPI {
 	private FullAPI(Builder b){
 		ib = new InstancesBuilder();
 		
+		if (b.p == null){
+			ib.setPreferences(Preferences.buildDefaultPreferences());
+		} else {
+			ib.setPreferences(b.p);
+		}
+		
 		if (b.psXMLPath==null)
 			ib.setProblemSet(b.probSet);
 		else 
-			ib.setProblemSet(new ProblemSet(b.psXMLPath,b.loadDocContents));
+			ib.setProblemSet(new ProblemSet(b.psXMLPath,
+					b.loadDocContents));
 		
 		if (b.cfdXMLPath==null)
 			ib.setCumulativeFeatureDriver(b.cfd);
@@ -170,7 +185,6 @@ public class FullAPI {
 		
 		ib.setUseDocTitles(b.useDocTitles);
 		ib.setLoadDocContents(b.loadDocContents);
-		ib.setNumThreads(b.numThreads);
 		ib.setUseSparse(b.isSparse);
 		selected = b.type;
 		numFolds = b.numFolds;
@@ -466,7 +480,7 @@ public class FullAPI {
 	public static void main(String[] args){
 
 		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_presentation.xml").classifierPath("weka.classifiers.functions.SMO")
+				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_train_test.xml").classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(8).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 
 		test.prepareInstances();

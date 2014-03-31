@@ -34,8 +34,9 @@ public class InstancesBuilder extends Engine {
 	private boolean isSparse;	//sparse instances if true, dense if false
 	private boolean useDocTitles;	//use doc titles as a feature?
 	private boolean loadDocContents; 
-	private int numThreads;	//number of calc threads to use during parallelization
-
+	//private int numThreads;	//number of calc threads to use during parallelization
+	private Preferences preferences;
+	
 	// persistant data stored as we create it
 	private ProblemSet ps;	//the documents
 	private CumulativeFeatureDriver cfd;	//the driver used to extract features
@@ -73,7 +74,8 @@ public class InstancesBuilder extends Engine {
 		private boolean isSparse = false;
 		private boolean useDocTitles = false;
 		private boolean loadDocContents = false;
-		private int numThreads = 4;
+		//private int numThreads = 4;
+		private Preferences p = null;
 		
 		public Builder psPath(String psp){
 			psPath = psp;
@@ -111,7 +113,15 @@ public class InstancesBuilder extends Engine {
 		}
 		
 		public Builder numThreads(int nt){
-			numThreads = nt;
+			if (p == null){
+				p = Preferences.buildDefaultPreferences();
+			}
+			p.setPreference("numCalcThreads", ""+nt);
+			return this;
+		}
+		
+		public Builder preferences(Preferences pref){
+			p = pref;
 			return this;
 		}
 		
@@ -154,9 +164,14 @@ public class InstancesBuilder extends Engine {
 			}
 		}
 		
+		if (b.p == null){
+			preferences = Preferences.buildDefaultPreferences();
+		} else {
+			preferences = b.p;
+		}
+		
 		isSparse = b.isSparse;
 		useDocTitles = b.useDocTitles;
-		numThreads = b.numThreads;
 		loadDocContents = b.loadDocContents;
 	}
 	
@@ -169,10 +184,10 @@ public class InstancesBuilder extends Engine {
 		cfd = oib.getCFD();
 		isSparse = oib.getIsSparse();
 		useDocTitles = oib.getUseDocTitles();
-		numThreads = oib.getNumThreads();
+		preferences = oib.getPreferences();
 		loadDocContents = oib.getLoadDocContents();
 	}
-	
+
 	//////////////////////////////////////////// Methods
 	
 	/**
@@ -192,6 +207,7 @@ public class InstancesBuilder extends Engine {
 		// if the num of threads is bigger then the number of docs, set it to
 		// the max number of docs (extract each document's features in its own
 		// thread
+		int numThreads = getNumThreads();
 		int threadsToUse = numThreads;
 		
 		//if we have more threads than documents, that's a bit silly.
@@ -256,6 +272,7 @@ public class InstancesBuilder extends Engine {
 		
 		//initialize/fetch data
 		List<Instance> generatedInstances = new ArrayList<Instance>();
+		int numThreads = getNumThreads();
 		int threadsToUse = numThreads;
 		int numInstances = eventList.size();
 		
@@ -306,6 +323,7 @@ public class InstancesBuilder extends Engine {
 			
 			//create/fetch data
 			List<Instance> generatedInstances = new ArrayList<Instance>();
+			int numThreads = getNumThreads();
 			int threadsToUse = numThreads;
 			int numInstances = ps.getAllTestDocs().size();
 		
@@ -454,6 +472,14 @@ public class InstancesBuilder extends Engine {
 	}
 	
 	/**
+	 * Updates the InstancesBuilder's preferences
+	 * @param pref
+	 */
+	public void setPreferences(Preferences pref){
+		preferences = pref;
+	}
+	
+	/**
 	 * A niche method for when you already have a testing Instances object
 	 * @param ti testing Instances object
 	 */
@@ -480,73 +506,30 @@ public class InstancesBuilder extends Engine {
 	 * @param nct number of calculation threads to use.
 	 */
 	public void setNumThreads(int nct) {
-		numThreads = nct;
-
-		File jProps = new File("./jsan_resources/JStylo_prop.prop");
-		if (jProps.exists()) { // write numCalcThreads to the file
-
-			try {
-				ArrayList<String> contents = new ArrayList<String>();
-				FileReader fileReader = new FileReader(jProps);
-				BufferedReader reader = new BufferedReader(fileReader);
-
-				// read the file into memory and update the numCalcThreads
-				// variable
-				String nextLine = reader.readLine();
-				while (nextLine != null) {
-					String temp = nextLine;
-
-					if (temp.contains("numCalcThreads")) {
-						temp = "numCalcThreads=" + numThreads;
-					}
-					contents.add(temp);
-					nextLine = reader.readLine();
-				}
-				reader.close();
-				fileReader.close();
-				// Write to the file
-				FileWriter cleaner = new FileWriter(jProps, false);
-				cleaner.write("");
-				cleaner.close();
-
-				FileWriter writer = new FileWriter(jProps, true);
-				for (String s : contents) {
-					writer.write(s + "\n");
-				}
-				writer.close();
-
-			} catch (FileNotFoundException e) {
-				//TODO gen new props file?
-				Logger.logln(
-						"Failed to read properties file! numCalcThreads defaulting to 1! Generating new prop file...",
-						Logger.LogOut.STDERR);
-				e.printStackTrace();
-				numThreads = 1;
-			} catch (IOException e) {
-				Logger.logln(
-						"Prop file empty! numCalcThreads defaulting to 1! Generating new prop file...",
-						Logger.LogOut.STDERR);
-				e.printStackTrace();
-				numThreads = 1;
-				//TODO gen new props file?
-			}
-		} else {
-			numThreads = 1;
-		}
+		preferences.setPreference("numCalcThreads", ""+nct);
 	}
 	
 	/**
 	 * @return the number of calculation threads we're using
 	 */
 	public int getNumThreads() {
-		return numThreads;
+		return Integer.parseInt(preferences.getPreference("numCalcThreads"));
 	}
+	
 
 	/**
 	 * @return true if we are using sparse instances, false if not
 	 */
 	public boolean isSparse() {
 		return isSparse;
+	}
+	
+	/**
+	 * Gets the preference object
+	 * @return
+	 */
+	private Preferences getPreferences() {
+		return preferences;
 	}
 	
 	/**
@@ -774,7 +757,7 @@ public class InstancesBuilder extends Engine {
 					* (threadId + 1)); i++)
 				try {
 					//grab the document
-					Document doc = ps.getAllTrainDocs().get(i);
+					//Document doc = ps.getAllTrainDocs().get(i);
 					//create the instance using it
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
 							eventList.get(i), isSparse, useDocTitles);

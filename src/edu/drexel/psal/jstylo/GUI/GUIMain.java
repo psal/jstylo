@@ -20,6 +20,7 @@ import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.InstancesBuilder;
 import edu.drexel.psal.jstylo.generics.Logger;
+import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 
 import javax.swing.*;
@@ -243,7 +244,6 @@ public class GUIMain extends javax.swing.JFrame {
 	public GUIMain() {
 		super();
 		initData();
-		loadPreferences();
 		initGUI();
 	}
 
@@ -255,123 +255,9 @@ public class GUIMain extends javax.swing.JFrame {
 		FeatureWizardDriver.populateAll();
 		analyzers = new ArrayList<Analyzer>();
 		ib = new InstancesBuilder();
+		//ib.setPreferences(Preferences.loadPreferences());
+		ib.setPreferences(Preferences.buildDefaultPreferences());
 		results = new ArrayList<String>();
-	}
-	
-	private void loadPreferences(){
-		
-		File jProps = new File("./jsan_resources/JStylo_prop.prop");
-		
-		if (jProps.exists()){ //if it already exists, read the calc thread variable
-			
-			//create an array simply to check to see if all parameters have been found.
-			//will be checked at the end to ensure that they have, otherwise, will load a default file.
-			boolean[] found = new boolean[2];
-			for (boolean b: found){
-				b = false;
-			}
-			try {
-				FileReader fileReader = new FileReader(jProps);
-				BufferedReader reader = new BufferedReader(fileReader);
-				
-				//read the file and save the variable when it is found if for some reason it's not in the file, it'll default to 4
-				String nextLine = reader.readLine();
-				
-				int i=0;
-				while (nextLine!=null){
-					if (nextLine.contains("numCalcThreads")){
-						String[] s = nextLine.split("="); //[0]="numCalcThreads" [1]=the number we're looking for
-						ib.setNumThreads(Integer.parseInt(s[1]));
-						found[i]=true;
-						i++;
-					}
-					if (nextLine.contains("useLogFile")){
-						String[] s = nextLine.split("=");
-						if (s[1].equalsIgnoreCase("1")){
-							Logger.logFile = true;
-							File logDir = new File("./log/");
-							if (!logDir.exists())
-								logDir.mkdirs();
-						} else {
-							Logger.logFile = false;
-						}
-						found[i]=true;
-						i++;
-					}
-					//load default analysis tab args?
-						//perhaps use a series of 0 and 1 for simple on/offs?
-					
-					//load last feature set
-					
-					//load default directories
-					
-					nextLine = reader.readLine();
-				}
-				reader.close();
-				fileReader.close();
-
-			} catch (FileNotFoundException e) {
-				Logger.logln("Failed to read properties file! numCalcThreads defaulting to 1! Generating new prop file...",Logger.LogOut.STDERR);
-				e.printStackTrace();
-				generateDefaultPropsFile();
-			} catch (IOException e) {
-				Logger.logln("Prop file empty! numCalcThreads defaulting to 1! Generating new prop file...",Logger.LogOut.STDERR);
-				e.printStackTrace();
-				generateDefaultPropsFile();
-			}	
-			//check to make sure all args were found
-			boolean verified = true;
-			for (boolean b: found){
-				verified = (b && verified);
-			}
-			//if not, then either an old or adjusted props file was found. Make a new one
-			if (!verified){
-				Logger.logln("Old version of properties file detected, generating a new one.");
-				generateDefaultPropsFile();
-			}
-			
-		} else { //if it doesn't exist, create it and give it defaultValues
-			Logger.logln("Could not find a properties file, generating default property file...");
-			generateDefaultPropsFile();
-		}
-	}
-
-	public static void generateDefaultPropsFile(){
-	
-		File resourceFolder = new File("./jsan_resources/");
-		resourceFolder.mkdirs();
-		
-		File jProps = new File("./jsan_resources/JStylo_prop.prop");
-		
-		try {
-			String[] contents ={"#JStylo Preferences",
-								"#Properties File Version: .2",
-								"numCalcThreads=4",
-								"useLogFile=0"};
-			
-			//Write to the file
-			FileWriter cleaner = new FileWriter(jProps,false);
-			cleaner.write("");
-			cleaner.close();
-			
-			FileWriter fwriter = new FileWriter(jProps,true);
-			BufferedWriter writer = new BufferedWriter(fwriter);
-			for(String s:contents){
-				writer.write(s);
-				writer.newLine();
-			}
-			writer.close();
-			fwriter.close();
-		} catch (FileNotFoundException e) {
-			Logger.logln("Failed to read properties file! numCalcThreads defaulting to 1! Generating new prop file...",Logger.LogOut.STDERR);
-			e.printStackTrace();
-			generateDefaultPropsFile();
-		} catch (IOException e) {
-			Logger.logln("Prop file empty! numCalcThreads defaulting to 1! Generating new prop file...",Logger.LogOut.STDERR);
-			e.printStackTrace();
-			generateDefaultPropsFile();
-		}
-		
 	}
 	
 	private void initGUI() {
