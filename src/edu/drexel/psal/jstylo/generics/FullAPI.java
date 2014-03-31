@@ -21,7 +21,7 @@ import weka.core.Instances;
  * @author Travis Dutko
  */
 
-public class SimpleAPI {
+public class FullAPI {
 
 	/**
 	 * Builder for the SimpleAPI class. <br>
@@ -116,8 +116,8 @@ public class SimpleAPI {
 			return this;
 		}
 		
-		public SimpleAPI build(){
-			return new SimpleAPI(this);
+		public FullAPI build(){
+			return new FullAPI(this);
 		}
 		
 	}
@@ -143,7 +143,7 @@ public class SimpleAPI {
 	 * Constructor; the SimpleAPI can be built solely via a Builder.
 	 * @param b the builder
 	 */
-	private SimpleAPI(Builder b){
+	private FullAPI(Builder b){
 		ib = new InstancesBuilder();
 		
 		if (b.psXMLPath==null)
@@ -465,7 +465,7 @@ public class SimpleAPI {
 	
 	public static void main(String[] args){
 
-		SimpleAPI test = new SimpleAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
+		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
 				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_presentation.xml").classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(8).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 

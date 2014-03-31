@@ -8,8 +8,8 @@ import edu.drexel.psal.jstylo.generics.InstancesBuilder;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
-import edu.drexel.psal.jstylo.generics.SimpleAPI;
-import edu.drexel.psal.jstylo.generics.SimpleAPI.analysisType;
+import edu.drexel.psal.jstylo.generics.FullAPI;
+import edu.drexel.psal.jstylo.generics.FullAPI.analysisType;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -621,7 +621,7 @@ public class AnalysisTabDriver {
 			boolean classifyTestDocs = main.analysisClassTestUnknownJRadioButton.isSelected()||main.analysisClassTestKnownJRadioButton.isSelected();
 
 			if (main.analysisRebuildInstancesJCheckBox.isSelected() && main.analysisTrainCVJRadioButton.isSelected()) {
-				// FIXME this is a hacky way of doing this. Stop it.
+				// FIXME this is a icky way of doing this. Stop it.
 				int numFolds = Integer.parseInt(main.analysisKFoldJTextField.getText());
 
 				List<Document> documents = main.ps.getAllTrainDocs();
@@ -658,9 +658,9 @@ public class AnalysisTabDriver {
 						probSet.addTestDoc(d.getAuthor(), d);
 					}
 
-					SimpleAPI jstylo;
+					FullAPI jstylo;
 					try {
-						jstylo = new SimpleAPI.Builder().cfd(new CumulativeFeatureDriver(main.cfd))
+						jstylo = new FullAPI.Builder().cfd(new CumulativeFeatureDriver(main.cfd))
 								.classifier(main.analyzers.get(0).getClassifier()).useDocTitles(false).ps(probSet)
 								.analysisType(analysisType.TRAIN_TEST_KNOWN)
 								.numThreads(Integer.parseInt(main.analysisNThreadJTextField.getText())).build();

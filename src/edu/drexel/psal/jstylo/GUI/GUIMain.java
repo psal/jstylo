@@ -292,9 +292,9 @@ public class GUIMain extends javax.swing.JFrame {
 							File logDir = new File("./log/");
 							if (!logDir.exists())
 								logDir.mkdirs();
-						} else 
+						} else {
 							Logger.logFile = false;
-						
+						}
 						found[i]=true;
 						i++;
 					}
@@ -322,7 +322,7 @@ public class GUIMain extends javax.swing.JFrame {
 			//check to make sure all args were found
 			boolean verified = true;
 			for (boolean b: found){
-				verified = b;
+				verified = (b && verified);
 			}
 			//if not, then either an old or adjusted props file was found. Make a new one
 			if (!verified){
