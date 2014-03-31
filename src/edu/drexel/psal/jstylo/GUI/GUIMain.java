@@ -1092,21 +1092,21 @@ public class GUIMain extends javax.swing.JFrame {
 							
 							analysisOutputFeatureVectorJCheckBox = new JCheckBox();
 							analysisOutputFeatureVectorJCheckBox.setToolTipText("Display the data collected from each document for each feature.");
-							analysisOutputFeatureVectorJCheckBox.setSelected(false);
+							analysisOutputFeatureVectorJCheckBox.setSelected(ib.getPreferences().getBoolPreference("printVectors"));
 							options.add(analysisOutputFeatureVectorJCheckBox);
 							analysisOutputFeatureVectorJCheckBox.setText("Output feature vectors (ARFF format)");
 						}
 						{
 							analysisSparseInstancesJCheckBox = new JCheckBox();
 							analysisSparseInstancesJCheckBox.setToolTipText("Display non-zero features only.");
-							analysisSparseInstancesJCheckBox.setSelected(true);
+							analysisSparseInstancesJCheckBox.setSelected(ib.isSparse());
 							options.add(analysisSparseInstancesJCheckBox);
 							analysisSparseInstancesJCheckBox.setText("Use sparse representation for feature vectors");
 						}
 						{	
 							analysisCalcInfoGainJCheckBox = new JCheckBox();
 							analysisCalcInfoGainJCheckBox.setToolTipText("Display how much information each feature taught the computer.");
-							analysisCalcInfoGainJCheckBox.setSelected(true);
+							analysisCalcInfoGainJCheckBox.setSelected(ib.getPreferences().getBoolPreference("calcInfoGain"));
 							options.add(analysisCalcInfoGainJCheckBox);
 							analysisCalcInfoGainJCheckBox.setText("Calculate InfoGain on feature set");
 						}
@@ -1117,11 +1117,12 @@ public class GUIMain extends javax.swing.JFrame {
 								
 								analysisApplyInfoGainJCheckBox = new JCheckBox();
 								analysisApplyInfoGainJCheckBox.setToolTipText("Limit the display to the top N features");
+								analysisApplyInfoGainJCheckBox.setSelected(ib.getPreferences().getBoolPreference("applyInfoGain"));
 								applyIG.add(analysisApplyInfoGainJCheckBox);
 								analysisApplyInfoGainJCheckBox.setText("Apply InfoGain on top N features:");
 							}
 							{
-								infoGainValueJTextField = new JTextField("200");
+								infoGainValueJTextField = new JTextField(ib.getPreferences().getPreference("numInfoGain"));
 								infoGainValueJTextField.setColumns(5);
 								applyIG.add(infoGainValueJTextField);
 								infoGainValueJTextField.setEnabled(false);
@@ -1170,7 +1171,7 @@ public class GUIMain extends javax.swing.JFrame {
 								analysisTrainCVoptionsJPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 								analysisTrainCVJPanel.add(analysisTrainCVoptionsJPanel,BorderLayout.SOUTH);
 								{
-									analysisKFoldJTextField = new JTextField("10");
+									analysisKFoldJTextField = new JTextField(ib.getPreferences().getPreference("kFolds"));
 									analysisKFoldJTextField.setPreferredSize(new Dimension(25,20));
 									analysisKFoldJLabel = new JLabel("K Folds: ");
 									analysisKFoldJTextField.setToolTipText("The number of groups to split the documents into. Must be larger then one and can't be larger then the number of documents you have." );
@@ -1184,7 +1185,7 @@ public class GUIMain extends javax.swing.JFrame {
 									
 									analysisRebuildInstancesJLabel = new JLabel("     Rebuild Instances: ");
 									analysisRebuildInstancesJCheckBox = new JCheckBox();
-									analysisRebuildInstancesJCheckBox.setSelected(true);
+									analysisRebuildInstancesJCheckBox.setSelected(ib.getPreferences().getBoolPreference("rebuildInstances"));
 									analysisRebuildInstancesJCheckBox.setToolTipText("Rebuilds the Instances object for each fold of the cross validation");
 									
 									analysisTrainCVoptionsJPanel.add(analysisKFoldJLabel);

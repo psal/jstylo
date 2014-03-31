@@ -12,20 +12,32 @@ import java.util.Map;
 
 public class Preferences{
 
-	private static final double currentVersion = 0.4;
+	private static final double currentVersion = 0.5;
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
 	private static final String[] validKeys = {
 		"numCalcThreads",
 		"useLogFile",
-		"isSparse",
+		"useSparse",
 		"useDocTitles",
-		"loadDocContents"};
+		"loadDocContents",
+		"printVectors",
+		"calcInfoGain",
+		"applyInfoGain",
+		"numInfoGain",
+		"kFolds",
+		"rebuildInstances"};
 	private static final String defaultPreferenceString = 
 			"numCalcThreads=4\n" +
 			"useLogFile=0\n" +
 			"useSparse=1\n" +
 			"useDocTitles=0\n" +
-			"loadDocContents=0\n";
+			"loadDocContents=0\n" +
+			"printVectors=0\n" +
+			"calcInfoGain=1\n" +
+			"applyInfoGain=0\n" +
+			"numInfoGain=200\n" +
+			"kFolds=10\n" +
+			"rebuildInstances=0\n";
 	
 	private Map<String,String> preferences;
 	
@@ -70,6 +82,19 @@ public class Preferences{
 			return preferences.get(key);
 		} else {
 			return "<Key Not Found>";
+		}
+	}
+	
+	public boolean getBoolPreference(String key){
+		if (preferences.containsKey(key)){
+			String s = preferences.get(key);
+			if (s.equals("0"))
+				return false;
+			else
+				return true;
+		} else {
+			System.out.println("Invalid key! "+key);
+			return false;
 		}
 	}
 	

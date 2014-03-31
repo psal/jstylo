@@ -529,33 +529,21 @@ public class InstancesBuilder extends Engine {
 	 * @return true if we are using sparse instances, false if not
 	 */
 	public boolean isSparse() {
-		String s = preferences.getPreference("useSparse");
-		if (s.equals("0"))
-			return false;
-		else
-			return true;
+		return preferences.getBoolPreference("useSparse");
 	}
 	
 	/**
 	 * @return whether or not we are pre-loading doc contents
 	 */
 	public boolean loadingDocContents(){
-		String s = preferences.getPreference("loadDocContents");
-		if (s.equals("0"))
-			return false;
-		else
-			return true;
+		return preferences.getBoolPreference("loadDocContents");
 	}
 	
 	/**
 	 * @return whether or not we're keeping doc titles
 	 */
 	public boolean usingDocTitles(){
-		String s = preferences.getPreference("useDocTitles");
-		if (s.equals("0"))
-			return false;
-		else
-			return true;
+		return preferences.getBoolPreference("useDocTitles");
 	}
 	
 	/**
