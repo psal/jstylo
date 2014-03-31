@@ -6,6 +6,7 @@ import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.InstancesBuilder;
 import edu.drexel.psal.jstylo.generics.Logger;
+import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.generics.FullAPI;
@@ -387,8 +388,9 @@ public class AnalysisTabDriver {
 				lockUnlock(main, true);
 				
 				//if the number of calc threads entered is different then the current stored one, change it
-				if (Integer.parseInt(main.analysisNThreadJTextField.getText())!=main.ib.getNumThreads())
+				if (Integer.parseInt(main.analysisNThreadJTextField.getText())!=main.ib.getNumThreads()){
 					main.ib.setNumThreads(Integer.parseInt(main.analysisNThreadJTextField.getText()));
+				}
 				
 				// start analysis thread
 				main.analysisThread = new Thread(new RunAnalysisThread(main));
@@ -1047,6 +1049,8 @@ public class AnalysisTabDriver {
 						updateResultsView();
 					}
 				}
+				
+				Preferences.savePreferences(main.ib.getPreferences());
 			}
 			// unlock gui and update results
 			updateBeforeStop();

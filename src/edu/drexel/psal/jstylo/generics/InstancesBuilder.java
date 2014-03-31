@@ -31,10 +31,9 @@ public class InstancesBuilder extends Engine {
 	
 	// These vars should be initialized in the constructor and stay the same
 	// throughout the entire process
-	private boolean isSparse;	//sparse instances if true, dense if false
-	private boolean useDocTitles;	//use doc titles as a feature?
-	private boolean loadDocContents; 
-	//private int numThreads;	//number of calc threads to use during parallelization
+	//private boolean isSparse;	//sparse instances if true, dense if false
+	//private boolean useDocTitles;	//use doc titles as a feature?
+	//private boolean loadDocContents; 
 	private Preferences preferences;
 	
 	// persistant data stored as we create it
@@ -141,6 +140,10 @@ public class InstancesBuilder extends Engine {
 	public InstancesBuilder() {
 	}
 
+	public InstancesBuilder(Preferences p){
+		preferences = p;
+	}
+	
 	/**
 	 * Builder constructor. Not currently used in house anywhere but someone who just wants to extract features
 	 * may appreciate this.<br>
@@ -170,9 +173,21 @@ public class InstancesBuilder extends Engine {
 			preferences = b.p;
 		}
 		
-		isSparse = b.isSparse;
-		useDocTitles = b.useDocTitles;
-		loadDocContents = b.loadDocContents;
+		
+		if(b.isSparse)
+			preferences.setPreference("useSparse", "1");
+		else
+			preferences.setPreference("useSparse", "0");
+
+		if (b.useDocTitles)
+			preferences.setPreference("useDocTitles", "1");
+		else
+			preferences.setPreference("useDocTitles","0");
+
+		if (b.loadDocContents)
+			preferences.setPreference("loadDocContents", "1");
+		else
+			preferences.setPreference("loadDocContents","0");
 	}
 	
 	/**
@@ -182,10 +197,7 @@ public class InstancesBuilder extends Engine {
 	public InstancesBuilder(InstancesBuilder oib){
 		ps = oib.getProblemSet();
 		cfd = oib.getCFD();
-		isSparse = oib.getIsSparse();
-		useDocTitles = oib.getUseDocTitles();
 		preferences = oib.getPreferences();
-		loadDocContents = oib.getLoadDocContents();
 	}
 
 	//////////////////////////////////////////// Methods
@@ -257,7 +269,7 @@ public class InstancesBuilder extends Engine {
 	 */
 	public void initializeAttributes() throws Exception {
 		attributes = getAttributeList(eventList, relevantEvents, cfd,
-				useDocTitles);
+				usingDocTitles());
 	}
 
 	/**
@@ -386,20 +398,6 @@ public class InstancesBuilder extends Engine {
 	//////////////////////////////////////////// Setters/Getters
 	
 	/**
-	 * @return whether or not we're keeping doc titles
-	 */
-	public boolean getUseDocTitles(){
-		return useDocTitles;
-	}
-	
-	/**
-	 * @return whether or not the instances are sparse
-	 */
-	public boolean getIsSparse(){
-		return isSparse;
-	}
-	
-	/**
 	 * @param probSet sets the problem set to the provided pset
 	 */
 	public void setProblemSet(ProblemSet probSet){
@@ -439,21 +437,30 @@ public class InstancesBuilder extends Engine {
 	 * @param udt whether or not to use doc titles
 	 */
 	public void setUseDocTitles(boolean udt){
-		useDocTitles = udt;
+		if (udt)
+			preferences.setPreference("useDocTitles","1");
+		else
+			preferences.setPreference("useDocTitles","0");
 	}
 	
 	/**
 	 * @param sparse whether or not to use sparse instances
 	 */
 	public void setUseSparse(boolean sparse){
-		isSparse = sparse;
+		if (sparse)
+			preferences.setPreference("useSparse","1");
+		else
+			preferences.setPreference("useSparse","0");
 	}
 	
 	/**
 	 * @param ldc whether or not we should load doc contents
 	 */
 	public void setLoadDocContents(boolean ldc){
-		loadDocContents = ldc;
+		if (ldc)
+			preferences.setPreference("loadDocContents","1");
+		else
+			preferences.setPreference("loadDocContents","0");
 	}
 	
 	/**
@@ -513,7 +520,8 @@ public class InstancesBuilder extends Engine {
 	 * @return the number of calculation threads we're using
 	 */
 	public int getNumThreads() {
-		return Integer.parseInt(preferences.getPreference("numCalcThreads"));
+		String s = preferences.getPreference("numCalcThreads");
+		return Integer.parseInt(s);
 	}
 	
 
@@ -521,14 +529,40 @@ public class InstancesBuilder extends Engine {
 	 * @return true if we are using sparse instances, false if not
 	 */
 	public boolean isSparse() {
-		return isSparse;
+		String s = preferences.getPreference("useSparse");
+		if (s.equals("0"))
+			return false;
+		else
+			return true;
+	}
+	
+	/**
+	 * @return whether or not we are pre-loading doc contents
+	 */
+	public boolean loadingDocContents(){
+		String s = preferences.getPreference("loadDocContents");
+		if (s.equals("0"))
+			return false;
+		else
+			return true;
+	}
+	
+	/**
+	 * @return whether or not we're keeping doc titles
+	 */
+	public boolean usingDocTitles(){
+		String s = preferences.getPreference("useDocTitles");
+		if (s.equals("0"))
+			return false;
+		else
+			return true;
 	}
 	
 	/**
 	 * Gets the preference object
 	 * @return
 	 */
-	private Preferences getPreferences() {
+	public Preferences getPreferences() {
 		return preferences;
 	}
 	
@@ -546,12 +580,7 @@ public class InstancesBuilder extends Engine {
 		return ps.getAllTestDocs();
 	}
 
-	/**
-	 * @return whether or not we are pre-loading doc contents
-	 */
-	public boolean getLoadDocContents(){
-		return loadDocContents;
-	}
+
 	
 	//////////////////////////////////////////// Utilities
 	/**
@@ -696,14 +725,14 @@ public class InstancesBuilder extends Engine {
 					//grab the document
 					Document doc = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadDocContents);
+					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents());
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							events, isSparse, useDocTitles);
+							events, isSparse(), usingDocTitles());
 					//normalize it
-					normInstance(cfd, instance, events, useDocTitles, attributes);
+					normInstance(cfd, instance, events, usingDocTitles(), attributes);
 					//add it to the collection of instances to be returned by the thread
 					list.add(instance);
 				} catch (Exception e) {
@@ -760,9 +789,9 @@ public class InstancesBuilder extends Engine {
 					//Document doc = ps.getAllTrainDocs().get(i);
 					//create the instance using it
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							eventList.get(i), isSparse, useDocTitles);
+							eventList.get(i), isSparse(), usingDocTitles());
 					//normalize it
-					normInstance(cfd, instance, eventList.get(i), useDocTitles,attributes);
+					normInstance(cfd, instance, eventList.get(i), usingDocTitles(),attributes);
 					//add it to this div's list of completed instances
 					list.add(instance);
 				} catch (Exception e) {
@@ -823,7 +852,7 @@ public class InstancesBuilder extends Engine {
 					* (threadId + 1)); i++){
 				try {
 					//try to extract the events
-					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadDocContents);
+					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents());
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("Error extracting features!", LogOut.STDERR);

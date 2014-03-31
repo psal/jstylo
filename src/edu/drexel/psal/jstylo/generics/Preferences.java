@@ -12,17 +12,25 @@ import java.util.Map;
 
 public class Preferences{
 
-	private static final double currentVersion = 0.3;
+	private static final double currentVersion = 0.4;
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
-	private static final String[] validKeys = {"numCalcThreads","useLogFile"};
+	private static final String[] validKeys = {
+		"numCalcThreads",
+		"useLogFile",
+		"isSparse",
+		"useDocTitles",
+		"loadDocContents"};
 	private static final String defaultPreferenceString = 
 			"numCalcThreads=4\n" +
-			"useLogFile=0\n";
+			"useLogFile=0\n" +
+			"useSparse=1\n" +
+			"useDocTitles=0\n" +
+			"loadDocContents=0\n";
 	
-	private Map<String,String> preference;
+	private Map<String,String> preferences;
 	
 	private Preferences(){
-		preference = new HashMap<String,String>();
+		preferences = new HashMap<String,String>();
 	}
 	
 	public static Preferences buildDefaultPreferences(){
@@ -48,7 +56,7 @@ public class Preferences{
 		}
 		
 		if (isValid){
-			preference.put(key, value);
+			preferences.put(key, value);
 		}
 	}
 	
@@ -58,8 +66,8 @@ public class Preferences{
 	 * @return
 	 */
 	public String getPreference(String key){
-		if (preference.containsKey(key)){
-			return preference.get(key);
+		if (preferences.containsKey(key)){
+			return preferences.get(key);
 		} else {
 			return "<Key Not Found>";
 		}
@@ -100,10 +108,11 @@ public class Preferences{
 		}
 		
 		try {
-			while(reader.ready()){
-				String line = reader.readLine();
+			String line = reader.readLine();
+			while(line != null){
 				if (line.startsWith("version")){
 					String[] components = line.split("=");
+					//System.out.println("Old version: "+components[1]+" New version: "+currentVersion);
 					double d = Double.parseDouble(components[1]);
 					if (d != currentVersion){
 						System.out.println("Outdated preference file! Replacing...");
@@ -114,8 +123,10 @@ public class Preferences{
 					}
 				} else if (line.contains("=")){
 					String[] components = line.split("=");
+					//System.out.printf("[0]:%s: [1]:%s:\n",components[0],components[1]);
 					p.setPreference(components[0],components[1]);
 				}
+				line = reader.readLine();;
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
@@ -128,18 +139,32 @@ public class Preferences{
 				e.printStackTrace();
 			}
 		}
-		return null;
+		
+		return p;
+	}
+	
+	public static void savePreferences(Preferences p){
+		savePreferences(p.toPreferenceString());
+	}
+	
+	public String toPreferenceString(){
+		String s = "";
+		
+		for (String key : preferences.keySet()){
+			s+=key+"="+preferences.get(key)+"\n";
+		}
+		return s;
 	}
 	
 	/**
 	 * Saves the current preference
 	 * @param preferenceString
 	 */
-	public static void savePreference(String preferenceString){
+	public static void savePreferences(String preferenceString){
 		BufferedWriter fileWriter = null;
 		String printString = "";
-		printString += "#JStylo Preference\n";
-		printString += "version="+currentVersion;
+		printString += "#JStylo Preferences\n";
+		printString += "version="+currentVersion+"\n";
 		printString += preferenceString;
 		
 		try {
@@ -151,7 +176,6 @@ public class Preferences{
 		
 		try {
 			fileWriter.write(printString);
-			createDefaultPreferenceFile();
 		} catch (IOException e) {
 			System.out.println("Failed to write preference!");
 			e.printStackTrace();
@@ -174,7 +198,7 @@ public class Preferences{
 			pFile.delete();
 		}
 		
-		savePreference(defaultPreferenceString);
+		savePreferences(defaultPreferenceString);
 	}
 	
 }

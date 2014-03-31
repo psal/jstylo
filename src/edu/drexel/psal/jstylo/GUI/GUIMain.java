@@ -6,13 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 import edu.drexel.psal.JSANConstants;
@@ -254,9 +247,7 @@ public class GUIMain extends javax.swing.JFrame {
 		FeaturesTabDriver.initPresetCFDs(this);
 		FeatureWizardDriver.populateAll();
 		analyzers = new ArrayList<Analyzer>();
-		ib = new InstancesBuilder();
-		//ib.setPreferences(Preferences.loadPreferences());
-		ib.setPreferences(Preferences.buildDefaultPreferences());
+		ib = new InstancesBuilder(Preferences.loadPreferences());
 		results = new ArrayList<String>();
 	}
 	
