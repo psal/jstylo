@@ -10,10 +10,27 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 
+ * This is primarily a data storage class which adds soem convenience functionality to the program.
+ * At the moment, all options in the analysis tab are saved in this data structure, then to a text file, and
+ * then loaded upon startup. In other words, it restores the previous run settings whenever this file is present.
+ * It also includes several parameters which are used exclusively by the API, either the remote one or the full one.
+ * 
+ * Functionality to add:
+ * 		Last used feature set
+ * 		Recent/previously used directory
+ * 		Recent/previously used problem set (maybe)
+ */
 public class Preferences{
 
+	//older versions will be replaced with the default of the newest version
 	private static final double currentVersion = 0.6;
+	
+	//where the file can be found
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
+	
+	//keys which are actually worth reading in
 	private static final String[] validKeys = {
 		"numCalcThreads",
 		"useLogFile",
@@ -27,6 +44,9 @@ public class Preferences{
 		"kFolds",
 		"rebuildInstances",
 		"analysisType"};
+	
+	//Used for default values in the event of a missing/outdated file
+	//or when building a Preferences object without a file for internal use
 	private static final String defaultPreferenceString = 
 			"numCalcThreads=4\n" +
 			"useLogFile=0\n" +
@@ -41,12 +61,20 @@ public class Preferences{
 			"rebuildInstances=0\n" +
 			"analysisType=0";
 	
+	//the main data structure
 	private Map<String,String> preferences;
 	
+	/**
+	 * An empty Preferences object
+	 */
 	private Preferences(){
 		preferences = new HashMap<String,String>();
 	}
 	
+	/**
+	 * A preferences object with default values
+	 * @return
+	 */
 	public static Preferences buildDefaultPreferences(){
 		Preferences p = new Preferences();
 		for (String s : defaultPreferenceString.split("\n")){
@@ -89,6 +117,11 @@ public class Preferences{
 		}
 	}
 	
+	/**
+	 * Translates a preference into a boolean value (only works on preferences with potential values of 1 and 0
+	 * @param key
+	 * @return
+	 */
 	public boolean getBoolPreference(String key){
 		if (preferences.containsKey(key)){
 			String s = preferences.get(key);
@@ -172,10 +205,18 @@ public class Preferences{
 		return p;
 	}
 	
+	/**
+	 * Saves the preferences object
+	 * @param p
+	 */
 	public static void savePreferences(Preferences p){
 		savePreferences(p.toPreferenceString());
 	}
 	
+	/**
+	 * Turns the current preferences into string form
+	 * @return
+	 */
 	public String toPreferenceString(){
 		String s = "";
 		
@@ -186,7 +227,7 @@ public class Preferences{
 	}
 	
 	/**
-	 * Saves the current preference
+	 * Saves the current preferences to a text file
 	 * @param preferenceString
 	 */
 	public static void savePreferences(String preferenceString){
