@@ -1165,8 +1165,11 @@ public class GUIMain extends javax.swing.JFrame {
 							options.add(analysisTrainCVJPanel,BorderLayout.CENTER);
 							{
 								analysisTrainCVJRadioButton = new JRadioButton();
-								analysisTrainCVJRadioButton.setSelected(true);
 								analysisTrainCVJPanel.add(analysisTrainCVJRadioButton,BorderLayout.CENTER);
+								if (ib.getPreferences().getPreference("analysisType").equals("0"))
+									analysisTrainCVJRadioButton.setSelected(true);
+								else
+									analysisTrainCVJRadioButton.setSelected(false);
 								analysisTypeButtonGroup.add(analysisTrainCVJRadioButton);
 								analysisTrainCVJRadioButton.setText("Run K-fold cross validation on training corpus");
 							}
@@ -1207,6 +1210,10 @@ public class GUIMain extends javax.swing.JFrame {
 							JPanel analysisClassTestJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
 							analysisClassTestUnknownJRadioButton = new JRadioButton();
 							analysisClassTestJPanel.add(analysisClassTestUnknownJRadioButton,BorderLayout.CENTER);
+							if (ib.getPreferences().getPreference("analysisType").equals("1"))
+								analysisClassTestUnknownJRadioButton.setSelected(true);
+							else
+								analysisClassTestUnknownJRadioButton.setSelected(false);
 							analysisTypeButtonGroup.add(analysisClassTestUnknownJRadioButton);
 							analysisClassTestUnknownJRadioButton.setText("Train on training corpus and classify unknown test documents");
 							analysisClassTestUnknownJRadioButton.setToolTipText("<html>" +
@@ -1219,6 +1226,10 @@ public class GUIMain extends javax.swing.JFrame {
 						{
 							JPanel analysisClassTestKnownJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
 							analysisClassTestKnownJRadioButton = new JRadioButton();
+							if (ib.getPreferences().getPreference("analysisType").equals("2"))
+								analysisClassTestKnownJRadioButton.setSelected(true);
+							else
+								analysisClassTestKnownJRadioButton.setSelected(false);
 							analysisClassTestKnownJPanel.add(analysisClassTestKnownJRadioButton,BorderLayout.CENTER);
 							analysisTypeButtonGroup.add(analysisClassTestKnownJRadioButton);
 							analysisClassTestKnownJRadioButton.setText("Train and classify on documents with known authors.");

@@ -328,7 +328,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				main.ib.getPreferences().setPreference("analysisType","0");
 				Logger.logln("K-Fold radio button selected");
 				
 				boolean selected = main.analysisTrainCVJRadioButton.isSelected();
@@ -344,7 +344,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				main.ib.getPreferences().setPreference("analysisType","1");
 				Logger.logln("Test and Classify Unknown radio button selected");
 				
 				boolean selected = main.analysisClassTestUnknownJRadioButton.isSelected();
@@ -360,7 +360,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				main.ib.getPreferences().setPreference("analysisType","2");
 				Logger.logln("Test and Classify Known radio button selected");
 				
 				boolean selected = main.analysisClassTestKnownJRadioButton.isSelected();
@@ -962,7 +962,7 @@ public class AnalysisTabDriver {
 				if (main.analysisClassTestUnknownJRadioButton.isSelected()) {
 					// Training and testing
 					// ====================
-
+					
 					Logger.logln("Starting training and testing phase...");
 
 					content += getTimestamp() + " Starting training and testing phase...\n";

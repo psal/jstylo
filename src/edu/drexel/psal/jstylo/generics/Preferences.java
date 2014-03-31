@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class Preferences{
 
-	private static final double currentVersion = 0.5;
+	private static final double currentVersion = 0.6;
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
 	private static final String[] validKeys = {
 		"numCalcThreads",
@@ -25,7 +25,8 @@ public class Preferences{
 		"applyInfoGain",
 		"numInfoGain",
 		"kFolds",
-		"rebuildInstances"};
+		"rebuildInstances",
+		"analysisType"};
 	private static final String defaultPreferenceString = 
 			"numCalcThreads=4\n" +
 			"useLogFile=0\n" +
@@ -37,7 +38,8 @@ public class Preferences{
 			"applyInfoGain=0\n" +
 			"numInfoGain=200\n" +
 			"kFolds=10\n" +
-			"rebuildInstances=0\n";
+			"rebuildInstances=0\n" +
+			"analysisType=0";
 	
 	private Map<String,String> preferences;
 	
