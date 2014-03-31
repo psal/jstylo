@@ -16,16 +16,16 @@ import java.util.Map;
  * At the moment, all options in the analysis tab are saved in this data structure, then to a text file, and
  * then loaded upon startup. In other words, it restores the previous run settings whenever this file is present.
  * It also includes several parameters which are used exclusively by the API, either the remote one or the full one.
+ * Now will auto select the last used feature set
  * 
  * Functionality to add:
- * 		Last used feature set
  * 		Recent/previously used directory
  * 		Recent/previously used problem set (maybe)
  */
 public class Preferences{
 
 	//older versions will be replaced with the default of the newest version
-	private static final double currentVersion = 0.6;
+	private static final double currentVersion = 0.7;
 	
 	//where the file can be found
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
@@ -43,7 +43,8 @@ public class Preferences{
 		"numInfoGain",
 		"kFolds",
 		"rebuildInstances",
-		"analysisType"};
+		"analysisType",
+		"featureSet"};
 	
 	//Used for default values in the event of a missing/outdated file
 	//or when building a Preferences object without a file for internal use
@@ -59,7 +60,8 @@ public class Preferences{
 			"numInfoGain=200\n" +
 			"kFolds=10\n" +
 			"rebuildInstances=0\n" +
-			"analysisType=0";
+			"analysisType=0\n" +
+			"featureSet=0";
 	
 	//the main data structure
 	private Map<String,String> preferences;

@@ -1110,7 +1110,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 					}
 				}
-				
+				main.ib.getPreferences().setPreference("featureSet",""+main.featuresSetJComboBox.getSelectedIndex());
 				Preferences.savePreferences(main.ib.getPreferences());
 			}
 			// unlock gui and update results

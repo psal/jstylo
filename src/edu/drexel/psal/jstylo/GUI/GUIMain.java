@@ -510,8 +510,10 @@ public class GUIMain extends javax.swing.JFrame {
 
 						featuresSetJComboBoxModel = new DefaultComboBoxModel(presetCFDsNames);
 						featuresSetJComboBox = new JComboBox();
-						panel.add(featuresSetJComboBox);
 						featuresSetJComboBox.setModel(featuresSetJComboBoxModel);
+						featuresSetJComboBox.setSelectedIndex(Integer.parseInt(ib.getPreferences().getPreference("featureSet")));
+						panel.add(featuresSetJComboBox);
+						
 						featuresSetJComboBox.setPreferredSize(new java.awt.Dimension(200, 20));
 					}
 					{
