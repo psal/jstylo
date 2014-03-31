@@ -47,8 +47,10 @@ public class Preferences{
 	
 	public static Preferences buildDefaultPreferences(){
 		Preferences p = new Preferences();
-		p.setPreference("numCalcThreads","4");
-		p.setPreference("useLogFile","0");
+		for (String s : defaultPreferenceString.split("\n")){
+			String[] components = s.split("=");
+			p.setPreference(components[0],components[1]);
+		}
 		return p;
 	}
 	

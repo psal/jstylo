@@ -1125,7 +1125,10 @@ public class GUIMain extends javax.swing.JFrame {
 								infoGainValueJTextField = new JTextField(ib.getPreferences().getPreference("numInfoGain"));
 								infoGainValueJTextField.setColumns(5);
 								applyIG.add(infoGainValueJTextField);
-								infoGainValueJTextField.setEnabled(false);
+								if (ib.getPreferences().getBoolPreference("applyInfoGain"))
+									infoGainValueJTextField.setEnabled(true);
+								else
+									infoGainValueJTextField.setEnabled(false);
 							}
 						}
 						{

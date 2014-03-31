@@ -63,6 +63,10 @@ public class AnalysisTabDriver {
 				
 				// enable / disable the apply InfoGain option
 				boolean selected = main.analysisCalcInfoGainJCheckBox.isSelected();
+				if (selected)
+					main.ib.getPreferences().setPreference("calcInfoGain","1");
+				else
+					main.ib.getPreferences().setPreference("calcInfoGain","0");
 				Logger.logln("Calculate InfoGain option - " + (selected ? "selected" : "unselected"));
 				main.analysisApplyInfoGainJCheckBox.setEnabled(selected);
 				main.infoGainValueJTextField.setEnabled(selected);
@@ -80,8 +84,60 @@ public class AnalysisTabDriver {
 				
 				// enable / disable apply InfoGain text field
 				boolean selected = main.analysisApplyInfoGainJCheckBox.isSelected();
+				if (selected)
+					main.ib.getPreferences().setPreference("applyInfoGain","1");
+				else
+					main.ib.getPreferences().setPreference("applyInfoGain","0");
 				Logger.logln("Apply InfoGain option - " + (selected ? "selected" : "unselected"));
 				main.infoGainValueJTextField.setEnabled(selected);
+			}
+		});
+		
+		// rebuild Instances checkbox
+		// =======================
+		
+		main.analysisRebuildInstancesJCheckBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				boolean selected = main.analysisRebuildInstancesJCheckBox.isSelected();
+				if (selected)
+					main.ib.getPreferences().setPreference("rebuildInstances","1");
+				else
+					main.ib.getPreferences().setPreference("rebuildInstances","0");
+			}
+		});
+		
+		// output vectors checkbox
+		// =======================
+		
+		main.analysisOutputFeatureVectorJCheckBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				boolean selected = main.analysisOutputFeatureVectorJCheckBox.isSelected();
+				if (selected)
+					main.ib.getPreferences().setPreference("printVectors","1");
+				else
+					main.ib.getPreferences().setPreference("printVectors","0");
+			}
+		});
+		
+		// sparse checkbox
+		// =======================
+		
+		main.analysisSparseInstancesJCheckBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				boolean selected = main.analysisSparseInstancesJCheckBox.isSelected();
+				if (selected)
+					main.ib.getPreferences().setPreference("useSparse","1");
+				else
+					main.ib.getPreferences().setPreference("useSparse","0");
 			}
 		});
 		
@@ -283,6 +339,7 @@ public class AnalysisTabDriver {
 				}			
 			}		
 		});
+		
 		main.analysisClassTestUnknownJRadioButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -298,6 +355,7 @@ public class AnalysisTabDriver {
 				}			
 			}		
 		});
+		
 		main.analysisClassTestKnownJRadioButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -866,6 +924,7 @@ public class AnalysisTabDriver {
 					int igValue = -1;
 					try {
 						igValue = Integer.parseInt(main.infoGainValueJTextField.getText());
+						main.ib.getPreferences().setPreference("numInfoGain", ""+igValue);
 					} catch (NumberFormatException e) {
 					}
 
@@ -967,6 +1026,8 @@ public class AnalysisTabDriver {
 							Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingInstances(),
 									Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
 
+							main.ib.getPreferences().setPreference("kFolds", main.analysisKFoldJTextField.getText());
+							
 							content += getTimestamp() + " done!\n\n";
 							Logger.logln("Done!");
 							updateResultsView();
