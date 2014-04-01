@@ -511,7 +511,12 @@ public class GUIMain extends javax.swing.JFrame {
 						featuresSetJComboBoxModel = new DefaultComboBoxModel(presetCFDsNames);
 						featuresSetJComboBox = new JComboBox();
 						featuresSetJComboBox.setModel(featuresSetJComboBoxModel);
-						featuresSetJComboBox.setSelectedIndex(Integer.parseInt(ib.getPreferences().getPreference("featureSet")));
+						int selected = Integer.parseInt(ib.getPreferences().getPreference("featureSet"));
+						featuresSetJComboBox.setSelectedIndex(selected);
+						if (selected != 0){
+							System.out.println("Value: "+selected);
+							cfd = presetCFDs.get(selected-1);
+						}
 						panel.add(featuresSetJComboBox);
 						
 						featuresSetJComboBox.setPreferredSize(new java.awt.Dimension(200, 20));
@@ -1379,7 +1384,7 @@ public class GUIMain extends javax.swing.JFrame {
 					}
 				}
 			}
-
+			GUIUpdateInterface.updateFeatureSetView(this);
 			// initialize listeners
 			DocsTabDriver.initListeners(this);
 			FeaturesTabDriver.initListeners(this);
