@@ -1,10 +1,6 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +69,6 @@ public class InstancesBuilder extends Engine {
 		private boolean isSparse = false;
 		private boolean useDocTitles = false;
 		private boolean loadDocContents = false;
-		//private int numThreads = 4;
 		private Preferences p = null;
 		
 		public Builder psPath(String psp){
@@ -137,8 +132,7 @@ public class InstancesBuilder extends Engine {
 	 * Ensure not to try to do anything fancy with it until all required
 	 * information is set
 	 */
-	public InstancesBuilder() {
-	}
+	public InstancesBuilder() {}
 
 	public InstancesBuilder(Preferences p){
 		preferences = p;
@@ -568,8 +562,6 @@ public class InstancesBuilder extends Engine {
 		return ps.getAllTestDocs();
 	}
 
-
-	
 	//////////////////////////////////////////// Utilities
 	/**
 	 * Writes the given Instances set into an ARFF file in the given filename.
@@ -634,7 +626,7 @@ public class InstancesBuilder extends Engine {
 	public void killThreads() {
 		
 		//feature extraction threads
-		if (!(featThreads==null)){
+		if (featThreads!=null){
 			for (int i=0; i<featThreads.length; i++){
 				featThreads[i].stop();
 			}
@@ -645,7 +637,7 @@ public class InstancesBuilder extends Engine {
 		}
 		
 		//training instances threads
-		if (!(trainThreads==null)){
+		if (trainThreads!=null){
 			for (int i=0; i<trainThreads.length; i++){
 				trainThreads[i].stop();
 			}
@@ -656,7 +648,7 @@ public class InstancesBuilder extends Engine {
 		}
 		
 		//testing instances threads
-		if (!(testThreads==null)){
+		if (testThreads!=null){
 			for (int i=0; i<testThreads.length; i++){
 				testThreads[i].stop();
 			}
@@ -665,7 +657,6 @@ public class InstancesBuilder extends Engine {
 			}
 			testThreads=null;
 		}
-		
 	}
 
 	//////////////////////////////////////////// Thread Definitions
