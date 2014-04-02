@@ -1,6 +1,7 @@
 package edu.drexel.psal.jstylo.analyzers;
 
 import edu.drexel.psal.jstylo.generics.Analyzer;
+import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.RelaxedEvaluation;
 
@@ -40,14 +41,17 @@ public class WekaAnalyzer extends Analyzer {
 	 */
 	public WekaAnalyzer() {
 		classifier = new weka.classifiers.functions.SMO();
+		type = AnalyzerTypeEnum.WEKA_ANALYZER;
 	}
 	
 	public WekaAnalyzer(Classifier classifier) {
 		this.classifier = classifier;
+		type = AnalyzerTypeEnum.WEKA_ANALYZER;
 	}
 	
 	public WekaAnalyzer(Object obj){
 		this.classifier = (Classifier) obj;
+		type = AnalyzerTypeEnum.WEKA_ANALYZER;
 	}
 	
 	/* ==========

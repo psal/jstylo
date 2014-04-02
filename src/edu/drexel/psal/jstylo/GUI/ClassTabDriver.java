@@ -76,7 +76,7 @@ public class ClassTabDriver {
 						Logger.logln("classname: "+className);
 						tmpObject = Class.forName(className).newInstance();
 						
-						if (tmpObject instanceof Classifier){	//TODO hopefully this is the only "instanceOf" I'll need
+						if (tmpObject instanceof Classifier){	//hopefully this is the only "instanceOf" I'll need
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
 							main.ib.setUseDocTitles(false);
 							main.analysisCalcInfoGainJCheckBox.setSelected(true);

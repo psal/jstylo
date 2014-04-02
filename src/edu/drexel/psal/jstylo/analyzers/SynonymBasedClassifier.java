@@ -7,8 +7,13 @@ import com.jgaap.generics.Document;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 import edu.drexel.psal.jstylo.generics.Analyzer;
+import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
 
 public class SynonymBasedClassifier extends Analyzer {
+	
+	public SynonymBasedClassifier(){
+		type = AnalyzerTypeEnum.SYNONYM_BASED_ANALYZER;
+	}
 	
 	@Override
 	public Map<String, Map<String, Double>> classify(Instances trainingSet,

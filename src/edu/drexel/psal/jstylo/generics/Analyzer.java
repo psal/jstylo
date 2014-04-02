@@ -22,6 +22,11 @@ public abstract class Analyzer{
 	 */
 	
 	/**
+	 * The type enumeration to allow us to avoid instanceofs
+	 */
+	protected AnalyzerTypeEnum type;
+	
+	/**
 	 * The Weka Instances dataset to hold the extracted training data.
 	 */
 	protected Instances trainingSet;
@@ -58,6 +63,14 @@ public abstract class Analyzer{
 	 * ==========
 	 */
 	
+	/**
+	 * Checks to see if this Analyzer is of a given type
+	 * @param t the type to match
+	 * @return true if they match, false if they do not
+	 */
+	public boolean isType(AnalyzerTypeEnum t){
+		return (t==type);
+	}
 	
 	/**
 	 * Classifies the given test set based on the given training set. Should update the following fields along the classification:

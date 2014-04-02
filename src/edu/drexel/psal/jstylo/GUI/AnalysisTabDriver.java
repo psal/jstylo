@@ -3,6 +3,7 @@ package edu.drexel.psal.jstylo.GUI;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Analyzer;
+import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.InstancesBuilder;
 import edu.drexel.psal.jstylo.generics.Logger;
@@ -1084,7 +1085,7 @@ public class AnalysisTabDriver {
 						main.analysisDriver = a;
 
 						//ick another instanceof. See if there's a way around using it.
-						if (a instanceof WriteprintsAnalyzer) {
+						if (a.isType(AnalyzerTypeEnum.WRITEPRINTS_ANALYZER)) {
 							a.classify(main.ib.getTrainingInstances(), main.ib.getTestInstances(),
 									main.ps.getAllTestDocs());
 						}

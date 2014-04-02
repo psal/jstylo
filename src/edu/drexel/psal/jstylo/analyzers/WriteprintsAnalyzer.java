@@ -89,6 +89,10 @@ public class WriteprintsAnalyzer extends Analyzer {
 	 * ==========
 	 */
 	
+	public WriteprintsAnalyzer(){
+		type = AnalyzerTypeEnum.WRITEPRINTS_ANALYZER;
+	}
+	
 	@Override
 	public Map<String,Map<String, Double>> classify(Instances train,
 			Instances test, List<Document> unknownDocs) {
@@ -107,11 +111,9 @@ public class WriteprintsAnalyzer extends Analyzer {
 		trainingSet = new Instances(train);
 		testSet = new Instances(test);
 		
-		trainingSet.deleteAttributeAt(0); //TODO
-		testSet.deleteAttributeAt(0); //TODO
+		trainingSet.deleteAttributeAt(0);
+		testSet.deleteAttributeAt(0); 
 		
-		//TODO if we get weird results somewhere the two lines below might be the reason. Testing didn't reveal anything though
-				//this was added because authors weren't being cleared between one classification and the next ie different presses of the "run analysis" button. 
 		if (authors!=null)
 			authors.clear();
 		
@@ -270,7 +272,7 @@ public class WriteprintsAnalyzer extends Analyzer {
 			long randSeed) {
 		Logger.logln(">>> runCrossValidation started");
 		// setup
-		data.deleteAttributeAt(0); //TODO
+		data.deleteAttributeAt(0);
 		data.setClass(data.attribute("authorName"));
 		
 		Instances randData = new Instances(data);
@@ -774,7 +776,7 @@ public class WriteprintsAnalyzer extends Analyzer {
 		return null;
 	}
 
-	//TODO add lengthy-ish description of what this analyzer does and its +/-
+	//Description of the Analyzer
 	@Override
 	public String analyzerDescription() {
 		String description =
