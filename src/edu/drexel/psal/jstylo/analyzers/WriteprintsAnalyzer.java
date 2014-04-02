@@ -3,8 +3,6 @@ package edu.drexel.psal.jstylo.analyzers;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.JarURLConnection;
-import java.net.URL;
 import java.util.*;
 
 import Jama.EigenvalueDecomposition;
@@ -599,13 +597,11 @@ public class WriteprintsAnalyzer extends Analyzer {
 	 * @throws IOException 
 	 */
 	private static void initWordnetDB() {
-		//TODO have to change this to deal with jars, not directories
-		try{
-			
+		
+		try{	
 			File wordnetDBDir = new File(JSANConstants.JGAAP_RESOURCE_WORDNET);
 			System.setProperty("wordnet.database.dir", wordnetDBDir.getAbsolutePath());
 			wndb = WordNetDatabase.getFileInstance();
-			
 		} catch (Exception e){
 			//e.printStackTrace();
 			Logger.logln("Wordnet Database for use with the WriteprintsAnalyzer not found",LogOut.STDERR);

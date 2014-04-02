@@ -1,7 +1,6 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import javax.swing.*;
-import javax.swing.table.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 

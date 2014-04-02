@@ -11,6 +11,10 @@ import com.jgaap.generics.*;
  */
 public class StringDocument extends Document
 {
+
+	private static final long serialVersionUID = 1L;
+
+
 	public StringDocument()
 	{
 		super();
