@@ -21,9 +21,7 @@ import com.jgaap.generics.*;
  *
  */
 public class CumulativeFeatureDriver implements Serializable {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 
 	/* ======
@@ -94,7 +92,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	 * @throws Exception
 	 */
 	public CumulativeFeatureDriver(String filename) throws Exception {
-		//Logger.logln("Reading CumulativeFeatureDriver from "+filename);
+		Logger.logln("Reading CumulativeFeatureDriver from "+filename);
 		XMLParser parser = new XMLParser(filename);
 		CumulativeFeatureDriver generated = parser.cfd;
 		this.name = generated.name;
@@ -132,6 +130,7 @@ public class CumulativeFeatureDriver implements Serializable {
 					currDoc.addCanonicizer(c);
 			} catch (NullPointerException e) {
 				// no canonicizers
+				Logger.logln("No canonicizers in use");
 			}
 			
 			if (!loadDocContents) {
@@ -149,7 +148,6 @@ public class CumulativeFeatureDriver implements Serializable {
 				Logger.logln("Failed to canonicize the document!");
 				throw new Exception();
 			}
-			//TODO maybe just check what type is is before hand? isn't there a features.get(i).isCalcHist() or something?
 			
 			// extract event set
 			String prefix = features.get(i).displayName().replace(" ", "-");
@@ -168,9 +166,6 @@ public class CumulativeFeatureDriver implements Serializable {
 			for (Event e: tmpEs){
 				es.addEvent(new Event(prefix+"{"+e.getEvent()+"}"));
 			}
-			//System.out.println("EventSetID: "+es.getEventSetID()+" numEvents: "+tmpEs.size());
-			//FIXME if only a single event was added, it /MIGHT/ be an event histogram. 
-			//somehow flag non-histogram features
 			esl.add(es);
 		}
 		return esl;
@@ -407,21 +402,6 @@ public class CumulativeFeatureDriver implements Serializable {
 	}
 	
 	/**
-	 * Tag to indicate the current scope of the XML.
-	 */
-	private enum Tag{
-		FEATURE_SET,
-		FEATURE,
-		EVENT_DRIVER,
-		CANONICIZERS,
-		CANONICIZER,
-		CULLERS,
-		CULLER,
-		NORM,
-		FACTOR,
-	}
-	
-	/**
 	 * XML parser to create a cumulative feature driver out of a XML file.
 	 */
 	private class XMLParser extends DefaultHandler {
@@ -432,13 +412,6 @@ public class CumulativeFeatureDriver implements Serializable {
 		 */
 		private CumulativeFeatureDriver cfd;
 		private String filename;
-		
-		private Tag currTag;
-		private FeatureDriver fd;
-		private EventDriver ed;
-		private Canonicizer c;
-		private EventCuller ec;
-		
 		
 		/* ============
 		 * constructors
@@ -624,6 +597,7 @@ public class CumulativeFeatureDriver implements Serializable {
 		 * @return
 		 * 		The generated cumulative feature driver.
 		 */
+		@SuppressWarnings("unused")
 		public CumulativeFeatureDriver getCumulativeFeatureDriver() {
 			return cfd;
 		}

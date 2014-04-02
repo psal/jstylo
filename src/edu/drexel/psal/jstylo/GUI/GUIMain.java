@@ -54,7 +54,6 @@ public class GUIMain extends javax.swing.JFrame {
 	protected ProblemSet ps;
 	protected CumulativeFeatureDriver cfd;
 	protected List<CumulativeFeatureDriver> presetCFDs;
-	//protected WekaInstancesBuilder wib;
 	protected InstancesBuilder ib;
 	protected Analyzer analysisDriver;
 	protected List<Analyzer> analyzers;
@@ -363,8 +362,6 @@ public class GUIMain extends javax.swing.JFrame {
 							removeTestDocJButton.setText("Remove Document(s)");
 						}
 
-						//buttons.add(new JPanel());
-						//buttons.add(new JPanel());
 						buttons.add(new JPanel());
 					}
 
@@ -514,7 +511,6 @@ public class GUIMain extends javax.swing.JFrame {
 						int selected = Integer.parseInt(ib.getPreferences().getPreference("featureSet"));
 						featuresSetJComboBox.setSelectedIndex(selected);
 						if (selected != 0){
-							System.out.println("Value: "+selected);
 							cfd = presetCFDs.get(selected-1);
 						}
 						panel.add(featuresSetJComboBox);
@@ -913,7 +909,6 @@ public class GUIMain extends javax.swing.JFrame {
 					// ===========
 					
 					JPanel center = new JPanel(new GridLayout(1,1,cellPadding,cellPadding));
-					//JPanel center = new JPanel(new BorderLayout());
 					classTab.add(center);
 					
 					{
