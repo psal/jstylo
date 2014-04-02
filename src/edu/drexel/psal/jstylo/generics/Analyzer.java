@@ -1,14 +1,10 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.io.StringReader;
 import java.util.*;
 
-import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.functions.SMO;
-import weka.core.*;
-import weka.core.converters.ArffLoader.ArffReader;
+import weka.core.Instances;
 
 import com.jgaap.generics.*;
 
@@ -175,7 +171,7 @@ public abstract class Analyzer{
 			}
 			res += f.toString()+"\n";
 		}
-		
+		f.close();
 		res += "\n";
 		return res;
 	}
