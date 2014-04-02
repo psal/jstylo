@@ -35,6 +35,7 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
  * the ease with which the code can be parallelized.<br>
  * @author Travis Dutko
  */
+@SuppressWarnings("deprecation")
 public class Engine implements API {
 
 	@Override
@@ -280,6 +281,7 @@ public class Engine implements API {
 		return relevantEvents;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes", "unused" })
 	@Override
 	public ArrayList<Attribute> getAttributeList(
 			List<List<EventSet>> culledEventSets,
@@ -486,6 +488,7 @@ public class Engine implements API {
 	}
 	
 
+	@SuppressWarnings("unused")
 	@Override
 	public Instance createInstance(List<Attribute> attributes,
 			List<EventSet> relevantEvents,
