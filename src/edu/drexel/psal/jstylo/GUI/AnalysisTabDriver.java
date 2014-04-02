@@ -64,9 +64,9 @@ public class AnalysisTabDriver {
 				// enable / disable the apply InfoGain option
 				boolean selected = main.analysisCalcInfoGainJCheckBox.isSelected();
 				if (selected)
-					main.ib.getPreferences().setPreference("calcInfoGain", "1");
+					main.setPreference("calcInfoGain", "1");
 				else
-					main.ib.getPreferences().setPreference("calcInfoGain", "0");
+					main.setPreference("calcInfoGain", "0");
 				Logger.logln("Calculate InfoGain option - " + (selected ? "selected" : "unselected"));
 				main.analysisApplyInfoGainJCheckBox.setEnabled(selected);
 				main.infoGainValueJTextField.setEnabled(selected);
@@ -85,9 +85,9 @@ public class AnalysisTabDriver {
 				// enable / disable apply InfoGain text field
 				boolean selected = main.analysisApplyInfoGainJCheckBox.isSelected();
 				if (selected)
-					main.ib.getPreferences().setPreference("applyInfoGain", "1");
+					main.setPreference("applyInfoGain", "1");
 				else
-					main.ib.getPreferences().setPreference("applyInfoGain", "0");
+					main.setPreference("applyInfoGain", "0");
 				Logger.logln("Apply InfoGain option - " + (selected ? "selected" : "unselected"));
 				main.infoGainValueJTextField.setEnabled(selected);
 			}
@@ -103,9 +103,9 @@ public class AnalysisTabDriver {
 
 				boolean selected = main.analysisRebuildInstancesJCheckBox.isSelected();
 				if (selected)
-					main.ib.getPreferences().setPreference("rebuildInstances", "1");
+					main.setPreference("rebuildInstances", "1");
 				else
-					main.ib.getPreferences().setPreference("rebuildInstances", "0");
+					main.setPreference("rebuildInstances", "0");
 			}
 		});
 
@@ -119,9 +119,9 @@ public class AnalysisTabDriver {
 
 				boolean selected = main.analysisOutputFeatureVectorJCheckBox.isSelected();
 				if (selected)
-					main.ib.getPreferences().setPreference("printVectors", "1");
+					main.setPreference("printVectors", "1");
 				else
-					main.ib.getPreferences().setPreference("printVectors", "0");
+					main.setPreference("printVectors", "0");
 			}
 		});
 
@@ -135,9 +135,9 @@ public class AnalysisTabDriver {
 
 				boolean selected = main.analysisSparseInstancesJCheckBox.isSelected();
 				if (selected)
-					main.ib.getPreferences().setPreference("useSparse", "1");
+					main.setPreference("useSparse", "1");
 				else
-					main.ib.getPreferences().setPreference("useSparse", "0");
+					main.setPreference("useSparse", "0");
 			}
 		});
 
@@ -312,7 +312,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				main.ib.getPreferences().setPreference("analysisType", "0");
+				main.setPreference("analysisType", "0");
 				Logger.logln("K-Fold radio button selected");
 
 				boolean selected = main.analysisTrainCVJRadioButton.isSelected();
@@ -328,7 +328,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				main.ib.getPreferences().setPreference("analysisType", "1");
+				main.setPreference("analysisType", "1");
 				Logger.logln("Test and Classify Unknown radio button selected");
 
 				boolean selected = main.analysisClassTestUnknownJRadioButton.isSelected();
@@ -344,7 +344,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				main.ib.getPreferences().setPreference("analysisType", "2");
+				main.setPreference("analysisType", "2");
 				Logger.logln("Test and Classify Known radio button selected");
 
 				boolean selected = main.analysisClassTestKnownJRadioButton.isSelected();
@@ -931,7 +931,7 @@ public class AnalysisTabDriver {
 					int igValue = -1;
 					try {
 						igValue = Integer.parseInt(main.infoGainValueJTextField.getText());
-						main.ib.getPreferences().setPreference("numInfoGain", "" + igValue);
+						main.setPreference("numInfoGain", "" + igValue);
 					} catch (NumberFormatException e) {
 						e.printStackTrace();
 					}
@@ -1042,7 +1042,7 @@ public class AnalysisTabDriver {
 						// run the experiment
 						Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingInstances(),
 								Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
-						main.ib.getPreferences().setPreference("kFolds", main.analysisKFoldJTextField.getText());
+						main.setPreference("kFolds", main.analysisKFoldJTextField.getText());
 
 						content += getTimestamp() + " done!\n\n";
 						Logger.logln("Done!");
@@ -1129,7 +1129,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 					}
 				}
-				main.ib.getPreferences().setPreference("featureSet", "" + main.featuresSetJComboBox.getSelectedIndex());
+				main.setPreference("featureSet", "" + main.featuresSetJComboBox.getSelectedIndex());
 				Preferences.savePreferences(main.ib.getPreferences());
 			}
 			// unlock gui and update results

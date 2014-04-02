@@ -508,7 +508,7 @@ public class GUIMain extends javax.swing.JFrame {
 						featuresSetJComboBoxModel = new DefaultComboBoxModel(presetCFDsNames);
 						featuresSetJComboBox = new JComboBox();
 						featuresSetJComboBox.setModel(featuresSetJComboBoxModel);
-						int selected = Integer.parseInt(ib.getPreferences().getPreference("featureSet"));
+						int selected = Integer.parseInt(getPreference("featureSet"));
 						featuresSetJComboBox.setSelectedIndex(selected);
 						if (selected != 0){
 							cfd = presetCFDs.get(selected-1);
@@ -1094,7 +1094,7 @@ public class GUIMain extends javax.swing.JFrame {
 							
 							analysisOutputFeatureVectorJCheckBox = new JCheckBox();
 							analysisOutputFeatureVectorJCheckBox.setToolTipText("Display the data collected from each document for each feature.");
-							analysisOutputFeatureVectorJCheckBox.setSelected(ib.getPreferences().getBoolPreference("printVectors"));
+							analysisOutputFeatureVectorJCheckBox.setSelected(getBoolPreference("printVectors"));
 							options.add(analysisOutputFeatureVectorJCheckBox);
 							analysisOutputFeatureVectorJCheckBox.setText("Output feature vectors (ARFF format)");
 						}
@@ -1108,7 +1108,7 @@ public class GUIMain extends javax.swing.JFrame {
 						{	
 							analysisCalcInfoGainJCheckBox = new JCheckBox();
 							analysisCalcInfoGainJCheckBox.setToolTipText("Display how much information each feature taught the computer.");
-							analysisCalcInfoGainJCheckBox.setSelected(ib.getPreferences().getBoolPreference("calcInfoGain"));
+							analysisCalcInfoGainJCheckBox.setSelected(getBoolPreference("calcInfoGain"));
 							options.add(analysisCalcInfoGainJCheckBox);
 							analysisCalcInfoGainJCheckBox.setText("Calculate InfoGain on feature set");
 						}
@@ -1119,15 +1119,15 @@ public class GUIMain extends javax.swing.JFrame {
 								
 								analysisApplyInfoGainJCheckBox = new JCheckBox();
 								analysisApplyInfoGainJCheckBox.setToolTipText("Limit the display to the top N features");
-								analysisApplyInfoGainJCheckBox.setSelected(ib.getPreferences().getBoolPreference("applyInfoGain"));
+								analysisApplyInfoGainJCheckBox.setSelected(getBoolPreference("applyInfoGain"));
 								applyIG.add(analysisApplyInfoGainJCheckBox);
 								analysisApplyInfoGainJCheckBox.setText("Apply InfoGain on top N features:");
 							}
 							{
-								infoGainValueJTextField = new JTextField(ib.getPreferences().getPreference("numInfoGain"));
+								infoGainValueJTextField = new JTextField(getPreference("numInfoGain"));
 								infoGainValueJTextField.setColumns(5);
 								applyIG.add(infoGainValueJTextField);
-								if (ib.getPreferences().getBoolPreference("applyInfoGain"))
+								if (getBoolPreference("applyInfoGain"))
 									infoGainValueJTextField.setEnabled(true);
 								else
 									infoGainValueJTextField.setEnabled(false);
@@ -1168,7 +1168,7 @@ public class GUIMain extends javax.swing.JFrame {
 							{
 								analysisTrainCVJRadioButton = new JRadioButton();
 								analysisTrainCVJPanel.add(analysisTrainCVJRadioButton,BorderLayout.CENTER);
-								if (ib.getPreferences().getPreference("analysisType").equals("0"))
+								if (getPreference("analysisType").equals("0"))
 									analysisTrainCVJRadioButton.setSelected(true);
 								else
 									analysisTrainCVJRadioButton.setSelected(false);
@@ -1179,7 +1179,7 @@ public class GUIMain extends javax.swing.JFrame {
 								analysisTrainCVoptionsJPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 								analysisTrainCVJPanel.add(analysisTrainCVoptionsJPanel,BorderLayout.SOUTH);
 								{
-									analysisKFoldJTextField = new JTextField(ib.getPreferences().getPreference("kFolds"));
+									analysisKFoldJTextField = new JTextField(getPreference("kFolds"));
 									analysisKFoldJTextField.setPreferredSize(new Dimension(25,20));
 									analysisKFoldJLabel = new JLabel("K Folds: ");
 									analysisKFoldJTextField.setToolTipText("The number of groups to split the documents into. Must be larger then one and can't be larger then the number of documents you have." );
@@ -1193,7 +1193,7 @@ public class GUIMain extends javax.swing.JFrame {
 									
 									analysisRebuildInstancesJLabel = new JLabel("     Rebuild Instances: ");
 									analysisRebuildInstancesJCheckBox = new JCheckBox();
-									analysisRebuildInstancesJCheckBox.setSelected(ib.getPreferences().getBoolPreference("rebuildInstances"));
+									analysisRebuildInstancesJCheckBox.setSelected(getBoolPreference("rebuildInstances"));
 									analysisRebuildInstancesJCheckBox.setToolTipText("Rebuilds the Instances object for each fold of the cross validation");
 									
 									analysisTrainCVoptionsJPanel.add(analysisKFoldJLabel);
@@ -1212,7 +1212,7 @@ public class GUIMain extends javax.swing.JFrame {
 							JPanel analysisClassTestJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
 							analysisClassTestUnknownJRadioButton = new JRadioButton();
 							analysisClassTestJPanel.add(analysisClassTestUnknownJRadioButton,BorderLayout.CENTER);
-							if (ib.getPreferences().getPreference("analysisType").equals("1"))
+							if (getPreference("analysisType").equals("1"))
 								analysisClassTestUnknownJRadioButton.setSelected(true);
 							else
 								analysisClassTestUnknownJRadioButton.setSelected(false);
@@ -1228,7 +1228,7 @@ public class GUIMain extends javax.swing.JFrame {
 						{
 							JPanel analysisClassTestKnownJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
 							analysisClassTestKnownJRadioButton = new JRadioButton();
-							if (ib.getPreferences().getPreference("analysisType").equals("2"))
+							if (getPreference("analysisType").equals("2"))
 								analysisClassTestKnownJRadioButton.setSelected(true);
 							else
 								analysisClassTestKnownJRadioButton.setSelected(false);
@@ -1389,5 +1389,21 @@ public class GUIMain extends javax.swing.JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean getBoolPreference(String key){
+		return getPreferences().getBoolPreference(key);
+	}
+	
+	public String getPreference(String key){
+		return getPreferences().getPreference(key);
+	}
+	
+	public void setPreference(String key, String value){
+		getPreferences().setPreference(key, value);
+	}
+	
+	private Preferences getPreferences(){
+		return ib.getPreferences();
 	}
 }

@@ -76,7 +76,7 @@ public class ClassTabDriver {
 						Logger.logln("classname: "+className);
 						tmpObject = Class.forName(className).newInstance();
 						
-						if (tmpObject instanceof Classifier){	//hopefully this is the only "instanceOf" I'll need
+						if (tmpObject instanceof Classifier){
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
 							main.ib.setUseDocTitles(false);
 							main.analysisCalcInfoGainJCheckBox.setSelected(true);
@@ -366,7 +366,7 @@ public class ClassTabDriver {
 	protected static void initWekaClassifiersTree(GUIMain main) {
 		
 		//converts the tree into an array and creates the root node
-		ArrayList<Node> loadedClassifiers = generateClassifiers();
+		ArrayList<Node> loadedClassifiers = generateClassifiers(main);
 		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("root");
 		
 		//adds the classifiers to the tree
@@ -464,16 +464,6 @@ public class ClassTabDriver {
 	 * </p>
 	 * 
 	 */
-	protected static String[] classifierGroups = new String[] { //TODO move this into the properties file for ease of editing
-		"edu.drexel.psal.jstylo.analyzers -F AuthorWPdata.class -F WekaAnalyzer.class -F SynonymBasedClassifier.class",
-		"weka.classifiers.bayes",
-		"weka.classifiers.functions",
-		"weka.classifiers.lazy",
-		"weka.classifiers.meta",
-		"weka.classifiers.misc",
-		"weka.classifiers.rules",
-		"weka.classifiers.trees"
-	};
 	
 	/**
 	 * Used for loading classifiers on startup.
@@ -562,14 +552,15 @@ public class ClassTabDriver {
 	/**
 	*		Returns the a list of nodes for the tree of classifiers.
 	**/
-	protected static ArrayList<Node> generateClassifiers(){
+	protected static ArrayList<Node> generateClassifiers(GUIMain main){
 		
 		ArrayList<Node> modules = new ArrayList<Node>();	
 		ArrayList<String> packagesToIgnore = new ArrayList<String>();
 		ArrayList<String> filesToIgnore = new ArrayList<String>();
-				
+		
+		String[] keys = main.getPreference("classifiers").split("<>");
 		//adds all of the classifier groups to the tree--these are all the "parents"
-		for (String ID: classifierGroups){
+		for (String ID: keys){
 			String[] components = ID.split(" ");
 
 			if (components.length!=1){ //arg extraction if len==1 there are no args, skip and add the module

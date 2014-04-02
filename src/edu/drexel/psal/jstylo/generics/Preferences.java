@@ -25,10 +25,20 @@ import java.util.Map;
 public class Preferences{
 
 	//older versions will be replaced with the default of the newest version
-	private static final double currentVersion = 0.7;
+	private static final double currentVersion = 0.75;
 	
 	//where the file can be found
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
+	
+	private static final String classifiersString = 
+			"edu.drexel.psal.jstylo.analyzers -F AuthorWPdata.class -F WekaAnalyzer.class -F SynonymBasedClassifier.class<>"+
+			"weka.classifiers.bayes<>"+
+			"weka.classifiers.functions<>"+
+			"weka.classifiers.lazy<>"+
+			"weka.classifiers.meta<>"+
+			"weka.classifiers.misc<>"+
+			"weka.classifiers.rules<>"+
+			"weka.classifiers.trees<>";
 	
 	//keys which are actually worth reading in
 	private static final String[] validKeys = {
@@ -44,7 +54,8 @@ public class Preferences{
 		"kFolds",
 		"rebuildInstances",
 		"analysisType",
-		"featureSet"};
+		"featureSet",
+		"classifiers"};
 	
 	//Used for default values in the event of a missing/outdated file
 	//or when building a Preferences object without a file for internal use
@@ -61,7 +72,8 @@ public class Preferences{
 			"kFolds=10\n" +
 			"rebuildInstances=0\n" +
 			"analysisType=0\n" +
-			"featureSet=0";
+			"featureSet=0\n" +
+			"classifiers="+classifiersString+"\n";
 	
 	//the main data structure
 	private Map<String,String> preferences;
