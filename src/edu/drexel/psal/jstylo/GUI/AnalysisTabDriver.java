@@ -25,7 +25,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -360,6 +359,7 @@ public class AnalysisTabDriver {
 
 		main.analysisRunJButton.addActionListener(new ActionListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Logger.logln("'Run Analysis' button clicked in the analysis tab.");
@@ -433,6 +433,7 @@ public class AnalysisTabDriver {
 
 		main.analysisStopJButton.addActionListener(new ActionListener() {
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Logger.logln("'Stop' button clicked in the analysis tab.");
@@ -624,6 +625,7 @@ public class AnalysisTabDriver {
 			this.main = main;
 		}
 
+		@SuppressWarnings({ "unchecked", "deprecation" })
 		public void run() {
 			Logger.logln(">>> Run Analysis thread started.");
 
@@ -982,7 +984,6 @@ public class AnalysisTabDriver {
 
 					//initialize values
 					Analyzer a;
-					Map<String, Map<String, Double>> results;
 					int numClass = main.analyzers.size();
 					
 					//perform the experiment once per analyzer
@@ -999,7 +1000,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						//perform the actual analysis
-						results = main.analysisDriver.classify(main.ib.getTrainingInstances(),
+						main.analysisDriver.classify(main.ib.getTrainingInstances(),
 								main.ib.getTestInstances(), main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";

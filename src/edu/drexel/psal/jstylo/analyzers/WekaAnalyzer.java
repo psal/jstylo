@@ -307,6 +307,7 @@ public class WekaAnalyzer extends Analyzer {
 		ArrayList<String> optionsDesc= new ArrayList<String>();
 		String[] optionsDescToReturn = null;
 		
+		@SuppressWarnings("unchecked")
 		Enumeration<Option> opts = ((OptionHandler) classifier).listOptions();
 		Option nextOpt = null;
 		while (opts.hasMoreElements()){

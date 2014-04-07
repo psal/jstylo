@@ -700,6 +700,7 @@ public class ClassTabDriver {
 								path+="..."; //kinda hacky way to separate the .class portion of the filename without removing ".class" from inside the string
 								path=path.replaceAll("\\.class\\.\\.\\.",""); 
 		
+								@SuppressWarnings("rawtypes")
 								Class tempClass = Class.forName(path);
 								boolean skip = false;
 								
@@ -724,7 +725,7 @@ public class ClassTabDriver {
 							}
 						} 
 					}
-					
+					source.close();	//TODO if there's a bug in the jars check this line
 				} catch (Exception e){ //if we're unsuccessful for some reason
 					Logger.logln("could not load node "+current.getName());
 					e.printStackTrace();

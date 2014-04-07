@@ -623,6 +623,7 @@ public class InstancesBuilder extends Engine {
 	/**
 	 * For use when stopping analysis mid-way through it. Kills any processing threads
 	 */
+	@SuppressWarnings("deprecation")
 	public void killThreads() {
 		
 		//feature extraction threads
