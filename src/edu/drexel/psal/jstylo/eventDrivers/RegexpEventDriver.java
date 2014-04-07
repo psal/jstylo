@@ -5,7 +5,7 @@ import java.util.regex.*;
 import com.jgaap.generics.*;
 
 public class RegexpEventDriver extends EventDriver {
-
+	private static final long serialVersionUID = 1L;
 	/* ======
 	 * fields
 	 * ======

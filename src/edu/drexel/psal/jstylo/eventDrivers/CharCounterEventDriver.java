@@ -1,10 +1,9 @@
 package edu.drexel.psal.jstylo.eventDrivers;
 
-import com.jgaap.eventDrivers.*;
 import com.jgaap.generics.*;
 
 public class CharCounterEventDriver extends SingleNumericEventDriver {
-
+	private static final long serialVersionUID = 1L;
 	/* ======
 	 * fields
 	 * ======
@@ -13,7 +12,7 @@ public class CharCounterEventDriver extends SingleNumericEventDriver {
 	/**
 	 * Event driver to be used for character count.
 	 */
-	private CharacterEventDriver charDriver;
+	//private CharacterEventDriver charDriver;
 	
 	
 	/* ============
@@ -25,7 +24,7 @@ public class CharCounterEventDriver extends SingleNumericEventDriver {
 	 * Default sentence counter event driver constructor.
 	 */
 	public CharCounterEventDriver() {
-		charDriver = new CharacterEventDriver();
+	//	charDriver = new CharacterEventDriver();
 	}
 	
 	/* ==================

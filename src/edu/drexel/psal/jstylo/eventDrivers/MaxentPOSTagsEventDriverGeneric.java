@@ -18,7 +18,7 @@ import java.util.*;
  */
 
 public class MaxentPOSTagsEventDriverGeneric extends EventDriver {
-
+	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
 		return "Maxent POS tags";

@@ -24,7 +24,7 @@ import com.jgaap.generics.EventSet;
  *
  */
 public class TreeTaggerEventDriver  extends EventDriver {
-
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	public String displayName() {
@@ -63,7 +63,6 @@ public class TreeTaggerEventDriver  extends EventDriver {
 		TreeTaggerEventDriver.taggerPath = taggerPath;
 	}
 
-	@SuppressWarnings("static-access")
 	@Override
 	public EventSet createEventSet(Document doc) {
 		final EventSet es = new EventSet(doc.getAuthor());

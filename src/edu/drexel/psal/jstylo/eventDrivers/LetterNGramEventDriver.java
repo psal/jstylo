@@ -4,7 +4,7 @@ import com.jgaap.eventDrivers.CharacterNGramEventDriver;
 import com.jgaap.generics.*;
 
 public class LetterNGramEventDriver extends CharacterNGramEventDriver {
-	
+	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
 		return "Letter N-Grams";

@@ -4,7 +4,7 @@ import com.jgaap.eventDrivers.NaiveWordEventDriver;
 import com.jgaap.generics.*;
 
 public class EventsCounterEventDriver extends SingleNumericEventDriver {
-
+	private static final long serialVersionUID = 1L;
 	/* ======
 	 * fields
 	 * ======

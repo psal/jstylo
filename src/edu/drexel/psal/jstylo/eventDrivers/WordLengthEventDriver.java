@@ -6,7 +6,7 @@ import java.util.*;
 import com.jgaap.generics.*;
 
 public class WordLengthEventDriver extends EventDriver {
-	
+	private static final long serialVersionUID = 1L;
 	/* ==================
 	 * overriding methods
 	 * ==================
@@ -31,7 +31,7 @@ public class WordLengthEventDriver extends EventDriver {
 		Scanner scan = new Scanner(new StringReader(doc.stringify()));
 		while (scan.hasNext())
 			es.addEvent(new Event(""+scan.next().length()));
-		
+		scan.close();
 		return es;
 	}
 }

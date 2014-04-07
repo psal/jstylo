@@ -43,7 +43,7 @@ import edu.drexel.psal.jstylo.eventCullers.FrequencyEventsExtended;
  * @author Ariel Stolerman
  */
 public class ListRegexpEventDriver extends EventDriver {
-
+	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
 		return "Regular Expression List-based event driver";
@@ -217,6 +217,7 @@ public class ListRegexpEventDriver extends EventDriver {
 	
 	// used only to get frequencies
 	protected class Freq extends FrequencyEventsExtended {
+		private static final long serialVersionUID = 1L;
 		public List<EventSet> cull(List<EventSet> arg0) {
 			return null;
 		}

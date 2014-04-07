@@ -15,7 +15,7 @@ import java.util.*;
  */
 
 public class FastTagPOSTagsEventDriver extends EventDriver {
-
+	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
 		return "FastTag POS";
@@ -52,7 +52,7 @@ public class FastTagPOSTagsEventDriver extends EventDriver {
 		tags = tagger.tag(words);
 		for (String tag: tags)
 			es.addEvent(new Event(tag));
-		
+		scan.close();
 		return es;
 	}
 }

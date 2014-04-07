@@ -4,7 +4,7 @@ import com.jgaap.eventDrivers.*;
 import com.jgaap.generics.*;
 
 public class GunningFogIndexEventDriver extends SingleNumericEventDriver {
-
+	private static final long serialVersionUID = 1L;
 	/* ======
 	 * fields
 	 * ======

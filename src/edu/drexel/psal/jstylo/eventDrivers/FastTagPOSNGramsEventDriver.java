@@ -15,7 +15,7 @@ import java.util.*;
  */
 
 public class FastTagPOSNGramsEventDriver extends EventDriver {
-
+	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
 		return "FastTag POS N-Grams";
@@ -65,7 +65,7 @@ public class FastTagPOSNGramsEventDriver extends EventDriver {
 			}
 			es.addEvent(new Event(curr));
 		}
-		
+		scan.close();
 		return es;
 	}
 	

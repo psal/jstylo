@@ -4,7 +4,7 @@ import com.jgaap.eventDrivers.WordSyllablesEventDriver;
 import com.jgaap.generics.*;
 
 public class SyllableCounterEventDriver extends SingleNumericEventDriver {
-
+	private static final long serialVersionUID = 1L;
 	/* ======
 	 * fields
 	 * ======

@@ -3,7 +3,7 @@ package edu.drexel.psal.jstylo.eventDrivers;
 import com.jgaap.generics.*;
 
 public class FleschReadingEaseScoreEventDriver extends SingleNumericEventDriver {
-
+	private static final long serialVersionUID = 1L;
 	/* ======
 	 * fields
 	 * ======

@@ -10,7 +10,7 @@ import com.jgaap.generics.*;
  *
  */
 public abstract class SingleNumericEventDriver extends EventDriver {
-	
+	private static final long serialVersionUID = 1L;	
 	/* ======
 	 * fields
 	 * ======
