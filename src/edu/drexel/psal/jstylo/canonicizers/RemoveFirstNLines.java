@@ -7,6 +7,8 @@ import com.jgaap.generics.Canonicizer;
  */
 public class RemoveFirstNLines extends Canonicizer {
 
+	private static final long serialVersionUID = 1L;
+	
 	public RemoveFirstNLines() {
 		addParams("numLines", "N", "1", new String[]{"1","2","3","4","5","10"}, true);
 	}

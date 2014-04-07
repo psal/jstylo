@@ -9,6 +9,8 @@ import com.jgaap.generics.Canonicizer;
  */
 public class StripEdgesPunctuation extends Canonicizer {
 
+	private static final long serialVersionUID = 1L;
+	
 	@Override
 	public String displayName() {
 		return "Word-edges Punctuation Stripper";
@@ -53,8 +55,10 @@ public class StripEdgesPunctuation extends Canonicizer {
 				newToken = newToken.replaceFirst("\\p{Punct}+$", "");		
 				line = line.replace(token, newToken);
 			}
+			lineScan.close();
 			res += line;
 		}
+		scan.close();
 		return res.toCharArray();
 	}
 	

@@ -10,6 +10,8 @@ import com.jgaap.generics.Canonicizer;
  */
 public class BrownExtractText extends Canonicizer {
 
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	public String displayName(){
 		return "Brown Corpus - extract words";
@@ -38,6 +40,7 @@ public class BrownExtractText extends Canonicizer {
 			String line = scan.nextLine();
 			resString += line.replaceAll("/\\S+", "")+"\n";
 		}
+		scan.close();
 		return resString.toCharArray();
 	}
 }

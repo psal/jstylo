@@ -10,6 +10,8 @@ import com.jgaap.generics.Canonicizer;
  */
 public class BrownExtractPOSTags extends Canonicizer {
 
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	public String displayName(){
 		return "Brown Corpus - extract POS tags";
@@ -40,6 +42,7 @@ public class BrownExtractPOSTags extends Canonicizer {
 			resString += line.replaceAll("\\S+/", "")+"\n";
 		}
 		resString = resString.toUpperCase();
+		scan.close();
 		return resString.toCharArray();
 	}
 	

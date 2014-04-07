@@ -10,6 +10,8 @@ import com.jgaap.generics.Canonicizer;
  */
 public class RemoveSpecialKeys extends Canonicizer {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected static String SPECIAL_KEYS_PATH =
 			"edu/drexel/psal/resources/special_keys.txt";
 	
@@ -34,6 +36,7 @@ public class RemoveSpecialKeys extends Canonicizer {
 					pair = scan.nextLine().split(",");
 					map.put(pair[0].trim(), pair[1].trim());
 				}
+				scan.close();
 			} catch (Exception e) {}
 	}
 	

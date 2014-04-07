@@ -9,6 +9,8 @@ import com.jgaap.generics.Canonicizer;
  */
 public class WordEndsPunctSeparator extends Canonicizer {
 
+	private static final long serialVersionUID = 1L;
+	
 	@Override
 	public String displayName() {
 		return "Word-Edges Punctuation Separator";
@@ -59,8 +61,10 @@ public class WordEndsPunctSeparator extends Canonicizer {
 				if (!token.equals(newToken))
 					line = line.replace(token, newToken);
 			}
+			lineScan.close();
 			res += line;
 		}
+		scan.close();
 		return res.toCharArray();
 	}
 	

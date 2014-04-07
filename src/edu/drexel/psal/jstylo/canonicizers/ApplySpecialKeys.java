@@ -11,6 +11,7 @@ import com.jgaap.generics.Document;
  */
 public class ApplySpecialKeys extends Canonicizer {
 
+	private static final long serialVersionUID = 1L;
 	private static char CAPSLOCK;
 	private static char ENTER;
 	private static char SPACE;
@@ -116,7 +117,6 @@ public class ApplySpecialKeys extends Canonicizer {
 		String s;
 
 		// position indicators
-		int maxLen = procText.length;
 		int len = 0;
 		int pos = 0;
 
