@@ -6,6 +6,7 @@ import com.jgaap.generics.*;
 
 public abstract class FrequencyEventsExtended extends EventCuller implements Comparator<String> {
 
+	private static final long serialVersionUID = 1L;
 	protected Map<String,Integer> map;
 	
 	protected int N = 10;

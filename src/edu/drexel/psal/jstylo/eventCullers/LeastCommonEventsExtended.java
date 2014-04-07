@@ -5,7 +5,7 @@ import java.util.*;
 import com.jgaap.generics.*;
 
 public class LeastCommonEventsExtended extends FrequencyEventsExtended {
-
+	private static final long serialVersionUID = 1L;
 	@Override
 	public List<EventSet> cull(List<EventSet> eventSets) {
 		map = getFrequency(eventSets);
