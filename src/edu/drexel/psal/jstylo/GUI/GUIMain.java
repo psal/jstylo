@@ -620,7 +620,8 @@ public class GUIMain extends javax.swing.JFrame {
 									featuresJList = new JList();
 									featuresListJScrollPane.setViewportView(featuresJList);
 									featuresJList.setModel(featuresJListModel);
-									featuresJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+									//featuresJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+									featuresJList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 								}
 							}
 							{

@@ -288,21 +288,25 @@ public class FeaturesTabDriver {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Logger.logln("'Remove' feature button clicked in the features tab.");
-				int selected = main.featuresJList.getSelectedIndex();
-
-				if (selected == -1) {
+				int selected[] = main.featuresJList.getSelectedIndices();
+				
+				if (selected[0] == -1) {
 					JOptionPane.showMessageDialog(main, "You must select a feature to be removed.",
 							"Remove Feature Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
-				int answer = JOptionPane.showConfirmDialog(main, "Are you sure you want to remove feature '"
-						+ main.featuresJList.getSelectedValue() + "'", "Remove Feature", JOptionPane.YES_NO_OPTION);
+				int answer = JOptionPane.showConfirmDialog(main,
+						"Are you sure you want to remove the selected feature(s)?", "Remove Feature",
+						JOptionPane.YES_NO_OPTION);
+
 				if (answer == JOptionPane.YES_OPTION) {
-					FeatureDriver fd = main.cfd.removeFeatureDriverAt(selected);
-					GUIUpdateInterface.updateFeatureSetView(main);
-					Logger.logln("Removed feature " + fd.getName());
+					for (int i : selected) {
+						FeatureDriver fd = main.cfd.removeFeatureDriverAt(selected[0]);
+					}
 				}
+
+				GUIUpdateInterface.updateFeatureSetView(main);
 			}
 		});
 
