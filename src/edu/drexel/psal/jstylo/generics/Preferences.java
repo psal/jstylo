@@ -40,6 +40,9 @@ public class Preferences{
 			"weka.classifiers.rules<>"+
 			"weka.classifiers.trees<>";
 	
+	private static final String verifiersString = 
+			"wlsvm<>";
+	
 	//keys which are actually worth reading in
 	private static final String[] validKeys = {
 		"numCalcThreads",
@@ -55,7 +58,8 @@ public class Preferences{
 		"rebuildInstances",
 		"analysisType",
 		"featureSet",
-		"classifiers"};
+		"classifiers",
+		"verifiers"};
 	
 	//Used for default values in the event of a missing/outdated file
 	//or when building a Preferences object without a file for internal use
@@ -73,7 +77,8 @@ public class Preferences{
 			"rebuildInstances=0\n" +
 			"analysisType=0\n" +
 			"featureSet=0\n" +
-			"classifiers="+classifiersString+"\n";
+			"classifiers="+classifiersString+"\n"+
+			"verifiers="+verifiersString+"\n";
 	
 	//the main data structure
 	private Map<String,String> preferences;

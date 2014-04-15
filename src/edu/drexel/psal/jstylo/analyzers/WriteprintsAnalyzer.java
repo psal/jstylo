@@ -294,7 +294,7 @@ public class WriteprintsAnalyzer extends Analyzer {
 		int tmpSize;
 		Map<String,Map<String,Double>> results = null;
 		Map<String,Double> instResults;
-		double max;
+		double max; 
 		String selected;
 		
 		//initialize underlying evaluation object
@@ -438,7 +438,7 @@ public class WriteprintsAnalyzer extends Analyzer {
 			return runCrossValidation(data,folds,randSeed);
 		else {
 			Logger.logln("runCrossValidation with relaxation factor not yet implemented for writeprints Analyzer.");
-			return null;
+			return runCrossValidation(data,folds,randSeed);
 		}
 	}
 	
