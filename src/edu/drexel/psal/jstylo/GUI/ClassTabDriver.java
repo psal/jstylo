@@ -5,7 +5,6 @@ import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -67,16 +66,17 @@ public class ClassTabDriver {
 				if (selectedNode.isLeaf()) {
 					Logger.logln("Classifier selected in the available classifiers tree in the classifiers tab: "
 							+ selectedNode.toString());
-
+					System.out.println("Path:"+path);
 					// get classifier
 					String className = getClassNameFromPath(path).substring(5);
 					tmpAnalyzer = null;
 					tmpObject = null;
 					try {
 						Logger.logln("classname: " + className);
-						
+
 						tmpObject = Class.forName(className).newInstance();
-						System.out.println("TEMP:"+tmpObject.toString());
+						System.out.println("TEMP:" + tmpObject.toString());
+
 						if (tmpObject instanceof Classifier) {
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
 							main.ib.setUseDocTitles(false);
@@ -386,11 +386,6 @@ public class ClassTabDriver {
 				rootNode.add(temp);
 			}
 		}
-		//TODO hacky way of adding verifier
-		DefaultMutableTreeNode lib = new DefaultMutableTreeNode("WLSVM");
-		DefaultMutableTreeNode par = new DefaultMutableTreeNode("wlsvm");
-		par.add(lib);
-		rootNode.add(par);
 		
 		// initializes the tree and class strings to go in it
 		DefaultTreeModel model = new DefaultTreeModel(rootNode);

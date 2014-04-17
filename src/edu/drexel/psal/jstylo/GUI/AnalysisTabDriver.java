@@ -1038,7 +1038,6 @@ public class AnalysisTabDriver {
 						content += getTimestamp() + " Starting cross validation...\n";
 						Logger.log("Starting cross validation...");
 						updateResultsView();
-
 						// run the experiment
 						Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingInstances(),
 								Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
