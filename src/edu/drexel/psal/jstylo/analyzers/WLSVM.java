@@ -93,6 +93,7 @@ public class WLSVM implements WeightedInstancesHandler, Classifier, OptionHandle
 	 * @return an enumeration of all the available options.
 	 */
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Enumeration listOptions() {
 		
 		Vector newVector = new Vector(13);
@@ -652,6 +653,7 @@ public class WLSVM implements WeightedInstancesHandler, Classifier, OptionHandle
 	 * @param instances
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Vector DataToSparse(Instances data) {
 		Vector sparse = new Vector(data.numInstances() + 1);
 		
@@ -688,6 +690,7 @@ public class WLSVM implements WeightedInstancesHandler, Classifier, OptionHandle
 		
 		StringTokenizer st = new StringTokenizer(line, " \t\n\r\f:");
 		
+		@SuppressWarnings("unused")
 		double target = atof(st.nextToken());
 		int m = st.countTokens() / 2;
 		svm_node[] x = new svm_node[m];
@@ -724,6 +727,7 @@ public class WLSVM implements WeightedInstancesHandler, Classifier, OptionHandle
 	/**
 	 * Builds the model
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void buildClassifier(Instances insts) throws Exception {
 		
 		if (normalize == 1) {

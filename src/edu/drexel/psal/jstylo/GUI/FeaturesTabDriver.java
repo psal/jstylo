@@ -301,8 +301,8 @@ public class FeaturesTabDriver {
 						JOptionPane.YES_NO_OPTION);
 
 				if (answer == JOptionPane.YES_OPTION) {
-					for (int i : selected) {
-						FeatureDriver fd = main.cfd.removeFeatureDriverAt(selected[0]);
+					for (int i = 0; i < selected.length; i++) {
+						main.cfd.removeFeatureDriverAt(selected[0]);
 					}
 				}
 
