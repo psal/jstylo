@@ -25,7 +25,7 @@
  * We have tried to keep our changes and additions to a minimum. It is currently a work in progress.
  */
 
-package edu.drexel.psal.jstylo.analyzers;
+package edu.drexel.psal.jstylo.verifiers;
 
 /*
  * An implementation of a custom Weka classifier that provides an access to LibSVM.
@@ -668,6 +668,7 @@ public class WLSVM implements WeightedInstancesHandler, Classifier, OptionHandle
 		int svm_type = svm.svm_get_svm_type(model);
 		int nr_class = svm.svm_get_nr_class(model);
 		int[] labels = new int[nr_class];
+		System.out.println("nr_class: "+nr_class);
 		double[] prob_estimates = null;
 		
 		if (param.probability == 1) {
@@ -707,7 +708,7 @@ public class WLSVM implements WeightedInstancesHandler, Classifier, OptionHandle
 			
 			// Return order of probabilities to canonical weka attribute order
 			for (int k=0; k < prob_estimates.length; k++) {
-				 //System.out.print(labels[k] + ":" + prob_estimates[k] + " ");
+				System.out.print(labels[k] + ":" + prob_estimates[k] + " ");
 				if (labels[k] == -1) 
 					labels[k] = 0;
 				weka_probs[labels[k]] = prob_estimates[k];
