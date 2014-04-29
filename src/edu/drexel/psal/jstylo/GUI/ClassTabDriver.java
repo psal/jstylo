@@ -72,10 +72,7 @@ public class ClassTabDriver {
 					tmpAnalyzer = null;
 					tmpObject = null;
 					try {
-						Logger.logln("classname: " + className);
-
 						tmpObject = Class.forName(className).newInstance();
-						System.out.println("TEMP:" + tmpObject.toString());
 
 						if (tmpObject instanceof Classifier) {
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());

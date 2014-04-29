@@ -1083,7 +1083,6 @@ public class AnalysisTabDriver {
 
 						main.analysisDriver = a;
 
-						//ick another instanceof. See if there's a way around using it.
 						if (a.isType(AnalyzerTypeEnum.WRITEPRINTS_ANALYZER)) {
 							a.classify(main.ib.getTrainingInstances(), main.ib.getTestInstances(),
 									main.ps.getAllTestDocs());
