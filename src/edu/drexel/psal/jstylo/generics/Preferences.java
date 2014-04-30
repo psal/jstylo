@@ -31,7 +31,7 @@ public class Preferences{
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
 	
 	private static final String classifiersString = 
-			"edu.drexel.psal.jstylo.analyzers -F AuthorWPdata.class -F WekaAnalyzer.class -F SynonymBasedClassifier.class<>"+
+			//"edu.drexel.psal.jstylo.analyzers -F AuthorWPdata.class -F WekaAnalyzer.class -F SynonymBasedClassifier.class<>"+
 			"weka.classifiers.bayes<>"+
 			"weka.classifiers.functions<>"+
 			"weka.classifiers.lazy<>"+
