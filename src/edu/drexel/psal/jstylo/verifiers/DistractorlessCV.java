@@ -1,12 +1,11 @@
 package edu.drexel.psal.jstylo.verifiers;
 
-import java.io.File;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import com.jgaap.backend.API;
 import com.jgaap.canonicizers.NormalizeWhitespace;
@@ -23,19 +22,22 @@ import com.jgaap.generics.Pair;
 import utils.CentroidDriverSD;
 import weka.classifiers.Evaluation;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
-import edu.drexel.psal.jstylo.generics.MultiplePrintStream;
+import edu.drexel.psal.jstylo.generics.FeatureDriver;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Verifier;
 
 public class DistractorlessCV extends Verifier{
 
-	private String resultsString;
-	private String savePath;
+	private String analysisString; //string of data to be analyzed
+	private String resultsString; //final results to be returned
+	private ProblemSet ps;
+	private CumulativeFeatureDriver cfd;
 	
-	public DistractorlessCV(ProblemSet p,CumulativeFeatureDriver cf,String s) {
-		super(p,null,null,cf);
+	public DistractorlessCV(ProblemSet p,CumulativeFeatureDriver cf) {
+		ps=p;
 		resultsString = "";
-		savePath = s;
+		analysisString = "";
+		cfd = cf;
 	}
 
 	@Override
@@ -110,15 +112,12 @@ public class DistractorlessCV extends Verifier{
 				// analyzer
 				AnalysisDriver ad = centroidCosine;
 
-				// csv path
-				String csvPath = savePath;
-				
 				// ---------------------------------------------------------------------
 				// run analysis
 				// ---------------------------------------------------------------------
 
 				try {
-					genDistsCSV(ps,canonicizers,ed,ad,csvPath);
+					genDistsCSV(ps,canonicizers,ed,ad);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -128,7 +127,7 @@ public class DistractorlessCV extends Verifier{
 				// ---------------------------------------------------------------------
 				
 				try {
-					genResCSV(csvPath,
+					genResCSV(
 							-0.1,
 							0.8,
 							1000);
@@ -141,7 +140,7 @@ public class DistractorlessCV extends Verifier{
 
 	@Override
 	public String getResultString() {
-		return resultsString;
+		return "Analysis Data:\n"+analysisString+"\n-----\nResults:\n"+resultsString;
 	}
 
 	/**
@@ -157,16 +156,12 @@ public class DistractorlessCV extends Verifier{
 			ProblemSet ps,
 			List<Canonicizer> canonicizers,
 			EventDriver eventDriver,
-			AnalysisDriver analysisDriver,
-			String csvPath) throws Exception
+			AnalysisDriver analysisDriver)
+					throws Exception
 	{
-		PrintStream csv = new PrintStream(new File(csvPath));
-		MultiplePrintStream mps = new MultiplePrintStream(
-				System.out,
-				csv);
 		// write header
 		//mps.println("problem,test_path,test_author,train_author,dist");
-		mps.println("problem,test_author,train_author,dist");
+		analysisString+=String.format("problem,test_author,train_author,dist\n");
 		List<Document> documents, docs;
 		Document doc;
 		
@@ -204,14 +199,30 @@ public class DistractorlessCV extends Verifier{
 						canonicizers,
 						eventDriver,
 						analysisDriver,
-						documents,
-						mps);
+						documents);
 			}
 		}
+		/*
+		 * TODO use the runAnalysis / leave oen out results to pick the desired threshold value
+		 * To accomplish this, allow the Verifier to have a target TP or FP rate, and then aim to hit that rate while max/minning other stats
+		 * provide a method which parses the "resultsString" picks the appropriate threshold, then runs a single verification on the unknown document.
+		 */
+		Double thresh = calculateDesiredThreshold();
+		for (Document d : ps.getAllTestDocs()){
+			String docString = "";
+			//extract features / get the "analysisString" for this document
+			//call the Distractorless method "evalCSV()" with the analysisString for this document and the desired threshold
+			//save results to some object
+		}
+			
 		
+		
+		//TODO Let's ignore this for now. Ideally we want to separate
+		//these into separate things
 		// =====================================================================
 		// TEST #2: author train-test on others
 		// =====================================================================
+		/*
 		for (String trainAuthor: ps.getAuthors())
 		{
 			docs = ps.getTrainDocs(trainAuthor);
@@ -245,11 +256,36 @@ public class DistractorlessCV extends Verifier{
 					canonicizers,
 					eventDriver,
 					analysisDriver,
-					documents,
-					mps);
+					documents);
+		} */
+	}
+	
+	/**
+	 * TODO figure out how to get the best threshold
+	 * maybe iterate over analysisString, take the dist (last value)
+	 * and average them?
+	 * Perhaps include an extra parameter to include anything reduce/increase the threshold
+	 * 
+	 * @return
+	 */
+	private double calculateDesiredThreshold(){
+		String aCopy = new String(analysisString);
+		double cumulative = 0.0;
+		int count = 0;
+		String[] line;
+		Scanner s = new Scanner(aCopy);
+
+		//collect all of the numbers
+		while (s.hasNext()){
+			line = s.nextLine().split(",");
+			cumulative += Double.parseDouble(line[line.length-1]);
+			count++;
 		}
-		csv.flush();
-		csv.close();
+		
+		s.close();
+		
+		//divide cumulative by the total number of docs
+		return (cumulative/count);
 	}
 	
 	/**
@@ -257,21 +293,16 @@ public class DistractorlessCV extends Verifier{
 	 * with same name with the suffix "_res". Results include: TP, TN, FP, FN,
 	 * precision, recall, f-measure and accuracy.
 	 */
-	public void genResCSV(String csvPath, double min, double max, int divFactor) throws Exception
+	public void genResCSV(double min, double max, int divFactor) throws Exception
 	{
-		PrintStream csv = new PrintStream(new File(
-				csvPath.replace(".csv", "_res.csv")));
-		MultiplePrintStream mps = new MultiplePrintStream(
-				System.out,
-				csv);
-		mps.println("threshold,tp,tn,fp,fn,precision,recall,f-measure,accuracy");
+		resultsString+=String.format("threshold,tp,tn,fp,fn,precision,recall,f-measure,accuracy\n");
 		double threshold;
 		//for (int t = 0; t <= numIters; t++)
 		for (int t = ((int) (min * divFactor)); t <= ((int)(max * divFactor)); t++)
 		{
 			threshold = ((double) t)/(divFactor * 1.0);
-			Evaluation eval = Distractorless.evalCSV(csvPath, threshold);
-			mps.println(
+			Evaluation eval = Distractorless.evalCSV(analysisString, threshold);
+			resultsString+=String.format(
 					threshold + "," +
 							eval.truePositiveRate(0) + "," +
 							eval.trueNegativeRate(0) + "," +
@@ -280,23 +311,20 @@ public class DistractorlessCV extends Verifier{
 							eval.precision(0) + "," +
 							eval.recall(0) + "," +
 							eval.fMeasure(0) + "," +
-							(eval.pctCorrect() / 100));
+							(eval.pctCorrect() / 100)+"\n");
 		}
-		csv.flush();
-		csv.close();
 	}
 
 	/**
 	 * Runs analysis on the given problem set and prints measured distances
 	 * into given multiple print stream.
 	 */
-	public static void runAnalysisPrintCSVResults(
+	public void runAnalysisPrintCSVResults(
 			String problem,
 			List<Canonicizer> canonicizers,
 			EventDriver eventDriver,
 			AnalysisDriver analysisDriver,
-			List<Document> documents,
-			MultiplePrintStream mps) throws Exception
+			List<Document> documents) throws Exception
 	{
 		API api = new API();
 				
@@ -305,8 +333,14 @@ public class DistractorlessCV extends Verifier{
 		}
 		
 		// configure API
-		for (Canonicizer c: canonicizers)
+		for (Canonicizer c: canonicizers) {
 			api.addCanonicizer(c);
+		}
+		/*
+		for (int i = 0; i < cfd.numOfFeatureDrivers(); i++){
+			FeatureDriver fd = cfd.featureDriverAt(i);
+			api.addEventDriver(fd.getUnderlyingEventDriver());
+		}*/
 		api.addEventDriver(eventDriver);		
 		api.addAnalysisDriver(analysisDriver);
 
@@ -330,12 +364,12 @@ public class DistractorlessCV extends Verifier{
 					.values().iterator().next();
 
 			for (Pair<String, Double> pair: res)
-				mps.println(
+				analysisString+=String.format(
 						problem + "," +
-						/*document.getFilePath() + "," +*/
+						document.getFilePath() + "," +
 						document.getTitle().split(" ")[1].trim() + "," +
 						pair.getFirst() + "," +
-						pair.getSecond());
+						pair.getSecond()+"\n");
 		}
 	}
 	

@@ -1,6 +1,5 @@
 package edu.drexel.psal.jstylo.verifiers;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -82,12 +81,12 @@ public class Distractorless {
 	 * Reads the CSV file in the given path and evaluates the results with the
 	 * given threshold.
 	 */
-	public static Evaluation evalCSV(String csvPath, double threshold)
+	public static Evaluation evalCSV(String analysisString, double threshold)
 			throws Exception
 	{
 		Evaluation eval = new Evaluation(insts);
 		
-		Scanner scan = new Scanner(new FileReader(csvPath));
+		Scanner scan = new Scanner(analysisString);
 		String[] line;
 		String testAuthor, trainAuthor;
 		double dist;
@@ -98,15 +97,16 @@ public class Distractorless {
 		while (scan.hasNext())
 		{
 			line = scan.nextLine().split(",");
-			/*
+			
 			testAuthor = line[2];
 			trainAuthor = line[3];
 			dist = Double.parseDouble(line[4]);
-			*/ //TODO
+			//TODO swap this depending on analysis 
+			/*
 			testAuthor = line[1];
 			trainAuthor = line[2];
 			dist = Double.parseDouble(line[3]);
-			
+			*/
 			updateEval(eval, testAuthor, trainAuthor, dist, threshold);
 		}
 		scan.close();

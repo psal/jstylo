@@ -15,9 +15,12 @@ public class ThresholdVerifier extends Verifier{
 	private boolean verified;
 	private double threshold;
 	private Instance instance;
+	private Classifier classifier;
+	private Evaluation eval;
 	
 	public ThresholdVerifier(Classifier c, Evaluation e, Instance i, double thresh,List<String> auths){
-		super(null,c,e,null);
+		classifier = c;
+		eval = e;
 		authors = auths;
 		result = "no one";
 		verified = false;
