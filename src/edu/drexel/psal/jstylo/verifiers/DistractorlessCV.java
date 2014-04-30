@@ -21,6 +21,7 @@ import com.jgaap.generics.Pair;
 
 import utils.CentroidDriverSD;
 import weka.classifiers.Evaluation;
+import weka.core.Instances;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.FeatureDriver;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
@@ -31,13 +32,16 @@ public class DistractorlessCV extends Verifier{
 	private String analysisString; //string of data to be analyzed
 	private String resultsString; //final results to be returned
 	private ProblemSet ps;
-	private CumulativeFeatureDriver cfd;
+	private Instances trainingInstances;
+	private Instances testingInstances;
 	
-	public DistractorlessCV(ProblemSet p,CumulativeFeatureDriver cf) {
+	public DistractorlessCV(ProblemSet p, Instances tri, Instances tei) {
 		ps=p;
+		trainingInstances = tri;
+		testingInstances = tei;
 		resultsString = "";
 		analysisString = "";
-		cfd = cf;
+		
 	}
 
 	@Override
@@ -363,13 +367,14 @@ public class DistractorlessCV extends Verifier{
 			res = document.getResults().values().iterator().next()
 					.values().iterator().next();
 
-			for (Pair<String, Double> pair: res)
+			for (Pair<String, Double> pair: res){
 				analysisString+=String.format(
 						problem + "," +
 						document.getFilePath() + "," +
 						document.getTitle().split(" ")[1].trim() + "," +
 						pair.getFirst() + "," +
 						pair.getSecond()+"\n");
+			}
 		}
 	}
 	
