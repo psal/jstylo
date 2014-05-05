@@ -3,9 +3,7 @@ package edu.drexel.psal.jstylo.verifiers;
 import java.util.List;
 
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
 import weka.core.Instance;
-import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Verifier;
 
 public class ThresholdVerifier extends Verifier{
@@ -16,11 +14,9 @@ public class ThresholdVerifier extends Verifier{
 	private double threshold;
 	private Instance instance;
 	private Classifier classifier;
-	private Evaluation eval;
 	
-	public ThresholdVerifier(Classifier c, Evaluation e, Instance i, double thresh,List<String> auths){
+	public ThresholdVerifier(Classifier c, Instance i, double thresh,List<String> auths){
 		classifier = c;
-		eval = e;
 		authors = auths;
 		result = "no one";
 		verified = false;

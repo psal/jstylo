@@ -2,15 +2,7 @@ package edu.drexel.psal.jstylo.verifiers;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
-
-import com.jgaap.backend.API;
-import com.jgaap.generics.Document;
-import com.jgaap.generics.EventCuller;
-import com.jgaap.generics.EventDriver;
-import com.jgaap.generics.EventSet;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
