@@ -1,33 +1,24 @@
 package edu.drexel.psal.jstylo.verifiers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
-import com.jgaap.backend.API;
-import com.jgaap.canonicizers.NormalizeWhitespace;
-import com.jgaap.canonicizers.UnifyCase;
-import com.jgaap.distances.HistogramDistance;
-import com.jgaap.eventDrivers.CharacterNGramEventDriver;
-import com.jgaap.eventDrivers.WordNGramEventDriver;
-import com.jgaap.generics.AnalysisDriver;
-import com.jgaap.generics.Canonicizer;
-import com.jgaap.generics.Document;
-import com.jgaap.generics.EventDriver;
-import com.jgaap.generics.Pair;
-
-import utils.CentroidDriverSD;
 import weka.classifiers.Evaluation;
 import weka.core.Instance;
 import weka.core.Instances;
-import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
-import edu.drexel.psal.jstylo.generics.FeatureDriver;
-import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Verifier;
 
+/**
+ * Heavily modified version of Ariel Stolerman's original DistractorlessCV class produced for Classify-Verify.
+ * There are two large differences:
+ * 		1) The feature extraction occurs elsewhere; currently through JStyki API calls. The extracted features are passed in as Instances objects
+ * 		2) This version has a simplified threshold determination method.
+ * 			>The original performed leave one out cross validation in order to determine the ideal threshold
+ * 			>This version takes the average diff and then applies a modifier.
+ * 			>Plans are in place to build the original's method into either this verifier or a subclass 
+ * @author Travis Dutko
+ */
 public class DistractorlessVerifier extends Verifier{
 
 	private String analysisString; //string of data to be analyzed
@@ -38,10 +29,24 @@ public class DistractorlessVerifier extends Verifier{
 	
 	private double thresholdModifier; //the modifier to be applied to the threshold
 	
+	/**
+	 * Basic constructor. Uses the default threshold modifier of 0.
+	 * This should equate to roughly 50% of the known documents being classified correctly (as we're just taking the mean diff).
+	 * @param tri
+	 * @param tei
+	 */
 	public DistractorlessVerifier(Instances tri, Instances tei){
 		this(tri,tei,0.0);
 	}
 	
+	/**
+	 * Constructor that also takes a threshold modifier.
+	 * Plans are in place for developing an automated way to determine the ideal threshold, but for now put the power in the user's hands.
+	 * To big of a positive modifier (ie 1.00) will likely result in a lot of false positives, whereas too low (-1.00) would have a lot of false negatives.
+	 * @param tri
+	 * @param tei
+	 * @param modifier
+	 */
 	public DistractorlessVerifier(Instances tri, Instances tei, double modifier) {
 		
 		//grab the instances
@@ -61,6 +66,9 @@ public class DistractorlessVerifier extends Verifier{
 		thresholdModifier = modifier;
 	}
 
+	/**
+	 * The actual verification method
+	 */
 	@Override
 	public void verify() {
 
@@ -130,35 +138,35 @@ public class DistractorlessVerifier extends Verifier{
 				e.printStackTrace();
 			}
 		}
-
-		try {
-			for (Evaluation e : documentEvaluations)
-				System.out.println();
-		} catch (Exception e) {
-
-		}
 	}
 
+	/**
+	 * returns the string of all of the docs with their diff values
+	 * @return
+	 */
 	public String getAnalysisString(){
 		return analysisString;
 	}
 	
+	/**
+	 * Returns the statistics strings created by the weka evaluation objects
+	 */
 	@Override
 	public String getResultString() {
 		String s = "";
 		for (Evaluation e : documentEvaluations) {
 			try {
 				s += e.toSummaryString() + "\n" + e.toClassDetailsString() + "\n" + e.toMatrixString() + "\n";
+				s += "<==========X==========>\n";
 			} catch (Exception exc) {
-
+				exc.printStackTrace();
 			}
 		}
 		return s;
 	}
 	
 	/**
-	 * maybe iterate over analysisString, take the dist (last value) and average them?
-	 * Perhaps include an extra parameter to include anything reduce/increase the threshold
+	 * Calculates the average distance between the author's documents and returns that as the threshold baseline
 	 * @return
 	 */
 	private double calculateDesiredThreshold(){
@@ -193,6 +201,9 @@ public class DistractorlessVerifier extends Verifier{
 				if (instI != instJ){
 					//if they are by the same author
 					if(instI.classValue() == instJ.classValue()){
+						//format is train author, test author, cosine distance
+						//DO NOT CHANGE
+						//unless you also change the Distractorless.java's evalCSV method to compensate
 						s+=String.format(
 								instI.attribute(instI.classIndex()).value((int)instI.classValue())+","+
 								instJ.attribute(instJ.classIndex()).value((int)instJ.classValue())+","+
@@ -206,32 +217,38 @@ public class DistractorlessVerifier extends Verifier{
 	}
 	
 	/**
-	 * 
+	 * Calculates the similarity of two feature vectors
 	 * @param a
 	 * @param b
 	 * @return
 	 */
 	private double calculateCosineDistance(double[] a, double[] b){
-		Double dot = 0.0;
-		Double normA = 0.0;
-		Double normB = 0.0;
-		int n = a.length;
+		Double dot = 0.0; //cumulative dot value
+		Double normA = 0.0; //cumulative norm value for doc a
+		Double normB = 0.0; //cumulative norm value for doc b
+		int n = a.length; //number of features
 		if (a.length != b.length){
 			System.out.println("Vectors are of different length! This is going to get messy...");
+			//honestly, it might be better to just break it if this is wrong.
+			//this means that either one has more features or something of that ilk
 			if (b.length < a.length)
-				n = b.length;
+				n = b.length; //but for now just compare the number of features both docs do have and hope for the best
 		}
 		
+		//for all features
 		for (int i = 0; i < n; i++){
+			//if it isn't the class feature
 			if (i == trainingInstances.classIndex())
 				continue;
 			else {
+				//calculate the dot and norm values
 				dot += a[i]*b[i];
 				normA += Math.pow(a[i],2);
 				normB += Math.pow(b[i],2);
 			}
 		}
 		
+		//simple math to calculate the final value
 		return 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
 	}
 	

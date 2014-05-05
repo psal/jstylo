@@ -5,7 +5,7 @@ import java.util.Map;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
-import edu.drexel.psal.jstylo.verifiers.DistractorlessCV;
+import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
@@ -492,11 +492,9 @@ public class FullAPI {
 				.numThreads(8).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).isSparse(false).build();
 
 		test.prepareInstances();
-		test.calcInfoGain();
-		test.applyInfoGain(50);
-		Verifier v = new DistractorlessCV(test.getProblemSet(),test.getTrainingInstances(),test.getTestInstances(),0.10);
+		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(),test.getTestInstances(),0.10);
 		v.verify();
-		//System.out.println(v.getResultString());
+		System.out.println(v.getResultString());
 		
 		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
