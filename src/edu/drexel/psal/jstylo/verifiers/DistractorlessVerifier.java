@@ -28,16 +28,21 @@ import edu.drexel.psal.jstylo.generics.FeatureDriver;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Verifier;
 
-public class DistractorlessCV extends Verifier{
+public class DistractorlessVerifier extends Verifier{
 
 	private String analysisString; //string of data to be analyzed
 	private List<Evaluation> documentEvaluations; //stores the weka Evaluation objects for the verification
 	
 	private Instances trainingInstances; //known documents
 	private Instances testingInstances; //documents to be verified
+	
 	private double thresholdModifier; //the modifier to be applied to the threshold
 	
-	public DistractorlessCV(Instances tri, Instances tei, double modifier) {
+	public DistractorlessVerifier(Instances tri, Instances tei){
+		this(tri,tei,0.0);
+	}
+	
+	public DistractorlessVerifier(Instances tri, Instances tei, double modifier) {
 		
 		//grab the instances
 		trainingInstances = tri;
