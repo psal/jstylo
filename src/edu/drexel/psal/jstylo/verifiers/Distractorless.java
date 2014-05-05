@@ -98,15 +98,16 @@ public class Distractorless {
 		{
 			line = scan.nextLine().split(",");
 			
+			/*
 			testAuthor = line[2];
 			trainAuthor = line[3];
 			dist = Double.parseDouble(line[4]);
 			//TODO swap this depending on analysis 
-			/*
-			testAuthor = line[1];
-			trainAuthor = line[2];
-			dist = Double.parseDouble(line[3]);
 			*/
+			trainAuthor = line[0];
+			testAuthor = line[1];
+			dist = Double.parseDouble(line[2]);
+			
 			updateEval(eval, testAuthor, trainAuthor, dist, threshold);
 		}
 		scan.close();
@@ -120,16 +121,17 @@ public class Distractorless {
 	public static void updateEval(Evaluation eval, String testAuthor,
 			String trainAuthor, double dist, double threshold) throws Exception
 	{
-		if (testAuthor.equals(trainAuthor))
+		if (testAuthor.equals(trainAuthor)) {
 			if (dist < threshold)
 				incTP(eval);
 			else
 				incFN(eval);
-		else
+		} else {
 			if (dist < threshold)
 				incFP(eval);
 			else
 				incTN(eval);
+		}
 	}
 	
 	public static void incTP(Evaluation eval) throws Exception

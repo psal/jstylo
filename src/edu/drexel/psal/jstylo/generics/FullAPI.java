@@ -1,15 +1,11 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.verifiers.DistractorlessCV;
-import edu.drexel.psal.jstylo.verifiers.ThresholdVerifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
@@ -491,25 +487,14 @@ public class FullAPI {
 
 		SMO s = new SMO();
 		s.setBuildLogisticModels(true);
-		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_demo.xml").classifier(s)
-				.numThreads(8).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+		FullAPI test = new FullAPI.Builder().cfdPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/feature_sets/word_grams.xml")
+				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_verify_small.xml").classifier(s)
+				.numThreads(8).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).isSparse(false).build();
 
 		test.prepareInstances();
-		//test.calcInfoGain();
-		//test.applyInfoGain(1500);
-		//test.prepareAnalyzer();
-		/*
-		test.run();
-		List<String> authors = new ArrayList<String>();
-		for (String a : test.getProblemSet().getAuthors()){
-			authors.add(a);
-		}
-		Collections.sort(authors);
-		System.out.println(test.getStatString());
-		*/
-		//Verifier v = new ThresholdVerifier(test.getUnderlyingClassifier(),test.getEvaluation(),test.getTestInstances().get(0),0.40,authors);
-		Verifier v = new DistractorlessCV(test.getProblemSet(),test.getCFD(),"C:/Users/Mordio/Desktop/enron.csv");
+		test.calcInfoGain();
+		test.applyInfoGain(50);
+		Verifier v = new DistractorlessCV(test.getProblemSet(),test.getTrainingInstances(),test.getTestInstances(),0.10);
 		v.verify();
 		//System.out.println(v.getResultString());
 		

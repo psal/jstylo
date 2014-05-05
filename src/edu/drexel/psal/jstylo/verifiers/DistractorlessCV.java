@@ -21,6 +21,7 @@ import com.jgaap.generics.Pair;
 
 import utils.CentroidDriverSD;
 import weka.classifiers.Evaluation;
+import weka.core.Instance;
 import weka.core.Instances;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.FeatureDriver;
@@ -34,143 +35,30 @@ public class DistractorlessCV extends Verifier{
 	private ProblemSet ps;
 	private Instances trainingInstances;
 	private Instances testingInstances;
+	private double thresholdModifier;
 	
-	public DistractorlessCV(ProblemSet p, Instances tri, Instances tei) {
+	public DistractorlessCV(ProblemSet p, Instances tri, Instances tei, double modifier) {
 		ps=p;
 		trainingInstances = tri;
 		testingInstances = tei;
+		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
+		if (testingInstances != null){
+			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
+		}
 		resultsString = "";
 		analysisString = "";
-		
+		thresholdModifier = modifier;
 	}
 
 	@Override
 	public void verify() {
 
-		// ---------------------------------------------------------------------
-		// configuration
-		// ---------------------------------------------------------------------
-		
-		String[] types = new String[]{
-				//"char",
-				"word"
-		};
-		// map to hold min, max and step (int this order)
-		Map<String,int[]> Ns = new HashMap<>();
-		Ns.put("char", new int[]{
-				1,
-				20,
-				1
-		});
-		Ns.put("word", new int[]{
-				3,
-				3,
-				1
-		});
-		
-		// ---------------------------------------------------------------------
-		// set environment
-		// ---------------------------------------------------------------------
-		
-		for (String type: types)
-		{
-			int[] bounds = Ns.get(type);
-			for (int N = bounds[0]; N <= bounds[1]; N += bounds[2])
-			{
-
-				//TODO ////////
-				//We need to swap this out with the cfd somehow
-				// event driver
-				EventDriver ed = null;
-
-				// chars
-				if (type.equals("char"))
-				{
-					CharacterNGramEventDriver charGrams =
-							new CharacterNGramEventDriver();
-					charGrams.setN(N);
-					charGrams.setParameter("N", N);
-					ed = charGrams;
-				}
-				else if (type.equals("word"))
-				{
-					// words
-					WordNGramEventDriver wordGrams = new WordNGramEventDriver();
-					wordGrams.setN(N);
-					wordGrams.setParameter("N", N);
-					ed = wordGrams;
-				}
-				//////////////
-				
-				
-				// centroid driver
-				CentroidDriverSD centroidCosine = new CentroidDriverSD();
-				centroidCosine.setAdjustByAuthorAvgInnerDist(true);
-				centroidCosine.setUseFeatureSD(true);
-				centroidCosine.setDistance(new HistogramDistance());
-				
-				// canonicizers
-				List<Canonicizer> canonicizers = new LinkedList<>();
-				canonicizers.add(new NormalizeWhitespace());
-				canonicizers.add(new UnifyCase());
-				// analyzer
-				AnalysisDriver ad = centroidCosine;
-
-				// ---------------------------------------------------------------------
-				// run analysis
-				// ---------------------------------------------------------------------
-
-				try {
-					genDistsCSV(ps,canonicizers,ed,ad);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-
-				// ---------------------------------------------------------------------
-				// run on different thresholds
-				// ---------------------------------------------------------------------
-				
-				try {
-					genResCSV(
-							-0.1,
-							0.8,
-							1000);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	@Override
-	public String getResultString() {
-		return "Analysis Data:\n"+analysisString+"\n-----\nResults:\n"+resultsString;
-	}
-
-	/**
-	 * Prepares all author-vs-self and author-vs-others verification problems
-	 * from the given problem set, using:
-	 * <ul>
-	 * <li>author-vs-self: leave-1-out validation</li>
-	 * <li>author-vs-others: straight-forward verification</li>
-	 * <ul>
-	 * Prints all results into a csv in the given path.
-	 */
-	public void genDistsCSV(
-			ProblemSet ps,
-			List<Canonicizer> canonicizers,
-			EventDriver eventDriver,
-			AnalysisDriver analysisDriver)
-					throws Exception
-	{
-		// write header
-		//mps.println("problem,test_path,test_author,train_author,dist");
 		analysisString+=String.format("problem,test_author,train_author,dist\n");
 		List<Document> documents, docs;
 		Document doc;
 		
 		// =====================================================================
-		// TEST #1: author leave-one-out on own documents
+		// author leave-one-out on own, known documents: This is used to establish the threshold
 		// =====================================================================
 		for (String author: ps.getAuthors())
 		{
@@ -197,79 +85,53 @@ public class DistractorlessCV extends Verifier{
 								doc.getTitle()));
 				}
 				
-				// run analysis and update evaluation
-				runAnalysisPrintCSVResults(
-						"author_on_self",
-						canonicizers,
-						eventDriver,
-						analysisDriver,
-						documents);
+				//run the leave one out classification
+				runAnalysis();
 			}
 		}
+		
+		//by this point, we now have the distance measures between the author and all of his/her documents
 		/*
-		 * TODO use the runAnalysis / leave oen out results to pick the desired threshold value
+		 * TODO use the runAnalysis / leave one out results to pick the desired threshold value
 		 * To accomplish this, allow the Verifier to have a target TP or FP rate, and then aim to hit that rate while max/minning other stats
 		 * provide a method which parses the "resultsString" picks the appropriate threshold, then runs a single verification on the unknown document.
 		 */
+		List<Evaluation> documentEvaluations = new ArrayList<Evaluation>();
 		Double thresh = calculateDesiredThreshold();
-		for (Document d : ps.getAllTestDocs()){
-			String docString = "";
-			//extract features / get the "analysisString" for this document
-			//call the Distractorless method "evalCSV()" with the analysisString for this document and the desired threshold
-			//save results to some object
-		}
-			
-		
-		
-		//TODO Let's ignore this for now. Ideally we want to separate
-		//these into separate things
-		// =====================================================================
-		// TEST #2: author train-test on others
-		// =====================================================================
-		/*
-		for (String trainAuthor: ps.getAuthors())
-		{
-			docs = ps.getTrainDocs(trainAuthor);
-			
-			// prepare train docs
-			documents = new LinkedList<>();
-			for (Document d: docs)
-				documents.add(new Document(
-						d.getFilePath(),
-						d.getAuthor(),
-						d.getTitle()));
-			
-			// prepare test docs
-			for (String testAuthor: ps.getAuthors())
-			{
-				// skip train author
-				if (testAuthor.equals(trainAuthor))
-					continue;
-				
-				docs = ps.getTrainDocs(testAuthor);
-				for (Document d: docs)
-					documents.add(new Document(
-							d.getFilePath(),
-							null,
-							"Correct: " + d.getAuthor()));
+		thresh = thresh + thresh * thresholdModifier;
+		for (int i = 0; i < testingInstances.numInstances(); i++){
+			Instance inst = testingInstances.get(i);
+			double total = 0.0;
+			int count = 0;
+			for (int j = 0; j < trainingInstances.numInstances(); j++){
+				total += calculateCosineDistance(trainingInstances.get(j).toDoubleArray(),inst.toDoubleArray());
+				count ++;
 			}
+			String docString = trainingInstances.get(0).attribute(trainingInstances.get(0).classIndex()).value((int)trainingInstances.get(0).classValue())+","+
+					inst.attribute(inst.classIndex()).value((int)inst.classValue())+","+(total / count);
+			try {
+				documentEvaluations.add(Distractorless.evalCSV(analysisString+docString,thresh));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try{
+		for (Evaluation e : documentEvaluations)
+			System.out.println(e.toSummaryString()+"\n"+e.toClassDetailsString()+"\n"+e.toMatrixString());
+		} catch (Exception e){
 			
-			// run analysis and update evaluation
-			runAnalysisPrintCSVResults(
-					"author_on_others",
-					canonicizers,
-					eventDriver,
-					analysisDriver,
-					documents);
-		} */
+		}
+	}
+
+	@Override
+	public String getResultString() {
+		return "Analysis Data:\n"+analysisString+"\n-----\nResults:\n"+resultsString;
 	}
 	
 	/**
-	 * TODO figure out how to get the best threshold
-	 * maybe iterate over analysisString, take the dist (last value)
-	 * and average them?
+	 * maybe iterate over analysisString, take the dist (last value) and average them?
 	 * Perhaps include an extra parameter to include anything reduce/increase the threshold
-	 * 
 	 * @return
 	 */
 	private double calculateDesiredThreshold(){
@@ -278,7 +140,7 @@ public class DistractorlessCV extends Verifier{
 		int count = 0;
 		String[] line;
 		Scanner s = new Scanner(aCopy);
-
+		s.nextLine(); //skip the header
 		//collect all of the numbers
 		while (s.hasNext()){
 			line = s.nextLine().split(",");
@@ -291,7 +153,62 @@ public class DistractorlessCV extends Verifier{
 		//divide cumulative by the total number of docs
 		return (cumulative/count);
 	}
+
+	private void runAnalysis(){
+		
+		//for all pairs of instances
+		for (int i = 0; i < trainingInstances.numInstances(); i++){
+			Instance instI = trainingInstances.get(i);
+			for (int j = 0; j<trainingInstances.numInstances(); j++){
+				Instance instJ = trainingInstances.get(j);
+				
+				//if they are not the same instance
+				if (instI != instJ){
+					//if they are by the same author
+					if(instI.classValue() == instJ.classValue()){
+						analysisString+=String.format(
+								instI.attribute(instI.classIndex()).value((int)instI.classValue())+","+
+								instJ.attribute(instJ.classIndex()).value((int)instJ.classValue())+","+
+								calculateCosineDistance(instI.toDoubleArray(),instJ.toDoubleArray())+"\n"
+								);
+					}
+				}
+			}
+		}
+	}
 	
+	/**
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private double calculateCosineDistance(double[] a, double[] b){
+		Double dot = 0.0;
+		Double normA = 0.0;
+		Double normB = 0.0;
+		int n = a.length;
+		if (a.length != b.length){
+			System.out.println("Vectors are of different length! This is going to get messy...");
+			if (b.length < a.length)
+				n = b.length;
+		}
+		
+		for (int i = 0; i < n; i++){
+			if (i == trainingInstances.classIndex())
+				continue;
+			else {
+				dot += a[i]*b[i];
+				normA += Math.pow(a[i],2);
+				normB += Math.pow(b[i],2);
+			}
+		}
+		
+		return 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
+	}
+	
+	
+	//TODO adapt/remove this if needed
 	/**
 	 * Generate result csv from the given csv file path and write to new csv
 	 * with same name with the suffix "_res". Results include: TP, TN, FP, FN,
@@ -301,7 +218,6 @@ public class DistractorlessCV extends Verifier{
 	{
 		resultsString+=String.format("threshold,tp,tn,fp,fn,precision,recall,f-measure,accuracy\n");
 		double threshold;
-		//for (int t = 0; t <= numIters; t++)
 		for (int t = ((int) (min * divFactor)); t <= ((int)(max * divFactor)); t++)
 		{
 			threshold = ((double) t)/(divFactor * 1.0);
@@ -316,65 +232,6 @@ public class DistractorlessCV extends Verifier{
 							eval.recall(0) + "," +
 							eval.fMeasure(0) + "," +
 							(eval.pctCorrect() / 100)+"\n");
-		}
-	}
-
-	/**
-	 * Runs analysis on the given problem set and prints measured distances
-	 * into given multiple print stream.
-	 */
-	public void runAnalysisPrintCSVResults(
-			String problem,
-			List<Canonicizer> canonicizers,
-			EventDriver eventDriver,
-			AnalysisDriver analysisDriver,
-			List<Document> documents) throws Exception
-	{
-		API api = new API();
-				
-		for(Document document : documents){
-			api.addDocument(document);
-		}
-		
-		// configure API
-		for (Canonicizer c: canonicizers) {
-			api.addCanonicizer(c);
-		}
-		/*
-		for (int i = 0; i < cfd.numOfFeatureDrivers(); i++){
-			FeatureDriver fd = cfd.featureDriverAt(i);
-			api.addEventDriver(fd.getUnderlyingEventDriver());
-		}*/
-		api.addEventDriver(eventDriver);		
-		api.addAnalysisDriver(analysisDriver);
-
-		// analyze
-		api.execute();
-
-		List<Document> knownDocuments = new ArrayList<Document>();
-		List<Document> unknownDocuments = new ArrayList<Document>();
-		for (Document document : documents) {
-			if (document.isAuthorKnown()) {
-				knownDocuments.add(document);
-			} else {
-				unknownDocuments.add(document);
-			}
-		}
-
-		List<Pair<String, Double>> res;
-		for (Document document: unknownDocuments)
-		{
-			res = document.getResults().values().iterator().next()
-					.values().iterator().next();
-
-			for (Pair<String, Double> pair: res){
-				analysisString+=String.format(
-						problem + "," +
-						document.getFilePath() + "," +
-						document.getTitle().split(" ")[1].trim() + "," +
-						pair.getFirst() + "," +
-						pair.getSecond()+"\n");
-			}
 		}
 	}
 	
