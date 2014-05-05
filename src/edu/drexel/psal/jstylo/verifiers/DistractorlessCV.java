@@ -31,22 +31,28 @@ import edu.drexel.psal.jstylo.generics.Verifier;
 public class DistractorlessCV extends Verifier{
 
 	private String analysisString; //string of data to be analyzed
-	private String resultsString; //final results to be returned
-	private ProblemSet ps;
-	private Instances trainingInstances;
-	private Instances testingInstances;
-	private double thresholdModifier;
+	private List<Evaluation> documentEvaluations; //stores the weka Evaluation objects for the verification
 	
-	public DistractorlessCV(ProblemSet p, Instances tri, Instances tei, double modifier) {
-		ps=p;
+	private Instances trainingInstances; //known documents
+	private Instances testingInstances; //documents to be verified
+	private double thresholdModifier; //the modifier to be applied to the threshold
+	
+	public DistractorlessCV(Instances tri, Instances tei, double modifier) {
+		
+		//grab the instances
 		trainingInstances = tri;
 		testingInstances = tei;
+		//and set class indicies
 		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
 		if (testingInstances != null){
 			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
 		}
-		resultsString = "";
+		
+		//initialize data structures
 		analysisString = "";
+		documentEvaluations = new ArrayList<Evaluation>();
+		
+		//grab threshold modifier
 		thresholdModifier = modifier;
 	}
 
@@ -54,13 +60,14 @@ public class DistractorlessCV extends Verifier{
 	public void verify() {
 
 		analysisString+=String.format("problem,test_author,train_author,dist\n");
-		List<Document> documents, docs;
-		Document doc;
+		//TODO Perform this "leave one out" for a more sophisticated way of establishing the desired threshold?
+		//List<Document> documents, docs;
+		//Document doc;
 		
 		// =====================================================================
 		// author leave-one-out on own, known documents: This is used to establish the threshold
 		// =====================================================================
-		for (String author: ps.getAuthors())
+		/*for (String author: ps.getAuthors())
 		{
 			docs = ps.getTrainDocs(author);
 			// iterate over author's docs and each time take one to be the
@@ -86,47 +93,62 @@ public class DistractorlessCV extends Verifier{
 				}
 				
 				//run the leave one out classification
-				runAnalysis();
+				
 			}
-		}
+		}*/
 		
-		//by this point, we now have the distance measures between the author and all of his/her documents
-		/*
-		 * TODO use the runAnalysis / leave one out results to pick the desired threshold value
-		 * To accomplish this, allow the Verifier to have a target TP or FP rate, and then aim to hit that rate while max/minning other stats
-		 * provide a method which parses the "resultsString" picks the appropriate threshold, then runs a single verification on the unknown document.
-		 */
-		List<Evaluation> documentEvaluations = new ArrayList<Evaluation>();
-		Double thresh = calculateDesiredThreshold();
-		thresh = thresh + thresh * thresholdModifier;
-		for (int i = 0; i < testingInstances.numInstances(); i++){
-			Instance inst = testingInstances.get(i);
+		// Calculates the average distance between all documents
+		analysisString = runAnalysis();
+
+		// Create a list of evaluations--one for each testing instance
+		Double thresh = calculateDesiredThreshold(); // grab the threshold from the analysis string
+		thresh = thresh + thresh * thresholdModifier; // apply the modifier
+
+		// for all testing documents
+		for (int i = 0; i < testingInstances.numInstances(); i++) {
+			Instance inst = testingInstances.get(i); // grab the instance
 			double total = 0.0;
 			int count = 0;
-			for (int j = 0; j < trainingInstances.numInstances(); j++){
-				total += calculateCosineDistance(trainingInstances.get(j).toDoubleArray(),inst.toDoubleArray());
-				count ++;
+			// calculate the CosineDistance between the document and each of the author's documents
+			for (int j = 0; j < trainingInstances.numInstances(); j++) {
+				total += calculateCosineDistance(trainingInstances.get(j).toDoubleArray(), inst.toDoubleArray());
+				count++;
 			}
-			String docString = trainingInstances.get(0).attribute(trainingInstances.get(0).classIndex()).value((int)trainingInstances.get(0).classValue())+","+
-					inst.attribute(inst.classIndex()).value((int)inst.classValue())+","+(total / count);
+			// then build the string to interpret from the results
+			String docString = trainingInstances.get(0).attribute(trainingInstances.get(0).classIndex())
+					.value((int) trainingInstances.get(0).classValue())
+					+ "," + inst.attribute(inst.classIndex()).value((int) inst.classValue()) + "," + (total / count);
 			try {
-				documentEvaluations.add(Distractorless.evalCSV(analysisString+docString,thresh));
+				// and create the evaluation with it via evalCSV
+				documentEvaluations.add(Distractorless.evalCSV(analysisString + docString, thresh));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
-		try{
-		for (Evaluation e : documentEvaluations)
-			System.out.println(e.toSummaryString()+"\n"+e.toClassDetailsString()+"\n"+e.toMatrixString());
-		} catch (Exception e){
-			
+
+		try {
+			for (Evaluation e : documentEvaluations)
+				System.out.println();
+		} catch (Exception e) {
+
 		}
 	}
 
+	public String getAnalysisString(){
+		return analysisString;
+	}
+	
 	@Override
 	public String getResultString() {
-		return "Analysis Data:\n"+analysisString+"\n-----\nResults:\n"+resultsString;
+		String s = "";
+		for (Evaluation e : documentEvaluations) {
+			try {
+				s += e.toSummaryString() + "\n" + e.toClassDetailsString() + "\n" + e.toMatrixString() + "\n";
+			} catch (Exception exc) {
+
+			}
+		}
+		return s;
 	}
 	
 	/**
@@ -154,8 +176,8 @@ public class DistractorlessCV extends Verifier{
 		return (cumulative/count);
 	}
 
-	private void runAnalysis(){
-		
+	private String runAnalysis(){
+		String s = "";
 		//for all pairs of instances
 		for (int i = 0; i < trainingInstances.numInstances(); i++){
 			Instance instI = trainingInstances.get(i);
@@ -166,7 +188,7 @@ public class DistractorlessCV extends Verifier{
 				if (instI != instJ){
 					//if they are by the same author
 					if(instI.classValue() == instJ.classValue()){
-						analysisString+=String.format(
+						s+=String.format(
 								instI.attribute(instI.classIndex()).value((int)instI.classValue())+","+
 								instJ.attribute(instJ.classIndex()).value((int)instJ.classValue())+","+
 								calculateCosineDistance(instI.toDoubleArray(),instJ.toDoubleArray())+"\n"
@@ -175,6 +197,7 @@ public class DistractorlessCV extends Verifier{
 				}
 			}
 		}
+		return s;
 	}
 	
 	/**
@@ -205,34 +228,6 @@ public class DistractorlessCV extends Verifier{
 		}
 		
 		return 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
-	}
-	
-	
-	//TODO adapt/remove this if needed
-	/**
-	 * Generate result csv from the given csv file path and write to new csv
-	 * with same name with the suffix "_res". Results include: TP, TN, FP, FN,
-	 * precision, recall, f-measure and accuracy.
-	 */
-	public void genResCSV(double min, double max, int divFactor) throws Exception
-	{
-		resultsString+=String.format("threshold,tp,tn,fp,fn,precision,recall,f-measure,accuracy\n");
-		double threshold;
-		for (int t = ((int) (min * divFactor)); t <= ((int)(max * divFactor)); t++)
-		{
-			threshold = ((double) t)/(divFactor * 1.0);
-			Evaluation eval = Distractorless.evalCSV(analysisString, threshold);
-			resultsString+=String.format(
-					threshold + "," +
-							eval.truePositiveRate(0) + "," +
-							eval.trueNegativeRate(0) + "," +
-							eval.falsePositiveRate(0) + "," +
-							eval.falseNegativeRate(0) + "," +
-							eval.precision(0) + "," +
-							eval.recall(0) + "," +
-							eval.fMeasure(0) + "," +
-							(eval.pctCorrect() / 100)+"\n");
-		}
 	}
 	
 }

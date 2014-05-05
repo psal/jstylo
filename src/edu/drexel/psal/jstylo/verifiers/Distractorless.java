@@ -102,7 +102,7 @@ public class Distractorless {
 			testAuthor = line[2];
 			trainAuthor = line[3];
 			dist = Double.parseDouble(line[4]);
-			//TODO swap this depending on analysis 
+			// swap this depending on analysis string
 			*/
 			trainAuthor = line[0];
 			testAuthor = line[1];
@@ -153,48 +153,5 @@ public class Distractorless {
 	{
 		eval.evaluateModelOnce(SMO, AUTHOR_BAD);
 	}
-	
-	
-	public static void loadCanonicizeEventify(API api) throws Exception
-	{
-		List<Document> documents = api.getDocuments();
-		List<EventDriver> eventDrivers = api.getEventDrivers();
-		for (EventDriver eventDriver: eventDrivers)
-		{
-			for(Document document : documents)
-			{
-				document.load();
-				document.processCanonicizers();
-				document.addEventSet(eventDriver,
-						eventDriver.createEventSet(document));
-				document.readStringText("");
-			}
-		}
-	}
-	
-	public static void cull(API api) throws Exception
-	{
-		List<Document> documents = api.getDocuments();
-		List<EventDriver> eventDrivers = api.getEventDrivers();
-		List<EventCuller> eventCullers = api.getEventCullers();
-		List<EventSet> eventSets = new ArrayList<EventSet>();
-		for (EventDriver eventDriver: eventDrivers)
-		{
-			for (final Document document : documents) {
-				if (document.getEventSets().containsKey(eventDriver)) {
-					eventSets.add(document.getEventSet(eventDriver));
-				}
-			}
-			for (EventCuller culler : eventCullers) {
-				eventSets = culler.cull(eventSets);
-			}
-			for (Document document : documents) {
-				if (document.getEventSets().containsKey(eventDriver)) {
-					document.addEventSet(eventDriver, eventSets.remove(0));
-				}
-			}
-			eventSets.clear();
-		}
-	}
-	
+
 }
