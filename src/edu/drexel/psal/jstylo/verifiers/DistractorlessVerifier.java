@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import weka.classifiers.Evaluation;
+import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import edu.drexel.psal.jstylo.generics.Verifier;
@@ -154,13 +155,16 @@ public class DistractorlessVerifier extends Verifier{
 	@Override
 	public String getResultString() {
 		String s = "";
+		int count = 0;
 		for (Evaluation e : documentEvaluations) {
+			Instance inst = testingInstances.get(count);
 			try {
-				s += e.toSummaryString() + "\n" + e.toClassDetailsString() + "\n" + e.toMatrixString() + "\n";
-				s += "<==========X==========>\n";
+				s += "<=========["+inst.stringValue(inst.attribute(0))+"]=========>";
+				s += /*e.toSummaryString() + "\n" + e.toClassDetailsString() + "\n" +*/ e.toMatrixString() + "\n";
 			} catch (Exception exc) {
 				exc.printStackTrace();
 			}
+			count++;
 		}
 		return s;
 	}
@@ -238,13 +242,15 @@ public class DistractorlessVerifier extends Verifier{
 		//for all features
 		for (int i = 0; i < n; i++){
 			//if it isn't the class feature
-			if (i == trainingInstances.classIndex())
+			if (trainingInstances.get(0).attribute(i).type() == Attribute.NOMINAL){
 				continue;
-			else {
+			} else {
+				if (a[i] != 0 && b[i] != 0){
 				//calculate the dot and norm values
 				dot += a[i]*b[i];
 				normA += Math.pow(a[i],2);
 				normB += Math.pow(b[i],2);
+				}
 			}
 		}
 		
