@@ -509,9 +509,11 @@ public class GUIMain extends javax.swing.JFrame {
 						featuresSetJComboBox = new JComboBox();
 						featuresSetJComboBox.setModel(featuresSetJComboBoxModel);
 						int selected = Integer.parseInt(getPreference("featureSet"));
-						featuresSetJComboBox.setSelectedIndex(selected);
-						if (selected != 0){
-							cfd = presetCFDs.get(selected-1);
+						if (featuresSetJComboBoxModel.getSize() > selected){
+							featuresSetJComboBox.setSelectedIndex(selected);
+							if (selected != 0){
+								cfd = presetCFDs.get(selected-1);
+							}
 						}
 						panel.add(featuresSetJComboBox);
 						
