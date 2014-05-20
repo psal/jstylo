@@ -526,16 +526,13 @@ public class FullAPI {
 	///////////////////////////////// Main method for testing purposes
 	
 	public static void main(String[] args){
-
 		SMO s = new SMO();
 		s.setBuildLogisticModels(true);
 		FullAPI test = new FullAPI.Builder().cfdPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/feature_sets/word_grams.xml")
 				.psPath("C:/Users/Mordio/Downloads/VerifyXMLs/arnold_j.xml").classifier(s)
 				.numThreads(8).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(true).isSparse(false).verifierName("Distractorless").build();
-
 		test.prepareInstances();
 		test.verify(0.0);
 		System.out.println(test.getVerificationResultString());
-		
 	}
 }

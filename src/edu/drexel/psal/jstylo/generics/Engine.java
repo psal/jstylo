@@ -79,6 +79,7 @@ public class Engine implements API {
 			if (!loadDocContents)
 				try {
 					doc.load();
+					//TODO dunno if this is right or not
 					tempEvent = new Event("" + (int) counter.getValue(doc));
 				} catch (Exception e) {
 					Logger.logln("Failed to extract sentence count from document!");
