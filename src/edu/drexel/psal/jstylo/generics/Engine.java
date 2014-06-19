@@ -48,6 +48,7 @@ public class Engine implements API {
 			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents);
 		} catch (Exception e) {
 			Logger.logln("Failed to extract events from documents!");
+			e.printStackTrace();
 			throw new Exception();
 		}
 		// create metadata event to store document information
@@ -79,7 +80,7 @@ public class Engine implements API {
 			if (!loadDocContents)
 				try {
 					doc.load();
-					//TODO dunno if this is right or not
+					//TODO dulnno if this is right or not
 					tempEvent = new Event("" + (int) counter.getValue(doc));
 				} catch (Exception e) {
 					Logger.logln("Failed to extract sentence count from document!");
@@ -781,7 +782,6 @@ public class Engine implements API {
 				return -1 * ((Double) first[0]).compareTo(((Double) second[0]));
 			}
 		});
-
 		return infoArr;
 	}
 

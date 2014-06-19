@@ -242,6 +242,9 @@ public class InstancesBuilder extends Engine {
 		
 		featThreads = null;
 		
+		//TODO extract test features here if present rather then in testing thread.
+		//Something's going wrong later on
+		
 		//cull the List<List<EventSet>> before returning
 		List<List<EventSet>> temp = cull(eventList, cfd);
 		

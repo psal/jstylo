@@ -330,7 +330,7 @@ public class FullAPI {
 				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
 			}
 		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
-			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),arg);
+			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),arg,true);
 		}
 		verifier.verify();
 	}
@@ -528,11 +528,13 @@ public class FullAPI {
 	public static void main(String[] args){
 		SMO s = new SMO();
 		s.setBuildLogisticModels(true);
-		FullAPI test = new FullAPI.Builder().cfdPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/feature_sets/word_grams.xml")
-				.psPath("C:/Users/Mordio/Downloads/VerifyXMLs/arnold_j.xml").classifier(s)
+		FullAPI test = new FullAPI.Builder().cfdPath("C:/Users/Mordio/workspace/research/featureSets/writeprints_feature_set_limited.xml")
+				.psPath("C:/Users/Mordio/Downloads/Work/modifiedVerify.xml").classifier(s)
 				.numThreads(8).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(true).isSparse(false).verifierName("Distractorless").build();
 		test.prepareInstances();
-		test.verify(0.0);
-		System.out.println(test.getVerificationResultString());
+		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(), test.getTestInstances(),0.17, false);
+		v.verify();
+	
+		System.out.println(v.getResultString());
 	}
 }

@@ -138,6 +138,7 @@ public class CumulativeFeatureDriver implements Serializable {
 					currDoc.load();
 				} catch (Exception e) {
 					Logger.logln("Failed to load document contents!");
+					e.printStackTrace();
 					throw new Exception();
 				}
 			}
