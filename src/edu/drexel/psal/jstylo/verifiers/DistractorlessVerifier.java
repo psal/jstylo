@@ -22,8 +22,11 @@ import edu.drexel.psal.jstylo.generics.Verifier;
  */
 public class DistractorlessVerifier extends Verifier{
 
+	private String trainAuthor; //the author whose training data we are using to perform verification
 	private String analysisString; //string of data to be analyzed
-	private List<Evaluation> documentEvaluations; //stores the weka Evaluation objects for the verification
+	private List<DistractorlessEvaluation> evaluations; //stores each experiment
+	private boolean metaVerification; //whether or not we actually know the authors of the documents.
+	private double[] centroid;
 	
 	private Instances trainingInstances; //known documents
 	private Instances testingInstances; //documents to be verified
@@ -36,8 +39,8 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param tri
 	 * @param tei
 	 */
-	public DistractorlessVerifier(Instances tri, Instances tei){
-		this(tri,tei,0.0);
+	public DistractorlessVerifier(Instances tri, Instances tei, boolean meta){
+		this(tri,tei,0.0,meta);
 	}
 	
 	/**
@@ -48,7 +51,7 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param tei
 	 * @param modifier
 	 */
-	public DistractorlessVerifier(Instances tri, Instances tei, double modifier) {
+	public DistractorlessVerifier(Instances tri, Instances tei, double modifier, boolean meta) {
 		
 		//grab the instances
 		trainingInstances = tri;
@@ -58,10 +61,12 @@ public class DistractorlessVerifier extends Verifier{
 		if (testingInstances != null){
 			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
 		}
-		
+		trainAuthor = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex()).value((int) trainingInstances.instance(0).classValue());
 		//initialize data structures
 		analysisString = "";
-		documentEvaluations = new ArrayList<Evaluation>();
+		evaluations = new ArrayList<DistractorlessEvaluation>();
+		
+		metaVerification = meta;
 		
 		//grab threshold modifier
 		thresholdModifier = modifier;
@@ -73,6 +78,16 @@ public class DistractorlessVerifier extends Verifier{
 	@Override
 	public void verify() {
 
+		//TODO new algorithm (I think the old way is wrong)
+		//1) calculate the "centroid" (average of all features in each slot)
+		//2) calculate the distance from each document TO THE CENTROID
+		//3) use those distances to calculate an average distance
+		//4) use that average distance as the threshold
+		//5) calculate the distance between each test document TO THE CENTROID
+		//6) if distance > threshold, reject, else accept
+		
+		calculateCentroid();
+		
 		analysisString+=String.format("problem,test_author,train_author,dist\n");
 		//TODO Perform this "leave one out" for a more sophisticated way of establishing the desired threshold?
 		//List<Document> documents, docs;
@@ -117,24 +132,23 @@ public class DistractorlessVerifier extends Verifier{
 		// Create a list of evaluations--one for each testing instance
 		Double thresh = calculateDesiredThreshold(); // grab the threshold from the analysis string
 		thresh = thresh + thresh * thresholdModifier; // apply the modifier
-
+		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
+			
 			Instance inst = testingInstances.get(i); // grab the instance
-			double total = 0.0;
-			int count = 0;
-			// calculate the CosineDistance between the document and each of the author's documents
-			for (int j = 0; j < trainingInstances.numInstances(); j++) {
-				total += calculateCosineDistance(trainingInstances.get(j).toDoubleArray(), inst.toDoubleArray());
-				count++;
-			}
+			DistractorlessEvaluation de = new DistractorlessEvaluation(inst.attribute(inst.classIndex()).value((int) inst.classValue()),inst);
+			double distance = calculateDistanceFromCentroid(inst.toDoubleArray());
+			de.setDistance(distance);
 			// then build the string to interpret from the results
 			String docString = trainingInstances.get(0).attribute(trainingInstances.get(0).classIndex())
 					.value((int) trainingInstances.get(0).classValue())
-					+ "," + inst.attribute(inst.classIndex()).value((int) inst.classValue()) + "," + (total / count);
+					+ "," + inst.attribute(inst.classIndex()).value((int) inst.classValue()) + "," + (distance);
+			//System.out.println("Distance for test doc "+i+" = "+total/count);
 			try {
 				// and create the evaluation with it via evalCSV
-				documentEvaluations.add(Distractorless.evalCSV(analysisString + docString, thresh));
+				de.setResultEval(Distractorless.evalCSV(analysisString + docString, thresh));
+				evaluations.add(de);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -155,17 +169,39 @@ public class DistractorlessVerifier extends Verifier{
 	@Override
 	public String getResultString() {
 		String s = "";
-		int count = 0;
-		for (Evaluation e : documentEvaluations) {
-			Instance inst = testingInstances.get(count);
-			try {
-				s += "<=========["+inst.stringValue(inst.attribute(0))+"]=========>";
-				s += /*e.toSummaryString() + "\n" + e.toClassDetailsString() + "\n" +*/ e.toMatrixString() + "\n";
-			} catch (Exception exc) {
-				exc.printStackTrace();
-			}
-			count++;
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
+		for (DistractorlessEvaluation de : evaluations){
+			s+=de.getResultString();
+			/*if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				s+="Result is a ";
+				if (result == 0){
+					s+="true positive\n\n";
+					tp++;
+				} else if (result == 1){
+					s+="false positive\n\n";
+					fp++;
+				} else if (result == 2){
+					s+="false negative\n\n";
+					fn++;
+				} else if (result == 3){
+					s+="true negative\n\n";
+					tn++;
+				} else {
+					s+="undefined\n\n";
+				}
+			}*/
 		}
+		
+		/*
+		if (metaVerification){
+			s+=String.format("Overall Result Counts: \nTrue Positives: %d\nFalse Positives: %d\nFalse Negatives: %d\nTrue Negatives: %d\nTotal experiments: %d",
+					tp,fp,tn,fn,(tp+fp+tn+fn));
+		}*/
+		
 		return s;
 	}
 	
@@ -193,31 +229,97 @@ public class DistractorlessVerifier extends Verifier{
 		return (cumulative/count);
 	}
 
-	private String runAnalysis(){
-		String s = "";
-		//for all pairs of instances
-		for (int i = 0; i < trainingInstances.numInstances(); i++){
-			Instance instI = trainingInstances.get(i);
-			for (int j = 0; j<trainingInstances.numInstances(); j++){
-				Instance instJ = trainingInstances.get(j);
-				
-				//if they are not the same instance
-				if (instI != instJ){
-					//if they are by the same author
-					if(instI.classValue() == instJ.classValue()){
-						//format is train author, test author, cosine distance
-						//DO NOT CHANGE
-						//unless you also change the Distractorless.java's evalCSV method to compensate
-						s+=String.format(
-								instI.attribute(instI.classIndex()).value((int)instI.classValue())+","+
-								instJ.attribute(instJ.classIndex()).value((int)instJ.classValue())+","+
-								calculateCosineDistance(instI.toDoubleArray(),instJ.toDoubleArray())+"\n"
-								);
-					}
+	private void calculateCentroid(){
+
+		centroid = new double[trainingInstances.numAttributes()-2];
+		
+		for (int i = 0; i < centroid.length; i++){
+			centroid[i] = 0;
+		}
+		
+		for (int j = 0; j < trainingInstances.numInstances(); j++){
+			for (int i = 1; i < trainingInstances.numAttributes()-1; i++){
+				centroid[i-1] += trainingInstances.instance(j).value(i);
+			}
+		}
+		
+		for (int i = 0; i < centroid.length; i++){
+			centroid[i] = centroid[i]/trainingInstances.numInstances();
+		}
+		
+		/*
+		int nominalFeatures = 0;
+		
+		for (int j = 0; j < trainingInstances.numAttributes(); j++){
+			if (trainingInstances.attribute(j).isNominal()){
+				nominalFeatures++;
+			}
+		}
+		
+		centroid  = new double[trainingInstances.numAttributes()-nominalFeatures];
+		int count = trainingInstances.numInstances();
+		
+		for (int i = 0; i < centroid.length; i++){
+			centroid[i]=0;
+		}
+		
+		for (int i = 0; i < count; i++){
+			int centCount = 0;
+			Instance inst = trainingInstances.instance(i);
+			for (int j = 0; j < trainingInstances.numAttributes(); j++){
+				if (!trainingInstances.attribute(j).isNominal()){
+					centroid[centCount] = inst.value(j);
+					centCount++;
 				}
 			}
 		}
+		
+		for (int i = 0; i < centroid.length; i++){
+			centroid[i]= centroid[i]/trainingInstances.numInstances();
+		}
+		*/
+	}
+	
+	private String runAnalysis(){
+		String s = "";
+		for (int j = 0; j < trainingInstances.numInstances(); j++) {
+			Instance instJ = trainingInstances.get(j);
+			// format is train author, test author, cosine distance
+			// DO NOT CHANGE
+			// unless you also change the Distractorless.java's evalCSV method to compensate
+			s += String.format(instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
+					+ instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
+					+ calculateDistanceFromCentroid(instJ.toDoubleArray()) + "\n");
+		}
 		return s;
+	}
+	
+	private double calculateDistanceFromCentroid(double[] b){
+		Double dot = 0.0; //cumulative dot value
+		Double normA = 0.0; //cumulative norm value for doc a
+		Double normB = 0.0; //cumulative norm value for doc b
+		int n = b.length; //number of features
+		double[] a = centroid;
+		
+		int centroidIndex = 0;
+		//for all features
+		for (int i = 1; i < n-1; i++){
+			//if it isn't the class feature
+			
+			if (trainingInstances.get(0).attribute(i).type() == Attribute.NOMINAL){
+				continue;
+			} else {
+				//calculate the dot and norm values
+				dot += a[centroidIndex]*b[i];
+				normA += Math.pow(a[centroidIndex],2);
+				normB += Math.pow(b[i],2);
+				centroidIndex++;
+			}
+		}
+		
+		//simple math to calculate the final value
+		double val = 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
+		return val;
 	}
 	
 	/**
@@ -232,7 +334,8 @@ public class DistractorlessVerifier extends Verifier{
 		Double normB = 0.0; //cumulative norm value for doc b
 		int n = a.length; //number of features
 		if (a.length != b.length){
-			System.out.println("Vectors are of different length! This is going to get messy...");
+			//System.out.println("Vectors are of different length! This is going to get messy...");
+			//System.out.println("a length: "+a.length+" b length: "+b.length);
 			//honestly, it might be better to just break it if this is wrong.
 			//this means that either one has more features or something of that ilk
 			if (b.length < a.length)
@@ -240,22 +343,22 @@ public class DistractorlessVerifier extends Verifier{
 		}
 		
 		//for all features
-		for (int i = 0; i < n; i++){
+		for (int i = 1; i < n-1; i++){
 			//if it isn't the class feature
+			
 			if (trainingInstances.get(0).attribute(i).type() == Attribute.NOMINAL){
 				continue;
 			} else {
-				if (a[i] != 0 && b[i] != 0){
 				//calculate the dot and norm values
 				dot += a[i]*b[i];
 				normA += Math.pow(a[i],2);
 				normB += Math.pow(b[i],2);
-				}
 			}
 		}
 		
 		//simple math to calculate the final value
-		return 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
+		double val = 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
+		return val;
 	}
 	
 }
