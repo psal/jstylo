@@ -1051,9 +1051,7 @@ public class GUIMain extends javax.swing.JFrame {
 								}
 							}
 						}
-						//////////
 						//Verifiers
-						//TODO
 						{
 							// available
 							// =========
@@ -1145,7 +1143,6 @@ public class GUIMain extends javax.swing.JFrame {
 								}
 							}
 						}
-						//////////
 					}
 				}
 				{
@@ -1332,7 +1329,6 @@ public class GUIMain extends javax.swing.JFrame {
 						label.setFont(defaultLabelFont);
 						analysisClassifyVerifyPanel.add(label,BorderLayout.NORTH);
 						analysisClassifyVerifyPanel.add(panel,BorderLayout.CENTER);
-						//analysisClassifyButton.setToolTipText("");
 						
 					}	
 					
@@ -1380,19 +1376,19 @@ public class GUIMain extends javax.swing.JFrame {
 					//Divide up into 2 sections
 					
 					JPanel mainPanel = new JPanel(new GridLayout(1,2));
-					
+					preferencesTab.add(mainPanel,BorderLayout.CENTER);
 					//section 1 =  analysis options & other preferences
 					{
-						JPanel analysisConfPanel = new JPanel();
+						JPanel analysisConfPanel = new JPanel(new BorderLayout());
 						mainPanel.add(analysisConfPanel);
 						analysisConfigJLabel = new JLabel();
-						analysisConfPanel.add(analysisConfigJLabel,BorderLayout.NORTH);
 						analysisConfigJLabel.setText("Configuration");
 						analysisConfigJLabel.setFont(defaultLabelFont);
+						analysisConfPanel.add(analysisConfigJLabel,BorderLayout.NORTH);
 						
 						// options
 						//TODO expand this for each option
-						JPanel options = new JPanel(new GridLayout(4,1,cellPadding,cellPadding));
+						JPanel options = new JPanel(new GridLayout(10,1,cellPadding,cellPadding));
 						analysisConfPanel.add(options,BorderLayout.CENTER);
 						{
 							
@@ -1450,17 +1446,54 @@ public class GUIMain extends javax.swing.JFrame {
 							analysisNPanel.add(analysisNThreadJTextField);
 							analysisConfPanel.add(analysisNPanel,BorderLayout.SOUTH);		
 						}
+						//TODO replace with actual options
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
 					}
 					//section 2 = post analysis options + credits
 					{
 						JPanel rightPanel = new JPanel(new GridLayout(2,1));
 						mainPanel.add(rightPanel);
-						JPanel postAnalysisPanel = new JPanel();
+						JPanel postAnalysisPanel = new JPanel(new BorderLayout());
 						rightPanel.add(postAnalysisPanel);
 						analysisPostAnalysisJLabel = new JLabel();
-						postAnalysisPanel.add(analysisPostAnalysisJLabel,BorderLayout.NORTH);
 						analysisPostAnalysisJLabel.setText("Post Analysis");
 						analysisPostAnalysisJLabel.setFont(defaultLabelFont);
+						postAnalysisPanel.add(analysisPostAnalysisJLabel,BorderLayout.NORTH);
 						
 						// options
 						JPanel options = new JPanel(new GridLayout(2,1,cellPadding,cellPadding));
