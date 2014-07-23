@@ -361,4 +361,8 @@ public class DistractorlessVerifier extends Verifier{
 		return val;
 	}
 	
+	public Evaluation getResultsEval(){
+		return evaluations.get(0).getResultEval();
+	}
+	
 }
