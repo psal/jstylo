@@ -67,6 +67,19 @@ public class MaxentPOSTagsEventDriver extends EventDriver {
 				es.addEvent(new Event(tw.tag()));
 		}
 		
+		//TODO trying to clean out the sub objects
+		int n = sentences.size();
+		for (int i = 0; i<n; i++){
+			List<HasWord> sentence =sentences.remove(0);
+			int m = sentence.size();
+			for (int j = 0; j<m; j++){
+				HasWord hw = sentence.remove(0);
+				hw = null;
+			}
+			sentence.clear();
+			sentence = null;
+		}
+		sentences = null;
 		return es;
 	}
 	

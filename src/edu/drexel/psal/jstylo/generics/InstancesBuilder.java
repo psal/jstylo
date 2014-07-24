@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jgaap.generics.Document;
+import com.jgaap.generics.Event;
+import com.jgaap.generics.EventCuller;
+import com.jgaap.generics.EventDriver;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
@@ -195,6 +198,61 @@ public class InstancesBuilder extends Engine {
 	}
 
 	//////////////////////////////////////////// Methods
+	
+	public void cleanAttributes(){
+		for (Attribute a :  attributes){
+			a = null;
+		}
+		attributes.clear();
+		attributes = null;
+		System.gc();
+	}
+	
+	//TODO trying to fix the memory issues
+	public void clean(){
+		System.out.println("In clean");
+		
+		for (EventSet es : relevantEvents){
+			for (Event ev : es){
+				ev = null;
+			}
+			es = null;
+		}
+		relevantEvents.clear();
+		relevantEvents = null;
+		
+		for (List<EventSet> les : eventList){
+			for (EventSet es : les){
+				for (Event e : es){
+					e = null;
+				}
+				es = null;
+			}
+			les = null;
+		}
+		eventList.clear();
+		eventList = null;
+		
+		int n = cfd.numOfFeatureDrivers();
+		for (int i = 0; i < n; i++){
+			FeatureDriver fd = cfd.removeFeatureDriverAt(0);
+			{
+				List<EventCuller> cullers = fd.getCullers();
+				for (EventCuller ec : cullers){
+					ec = null;
+				}
+				cullers.clear();
+				cullers = null;
+				
+				EventDriver ed = fd.getUnderlyingEventDriver();
+				ed = null;
+			}
+			fd = null;
+		}
+		cfd = null;
+		
+		System.gc();
+	}
 	
 	/**
 	 * Extracts the List\<EventSet\> from each document using a user-defined number of threads.

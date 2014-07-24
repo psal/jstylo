@@ -78,6 +78,19 @@ public class MaxentPOSNGramsEventDriver extends EventDriver {
 			es.addEvent(new Event(curr));
 		}
 		
+		//TODO trying to clean out the sub objects
+		int p = sentences.size();
+		for (int q = 0; i<p; i++){
+			List<HasWord> sentence =sentences.remove(0);
+			int m = sentence.size();
+			for (int r = 0; r<m; r++){
+				HasWord hw = sentence.remove(0);
+				hw = null;
+			}
+			sentence.clear();
+			sentence = null;
+		}
+		sentences = null;
 		return es;
 	}
 	
