@@ -12,6 +12,7 @@ import com.jgaap.generics.EventDriver;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -244,8 +245,12 @@ public class InstancesBuilder extends Engine {
 				cullers.clear();
 				cullers = null;
 				
-				EventDriver ed = fd.getUnderlyingEventDriver();
-				ed = null;
+				EventDriver eventDriver = fd.getUnderlyingEventDriver();
+				if (eventDriver instanceof StanfordDriver){
+					((StanfordDriver) eventDriver).destroyTagger();
+				}
+				
+				eventDriver = null;
 			}
 			fd = null;
 		}

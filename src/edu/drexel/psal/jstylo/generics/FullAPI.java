@@ -484,48 +484,48 @@ public class FullAPI {
 		
 		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
 				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(8).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
+				.numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tGoing!");
 		test.prepareInstances();
 		
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tGoing!");
 		//test.calcInfoGain();
 		//test.applyInfoGain(1500);
 		test.prepareAnalyzer();
 		
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tCleaning!");
 		test.ib.clean();
 		
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tGoing!");
 		test.run();
 		
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tCleaning!");
 		test.ib.cleanAttributes();
 		
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tGoing!");
 		System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
 		
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tGoing!");
 		test = null;
 		
 		System.out.println("Waiting...");
-		in.nextLine();
+		//in.nextLine();
 		System.out.println("\tGoing!");
 		in.close();
 		System.out.println("Done.");

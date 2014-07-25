@@ -7,6 +7,7 @@ import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger; 
+import edu.stanford.nlp.tagger.maxent.TTags;
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 import java.io.*;
@@ -18,7 +19,7 @@ import java.util.*;
  * @author Ariel Stolerman
  */
 
-public class MaxentPOSTagsEventDriver extends EventDriver {
+public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDriver{
 	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
@@ -99,5 +100,12 @@ public class MaxentPOSTagsEventDriver extends EventDriver {
 			e.printStackTrace();
 		}
 		return t;
+	}
+	//TODO
+	public void destroyTagger() { 
+		TTags tt = tagger.getTags();
+		
+		taggerPath = null;
+		tagger = null;
 	}
 }

@@ -15,7 +15,7 @@ import java.util.*;
  * @author Ariel Stolerman
  */
 
-public class MaxentPOSNGramsEventDriver extends EventDriver {
+public class MaxentPOSNGramsEventDriver extends EventDriver implements StanfordDriver{
 	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
@@ -92,6 +92,12 @@ public class MaxentPOSNGramsEventDriver extends EventDriver {
 		}
 		sentences = null;
 		return es;
+	}
+	
+	//TODO
+	public void destroyTagger() { 
+		taggerPath = null;
+		tagger = null;
 	}
 	
 	/*
