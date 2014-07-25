@@ -1,7 +1,6 @@
 package edu.drexel.psal.jstylo.generics;
 
 import java.util.Map;
-import java.util.Scanner;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
@@ -233,6 +232,7 @@ public class FullAPI {
 			System.out.println("Failed to prepare Analyzer");
 			e.printStackTrace();
 		}
+		ib.clean();
 	}
 	
 	/**
@@ -298,6 +298,7 @@ public class FullAPI {
 			System.out.println("Unreachable. Something went wrong somewhere.");
 			break;
 		}
+		ib.cleanAttributes();
 	}
 	
 	///////////////////////////////// Setters/Getters
@@ -480,54 +481,16 @@ public class FullAPI {
 	
 	public static void main(String[] args){
 
-		Scanner in = new Scanner(System.in);
-		
 		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
 				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tGoing!");
 		test.prepareInstances();
-		
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tGoing!");
 		//test.calcInfoGain();
 		//test.applyInfoGain(1500);
 		test.prepareAnalyzer();
-		
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tCleaning!");
-		test.ib.clean();
-		
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tGoing!");
 		test.run();
-		
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tCleaning!");
-		test.ib.cleanAttributes();
-		
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tGoing!");
 		System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
-		
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tGoing!");
-		test = null;
-		
-		System.out.println("Waiting...");
-		//in.nextLine();
-		System.out.println("\tGoing!");
-		in.close();
-		System.out.println("Done.");
 	}
 }

@@ -200,6 +200,7 @@ public class InstancesBuilder extends Engine {
 
 	//////////////////////////////////////////// Methods
 	
+	@SuppressWarnings("unused")
 	public void cleanAttributes(){
 		for (Attribute a :  attributes){
 			a = null;
@@ -209,7 +210,7 @@ public class InstancesBuilder extends Engine {
 		System.gc();
 	}
 	
-	//TODO trying to fix the memory issues
+	@SuppressWarnings("unused")
 	public void clean(){
 		System.out.println("In clean");
 		
