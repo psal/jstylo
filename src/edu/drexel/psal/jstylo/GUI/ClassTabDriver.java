@@ -440,10 +440,15 @@ public class ClassTabDriver {
 		}
 		
 		// expand tree
+		/*
 		int row = 0;
-		int defaultExpansion = 9;
+		int defaultExpansion = 11;
 		while (row < defaultExpansion)
 			main.classJTree.expandRow(row++);
+		*/
+		main.classJTree.expandRow(1);
+		main.classJTree.expandRow(2);
+		main.classJTree.expandRow(4);
 	}
 	/**
 	 * Strings which represent the "root" directories for a given set of classifiers<br>
