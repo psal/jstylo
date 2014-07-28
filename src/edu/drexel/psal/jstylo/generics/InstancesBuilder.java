@@ -212,7 +212,6 @@ public class InstancesBuilder extends Engine {
 	
 	@SuppressWarnings("unused")
 	public void clean(){
-		System.out.println("In clean");
 		
 		for (EventSet es : relevantEvents){
 			for (Event ev : es){
@@ -235,26 +234,7 @@ public class InstancesBuilder extends Engine {
 		eventList.clear();
 		eventList = null;
 		
-		int n = cfd.numOfFeatureDrivers();
-		for (int i = 0; i < n; i++){
-			FeatureDriver fd = cfd.removeFeatureDriverAt(0);
-			{
-				List<EventCuller> cullers = fd.getCullers();
-				for (EventCuller ec : cullers){
-					ec = null;
-				}
-				cullers.clear();
-				cullers = null;
-				
-				EventDriver eventDriver = fd.getUnderlyingEventDriver();
-				if (eventDriver instanceof StanfordDriver){
-					((StanfordDriver) eventDriver).destroyTagger();
-				}
-				
-				eventDriver = null;
-			}
-			fd = null;
-		}
+		cfd.clean();
 		cfd = null;
 		
 		System.gc();
@@ -832,7 +812,7 @@ public class InstancesBuilder extends Engine {
 					//grab the document
 					//Document doc = ps.getAllTrainDocs().get(i);
 					//create the instance using it
-				    Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
+				    //Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
 							eventList.get(i), isSparse(), usingDocTitles());
 					//normalize it
@@ -897,7 +877,7 @@ public class InstancesBuilder extends Engine {
 					* (threadId + 1)); i++){
 				try {
 					//try to extract the events
-				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
+				    //Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
 					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents());
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {

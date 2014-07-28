@@ -13,6 +13,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.jgaap.generics.*;
 
+import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
+
 /**
  * The cumulative feature driver class is designed to create a concatenated result of several feature drivers.
  * For details about a feature driver, look into the documentation of {@see FeatureDriver}.
@@ -171,6 +173,28 @@ public class CumulativeFeatureDriver implements Serializable {
 		return esl;
 	}
 	
+	public void clean(){
+		int n = numOfFeatureDrivers();
+		for (int i = 0; i < n; i++){
+			FeatureDriver fd = removeFeatureDriverAt(0);
+			{
+				List<EventCuller> cullers = fd.getCullers();
+				for (EventCuller ec : cullers){
+					ec = null;
+				}
+				cullers.clear();
+				cullers = null;
+				
+				EventDriver eventDriver = fd.getUnderlyingEventDriver();
+				if (eventDriver instanceof StanfordDriver){
+					((StanfordDriver) eventDriver).destroyTagger();
+				}
+				
+				eventDriver = null;
+			}
+			fd = null;
+		}
+	}
 	
 	/* =======
 	 * queries
