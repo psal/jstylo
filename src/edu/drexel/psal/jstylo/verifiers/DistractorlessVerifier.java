@@ -361,6 +361,14 @@ public class DistractorlessVerifier extends Verifier{
 		return val;
 	}
 	
+	public List<Evaluation> getResultEvaluations(){
+		List<Evaluation> results = new ArrayList<Evaluation>();
+		for (DistractorlessEvaluation de : evaluations){
+			results.add(de.getResultEval());
+		}
+		return results;
+	}
+	
 	public Evaluation getResultsEval(){
 		return evaluations.get(0).getResultEval();
 	}
