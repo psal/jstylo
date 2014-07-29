@@ -220,7 +220,7 @@ public class FullAPI {
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on
 			ib.createTrainingInstancesThreaded(); //creates train Instances
 			ib.createTestInstancesThreaded(); //creates test Instances (if present)
-			
+			ib.killThreads();
 		} catch (Exception e) {
 			System.out.println("Failed to prepare instances");
 			e.printStackTrace();
@@ -247,6 +247,7 @@ public class FullAPI {
 			System.out.println("Failed to prepare Analyzer");
 			e.printStackTrace();
 		}
+		ib.clean();
 	}
 	
 	/**
@@ -312,6 +313,7 @@ public class FullAPI {
 			System.out.println("Unreachable. Something went wrong somewhere.");
 			break;
 		}
+		ib.cleanAttributes();
 	}
 	
 	/**
@@ -526,15 +528,17 @@ public class FullAPI {
 	///////////////////////////////// Main method for testing purposes
 	
 	public static void main(String[] args){
-		SMO s = new SMO();
-		s.setBuildLogisticModels(true);
-		FullAPI test = new FullAPI.Builder().cfdPath("C:/Users/Mordio/workspace/research/featureSets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Downloads/Work/modifiedVerify.xml").classifier(s)
-				.numThreads(8).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(true).isSparse(false).verifierName("Distractorless").build();
+
+		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
+				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
+				.numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
+
 		test.prepareInstances();
-		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(), test.getTestInstances(),0.17, false);
-		v.verify();
-	
-		System.out.println(v.getResultString());
+		//test.calcInfoGain();
+		//test.applyInfoGain(1500);
+		test.prepareAnalyzer();
+		test.run();
+		System.out.println(test.getClassificationAccuracy());
+		//System.out.println(test.getStatString());
 	}
 }

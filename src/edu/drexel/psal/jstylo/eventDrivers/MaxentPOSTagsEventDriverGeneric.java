@@ -17,7 +17,7 @@ import java.util.*;
  * @author Ariel Stolerman
  */
 
-public class MaxentPOSTagsEventDriverGeneric extends EventDriver {
+public class MaxentPOSTagsEventDriverGeneric extends EventDriver implements StanfordDriver{
 	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
@@ -69,8 +69,22 @@ public class MaxentPOSTagsEventDriverGeneric extends EventDriver {
 				es.addEvent(new Event(tw.tag()));
 		}
 		
+		//TODO trying to clean out the sub objects
+		int n = sentences.size();
+		for (int i = 0; i<n; i++){
+			List<HasWord> sentence =sentences.remove(0);
+			int m = sentence.size();
+			for (int j = 0; j<m; j++){
+				HasWord hw = sentence.remove(0);
+				hw = null;
+			}
+			sentence.clear();
+			sentence = null;
+		}
+		sentences = null;
 		return es;
 	}
+
 	
 	/**
 	 * Initialize the tagger.
@@ -91,5 +105,10 @@ public class MaxentPOSTagsEventDriverGeneric extends EventDriver {
 			e.printStackTrace();
 		}
 		return t;
+	}
+	//TODO
+	public void destroyTagger() { 
+		taggerPath = null;
+		tagger = null;
 	}
 }
