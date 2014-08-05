@@ -72,6 +72,10 @@ public class DistractorlessVerifier extends Verifier{
 		thresholdModifier = modifier;
 	}
 
+	public void setTestInstances(Instances tei){
+		testingInstances = tei;
+	}
+	
 	/**
 	 * The actual verification method
 	 */
