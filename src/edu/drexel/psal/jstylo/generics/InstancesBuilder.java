@@ -439,6 +439,7 @@ public class InstancesBuilder extends Engine {
 	 * @param probSet sets the problem set to the provided pset
 	 */
 	public void setProblemSet(ProblemSet probSet){
+		ps = null;
 		ps = probSet;
 	}
 	

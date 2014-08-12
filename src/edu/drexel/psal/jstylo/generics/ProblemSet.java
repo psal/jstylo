@@ -195,6 +195,17 @@ public class ProblemSet implements Serializable {
 		this.trainCorpusName = name;
 	}
 	
+	public Map<String,List<String>> getTitles() {
+		HashMap map = new HashMap<String,List<String>>();
+		for (String author : trainDocsMap.keySet()){
+			map.put(author, new ArrayList<String>());
+			for (Document doc : trainDocsMap.get(author)){
+				((List<String>)map.get(author)).add(doc.getTitle());
+			}
+		}
+		return map;
+	}
+	
 	/**
 	 * Adds the given training document to the given training author. If no such author exists in the  training map, 
 	 * creates a new entry for that author. Returns true iff the addition succeeded.
