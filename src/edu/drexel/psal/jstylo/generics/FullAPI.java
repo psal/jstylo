@@ -542,15 +542,18 @@ public class FullAPI {
 	public static void main(String[] args){
 
 		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
+				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_verify_meta.xml").classifierPath("weka.classifiers.functions.SMO")
+				.numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN).useDocTitles(true).build();
 
 		test.prepareInstances();
+		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(),test.getTestInstances(),true);
+		v.verify();
+		System.out.println(v.getResultString());
 		//test.calcInfoGain();
 		//test.applyInfoGain(1500);
-		test.prepareAnalyzer();
-		test.run();
-		System.out.println(test.getClassificationAccuracy());
+		//test.prepareAnalyzer();
+		//test.run();
+		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
 	}
 }

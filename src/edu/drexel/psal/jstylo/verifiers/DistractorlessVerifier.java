@@ -151,7 +151,7 @@ public class DistractorlessVerifier extends Verifier{
 			//System.out.println("Distance for test doc "+i+" = "+total/count);
 			try {
 				// and create the evaluation with it via evalCSV
-				de.setResultEval(Distractorless.evalCSV(analysisString + docString, thresh));
+				de.setResultEval(Distractorless.evalCSV(analysisString + docString, thresh, metaVerification));
 				evaluations.add(de);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -179,7 +179,7 @@ public class DistractorlessVerifier extends Verifier{
 		int tn = 0;
 		for (DistractorlessEvaluation de : evaluations){
 			s+=de.getResultString();
-			/*if(metaVerification){
+			if(metaVerification){
 				int result = de.getCorrectlyVerified(trainAuthor);
 				s+="Result is a ";
 				if (result == 0){
@@ -197,14 +197,14 @@ public class DistractorlessVerifier extends Verifier{
 				} else {
 					s+="undefined\n\n";
 				}
-			}*/
+			}
 		}
 		
-		/*
+		
 		if (metaVerification){
 			s+=String.format("Overall Result Counts: \nTrue Positives: %d\nFalse Positives: %d\nFalse Negatives: %d\nTrue Negatives: %d\nTotal experiments: %d",
 					tp,fp,tn,fn,(tp+fp+tn+fn));
-		}*/
+		}
 		
 		return s;
 	}

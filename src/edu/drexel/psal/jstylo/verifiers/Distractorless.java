@@ -73,7 +73,7 @@ public class Distractorless {
 	 * Reads the CSV file in the given path and evaluates the results with the
 	 * given threshold.
 	 */
-	public static Evaluation evalCSV(String analysisString, double threshold)
+	public static Evaluation evalCSV(String analysisString, double threshold, boolean meta)
 			throws Exception
 	{
 		Evaluation eval = new Evaluation(insts);
@@ -100,7 +100,12 @@ public class Distractorless {
 			testAuthor = line[1];
 			dist = Double.parseDouble(line[2]);
 			
-			updateEval(eval, testAuthor, trainAuthor, dist, threshold);
+			if (!meta){
+				updateEval(eval, testAuthor, trainAuthor, dist, threshold,false);
+			} else {
+				//TODO this is where we want the fix. If we're doing the training document have the call be "true"
+				//the only question is how to tell if it is the training document or not.
+			}
 		}
 		scan.close();
 		
@@ -111,18 +116,26 @@ public class Distractorless {
 	 * updates the input evaluation according to the given parameters.
 	 */
 	public static void updateEval(Evaluation eval, String testAuthor,
-			String trainAuthor, double dist, double threshold) throws Exception
+			String trainAuthor, double dist, double threshold, boolean meta) throws Exception
 	{
-		if (testAuthor.equals(trainAuthor)) {
-			if (dist < threshold)
-				incTP(eval);
-			else
-				incFN(eval);
+		if (meta == false) {
+			if (testAuthor.equals(trainAuthor)) {
+				if (dist < threshold)
+					incTP(eval);
+				else
+					incFN(eval);
+			} else {
+				if (dist < threshold)
+					incFP(eval);
+				else
+					incTN(eval);
+			}
 		} else {
-			if (dist < threshold)
+			if (testAuthor.equals(trainAuthor)) {
 				incFP(eval);
-			else
+			} else {
 				incTN(eval);
+			}
 		}
 	}
 	
