@@ -354,6 +354,10 @@ public class FullAPI {
 		ib.setUseDocTitles(useDocTitles);
 	}
 	
+	public void setProblemSet(ProblemSet probSet){
+		ib.setProblemSet(probSet);
+	}
+	
 	/**
 	 * @param sparse boolean value. Whether or not to use sparse instances
 	 */
@@ -399,6 +403,14 @@ public class FullAPI {
 	 */
 	public void setNumThreads(int nt){
 		ib.setNumThreads(nt);
+	}
+	
+	public void setClassifier(Classifier c){
+		analysisDriver = new WekaAnalyzer(c);
+	}
+	
+	public Analyzer getUnderlyingAnalyzer(){
+		return analysisDriver;
 	}
 	
 	/**
