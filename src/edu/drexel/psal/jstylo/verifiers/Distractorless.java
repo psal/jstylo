@@ -103,8 +103,14 @@ public class Distractorless {
 			if (!meta){
 				updateEval(eval, testAuthor, trainAuthor, dist, threshold,false);
 			} else {
+				if (line.length == 3){
+					updateEval(eval, testAuthor, trainAuthor, dist, threshold,false);
+				} else {
+					updateEval(eval, testAuthor, trainAuthor, dist, threshold,true);
+				}
 				//TODO this is where we want the fix. If we're doing the training document have the call be "true"
 				//the only question is how to tell if it is the training document or not.
+				
 			}
 		}
 		scan.close();

@@ -82,14 +82,6 @@ public class DistractorlessVerifier extends Verifier{
 	@Override
 	public void verify() {
 
-		//TODO new algorithm (I think the old way is wrong)
-		//1) calculate the "centroid" (average of all features in each slot)
-		//2) calculate the distance from each document TO THE CENTROID
-		//3) use those distances to calculate an average distance
-		//4) use that average distance as the threshold
-		//5) calculate the distance between each test document TO THE CENTROID
-		//6) if distance > threshold, reject, else accept
-		
 		calculateCentroid();
 		
 		analysisString+=String.format("problem,test_author,train_author,dist\n");
@@ -148,6 +140,11 @@ public class DistractorlessVerifier extends Verifier{
 			String docString = trainingInstances.get(0).attribute(trainingInstances.get(0).classIndex())
 					.value((int) trainingInstances.get(0).classValue())
 					+ "," + inst.attribute(inst.classIndex()).value((int) inst.classValue()) + "," + (distance);
+			if (metaVerification){
+				docString+=",1";
+			} else {
+				docString+=",0";
+			}
 			//System.out.println("Distance for test doc "+i+" = "+total/count);
 			try {
 				// and create the evaluation with it via evalCSV

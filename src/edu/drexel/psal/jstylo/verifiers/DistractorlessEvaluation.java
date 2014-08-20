@@ -62,8 +62,8 @@ public class DistractorlessEvaluation {
 	
 	public int getCorrectlyVerified(String author) { 
 		
-		System.out.println(resultEval.confusionMatrix()[1][0]);
-		System.out.println("ta: "+trueAuthor+" a: "+author);
+		//System.out.println(resultEval.confusionMatrix()[1][0]);
+		//System.out.println("ta: "+trueAuthor+" a: "+author);
 		//if this = 1, we verified it as the author
 		if (resultEval.confusionMatrix()[1][0] == 1){
 			//so check if the author is actually the true author
