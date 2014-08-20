@@ -140,11 +140,7 @@ public class DistractorlessVerifier extends Verifier{
 			String docString = trainingInstances.get(0).attribute(trainingInstances.get(0).classIndex())
 					.value((int) trainingInstances.get(0).classValue())
 					+ "," + inst.attribute(inst.classIndex()).value((int) inst.classValue()) + "," + (distance);
-			if (metaVerification){
-				docString+=",1";
-			} else {
-				docString+=",0";
-			}
+			docString+=",testDoc";
 			//System.out.println("Distance for test doc "+i+" = "+total/count);
 			try {
 				// and create the evaluation with it via evalCSV

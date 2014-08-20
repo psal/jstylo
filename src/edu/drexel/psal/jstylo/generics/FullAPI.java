@@ -544,7 +544,7 @@ public class FullAPI {
 				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_verify_meta.xml").classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN).useDocTitles(true).build();
 		test.prepareInstances();
-		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(),test.getTestInstances(),true);
+		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(),test.getTestInstances(),false);
 		v.verify();
 		System.out.println(v.getResultString());
 		//test.calcInfoGain();

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Scanner;
 
+import edu.drexel.psal.jstylo.generics.ProblemSet;
+
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
 import weka.core.Instance;
@@ -101,16 +103,19 @@ public class Distractorless {
 			dist = Double.parseDouble(line[2]);
 			
 			if (!meta){
-				updateEval(eval, testAuthor, trainAuthor, dist, threshold,false);
+				if (line.length == 3) {
+					updateEval(eval, testAuthor, trainAuthor, dist, threshold, false);
+				} else {
+					System.out.println("dist: "+dist+" thresh: "+threshold);
+					updateEval(eval, ProblemSet.getDummyAuthor(), trainAuthor, dist, threshold, false);
+				}
 			} else {
 				if (line.length == 3){
 					updateEval(eval, testAuthor, trainAuthor, dist, threshold,false);
 				} else {
+					System.out.println("dist: "+dist+" thresh: "+threshold);
 					updateEval(eval, testAuthor, trainAuthor, dist, threshold,true);
 				}
-				//TODO this is where we want the fix. If we're doing the training document have the call be "true"
-				//the only question is how to tell if it is the training document or not.
-				
 			}
 		}
 		scan.close();
@@ -137,7 +142,7 @@ public class Distractorless {
 					incTN(eval);
 			}
 		} else {
-			if (testAuthor.equals(trainAuthor)) {
+			if (dist < threshold) {
 				incFP(eval);
 			} else {
 				incTN(eval);
