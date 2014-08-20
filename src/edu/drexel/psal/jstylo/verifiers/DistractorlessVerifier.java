@@ -202,6 +202,34 @@ public class DistractorlessVerifier extends Verifier{
 		return s;
 	}
 	
+	/*
+	 * 
+	 */
+	@Override
+	public double getAccuracy(){
+		double acc = 0.0;
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
+		for (DistractorlessEvaluation de : evaluations){
+			if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				if (result == 0){
+					tp++;
+				} else if (result == 1){
+					fp++;
+				} else if (result == 2){
+					fn++;
+				} else if (result == 3){
+					tn++;
+				}
+			}
+		}
+		acc = (((double)(tp + tn)) / ((double)(tp+tn+fp+fn)));  
+		return acc;
+	}
+	
 	/**
 	 * Calculates the average distance between the author's documents and returns that as the threshold baseline
 	 * @return

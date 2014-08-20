@@ -106,14 +106,12 @@ public class Distractorless {
 				if (line.length == 3) {
 					updateEval(eval, testAuthor, trainAuthor, dist, threshold, false);
 				} else {
-					System.out.println("dist: "+dist+" thresh: "+threshold);
 					updateEval(eval, ProblemSet.getDummyAuthor(), trainAuthor, dist, threshold, false);
 				}
 			} else {
 				if (line.length == 3){
 					updateEval(eval, testAuthor, trainAuthor, dist, threshold,false);
 				} else {
-					System.out.println("dist: "+dist+" thresh: "+threshold);
 					updateEval(eval, testAuthor, trainAuthor, dist, threshold,true);
 				}
 			}

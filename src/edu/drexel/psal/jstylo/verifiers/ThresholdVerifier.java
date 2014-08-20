@@ -62,4 +62,11 @@ public class ThresholdVerifier extends Verifier{
 			return "The author could not be verified";
 	}
 
+	/*
+	 * This class does not yet support meta-verification and so only returns 0
+	 */
+	@Override
+	public double getAccuracy(){
+		return 0.0;
+	}
 }

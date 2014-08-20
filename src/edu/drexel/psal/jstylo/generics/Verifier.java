@@ -7,4 +7,6 @@ public abstract class Verifier {
 	
 	public abstract String getResultString();
 	
+	public abstract double getAccuracy();
+	
 }
