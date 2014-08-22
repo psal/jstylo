@@ -328,10 +328,9 @@ public class DistractorlessVerifier extends Verifier{
 			} else {
 				Collections.sort(thresholds);
 				for (double d : thresholds){
-					System.out.println("Testing sort: "+d);
 				}
-				System.out.println("To get at least a rate of: "+rate+" we need a threshold of: "+thresholds.get(goal));
-				System.out.println("For comparison, the average distance is: "+cumulative/count);
+				//System.out.println("To get at least a rate of: "+rate+" we need a threshold of: "+thresholds.get(goal));
+				//System.out.println("For comparison, the average distance is: "+cumulative/count);
 				return thresholds.get(goal);
 			}
 		}
