@@ -1,6 +1,7 @@
 package edu.drexel.psal.jstylo.verifiers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -27,6 +28,7 @@ public class DistractorlessVerifier extends Verifier{
 	private List<DistractorlessEvaluation> evaluations; //stores each experiment
 	private boolean metaVerification; //whether or not we actually know the authors of the documents.
 	private double[] centroid;
+	private double TPThresholdRate;
 	
 	private Instances trainingInstances; //known documents
 	private Instances testingInstances; //documents to be verified
@@ -40,7 +42,48 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param tei
 	 */
 	public DistractorlessVerifier(Instances tri, Instances tei, boolean meta){
-		this(tri,tei,0.0,meta);
+		//grab the instances
+		trainingInstances = tri;
+		testingInstances = tei;
+		//and set class indicies
+		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
+		if (testingInstances != null){
+			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
+		}
+		trainAuthor = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex()).value((int) trainingInstances.instance(0).classValue());
+		//initialize data structures
+		analysisString = "";
+		evaluations = new ArrayList<DistractorlessEvaluation>();
+		
+		metaVerification = meta;
+	}
+	
+	/**
+	 * Constructor for use with a desired true positive rate on known data. this will pick the narrowest threshold that meets this criteria for analysis.
+	 * @param tri
+	 * @param tei
+	 * @param meta
+	 * @param rate
+	 */
+	public DistractorlessVerifier(Instances tri, Instances tei, boolean meta, double rate){
+		//grab the instances
+		trainingInstances = tri;
+		testingInstances = tei;
+		//and set class indicies
+		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
+		if (testingInstances != null){
+			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
+		}
+		trainAuthor = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex()).value((int) trainingInstances.instance(0).classValue());
+		//initialize data structures
+		analysisString = "";
+		evaluations = new ArrayList<DistractorlessEvaluation>();
+		
+		metaVerification = meta;
+
+		//set rate
+		TPThresholdRate = rate;
+		thresholdModifier = Double.MIN_VALUE;
 	}
 	
 	/**
@@ -70,8 +113,9 @@ public class DistractorlessVerifier extends Verifier{
 		
 		//grab threshold modifier
 		thresholdModifier = modifier;
+		TPThresholdRate = Double.MIN_VALUE;
 	}
-
+	
 	public void setTestInstances(Instances tei){
 		testingInstances = tei;
 	}
@@ -125,9 +169,17 @@ public class DistractorlessVerifier extends Verifier{
 		// Calculates the average distance between all documents
 		analysisString = runAnalysis();
 
+		Double thresh = 0.0;
 		// Create a list of evaluations--one for each testing instance
-		Double thresh = calculateDesiredThreshold(); // grab the threshold from the analysis string
-		thresh = thresh + thresh * thresholdModifier; // apply the modifier
+		//FIXME
+		if (TPThresholdRate == Double.MIN_VALUE){
+			System.out.println("Generating threshold based on average times a multiplier");
+			thresh = calculateDesiredThreshold(0.0); // grab the threshold from the analysis string
+			thresh = thresh + thresh * thresholdModifier; // apply the modifier
+		} else {
+			System.out.println("Generating threshold bassed on desired true positive rate on known data");
+			thresh = calculateDesiredThreshold(TPThresholdRate);
+		}
 		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
@@ -234,24 +286,55 @@ public class DistractorlessVerifier extends Verifier{
 	 * Calculates the average distance between the author's documents and returns that as the threshold baseline
 	 * @return
 	 */
-	private double calculateDesiredThreshold(){
+	private double calculateDesiredThreshold(double rate){
+		
 		String aCopy = new String(analysisString);
 		double cumulative = 0.0;
+		double max = 0.0;
 		int count = 0;
 		String[] line;
 		Scanner s = new Scanner(aCopy);
 		s.nextLine(); //skip the header
+		List<Double> thresholds = new ArrayList<Double>();
 		//collect all of the numbers
 		while (s.hasNext()){
 			line = s.nextLine().split(",");
-			cumulative += Double.parseDouble(line[line.length-1]);
+			double value = Double.parseDouble(line[line.length-1]);
+			if (value > max){
+				max = value;
+			}
+			thresholds.add(value);
+			cumulative += value;
 			count++;
 		}
 		
 		s.close();
 		
-		//divide cumulative by the total number of docs
-		return (cumulative/count);
+		//if we're using the average * multiplier method, just return the average
+		if (rate == 0.0){
+			return (cumulative/count);
+			
+		//otherwise, it's time to do some extra math
+		} else {
+			int goal = -1;
+			for (int i = 0; i<count; i++){
+				if ((i * (1.0/count)) > rate){
+					goal = i;
+					break;
+				}
+			}
+			if (goal == -1){
+				return (cumulative/count);
+			} else {
+				Collections.sort(thresholds);
+				for (double d : thresholds){
+					System.out.println("Testing sort: "+d);
+				}
+				System.out.println("To get at least a rate of: "+rate+" we need a threshold of: "+thresholds.get(goal));
+				System.out.println("For comparison, the average distance is: "+cumulative/count);
+				return thresholds.get(goal);
+			}
+		}
 	}
 
 	private void calculateCentroid(){

@@ -544,14 +544,26 @@ public class FullAPI {
 				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_verify_meta.xml").classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN).useDocTitles(true).build();
 		test.prepareInstances();
-		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(),test.getTestInstances(),true);
+		
+		
+		/*test distractorless via true positive on known based threshold*/
+		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(),test.getTestInstances(),true,0.80);
 		v.verify();
-		System.out.println(""+v.getAccuracy());
-		//test.calcInfoGain();
-		//test.applyInfoGain(1500);
-		//test.prepareAnalyzer();
-		//test.run();
-		//System.out.println(test.getClassificationAccuracy());
-		//System.out.println(test.getStatString());
+		System.out.println(v.getResultString());
+		
+		/* Test distractorless via average based threshold
+		Verifier v2 = new DistractorlessVerifier(test.getTrainingInstances(),test.getTestInstances(),0.0,true);
+		v2.verify();
+		System.out.println(v2.getResultString());
+		*/
+		
+		/*
+		test.calcInfoGain();
+		test.applyInfoGain(1500);
+		test.prepareAnalyzer();
+		test.run();
+		System.out.println(test.getClassificationAccuracy());
+		System.out.println(test.getStatString());
+		*/
 	}
 }
