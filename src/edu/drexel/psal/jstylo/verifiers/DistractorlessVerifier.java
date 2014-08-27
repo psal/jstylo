@@ -254,6 +254,33 @@ public class DistractorlessVerifier extends Verifier{
 		return s;
 	}
 	
+	public int[] getRates(){
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
+		for (DistractorlessEvaluation de : evaluations){
+			if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				if (result == 0){
+					tp++;
+				} else if (result == 1){
+					fp++;
+				} else if (result == 2){
+					fn++;
+				} else if (result == 3){
+					tn++;
+				}
+			}
+		}
+		int[] results = new int[4];
+		results[0]=tp;
+		results[1]=fp;
+		results[2]=fn;
+		results[3]=tn;
+		return results;
+	}
+	
 	/*
 	 * 
 	 */
