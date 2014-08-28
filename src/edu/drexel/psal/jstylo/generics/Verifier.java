@@ -1,8 +1,12 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.Serializable;
 
-public abstract class Verifier {
-	
+
+public abstract class Verifier implements Serializable{
+
+	private static final long serialVersionUID = 1L;
+
 	public abstract void verify();
 	
 	public abstract String getResultString();

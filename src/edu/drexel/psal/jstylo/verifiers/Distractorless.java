@@ -1,6 +1,7 @@
 package edu.drexel.psal.jstylo.verifiers;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Scanner;
 
@@ -11,7 +12,7 @@ import weka.classifiers.functions.SMO;
 import weka.core.Instance;
 import weka.core.Instances;
 
-public class Distractorless {
+public class Distractorless implements Serializable{
 
 	/*
 	 * These values are used to create a "fake" weka evaluation for statistical purposes.

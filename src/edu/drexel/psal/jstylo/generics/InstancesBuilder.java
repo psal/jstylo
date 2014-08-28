@@ -286,9 +286,6 @@ public class InstancesBuilder extends Engine {
 		
 		featThreads = null;
 		
-		//TODO extract test features here if present rather then in testing thread.
-		//Something's going wrong later on
-		
 		//cull the List<List<EventSet>> before returning
 		List<List<EventSet>> temp = cull(eventList, cfd);
 		
@@ -379,7 +376,6 @@ public class InstancesBuilder extends Engine {
 			int numThreads = getNumThreads();
 			int threadsToUse = numThreads;
 			int numInstances = ps.getAllTestDocs().size();
-		
 			//make sure number of threads isn't silly
 			if (numThreads > numInstances) {
 				threadsToUse = numInstances;
@@ -407,7 +403,7 @@ public class InstancesBuilder extends Engine {
 			//add all of the instance objects to the Instances object
 			for (Instance inst: generatedInstances){
 				testInstances.add(inst);
-			}		
+			}	
 		}
 	}
 
@@ -746,29 +742,58 @@ public class InstancesBuilder extends Engine {
 		//Run method
 		@Override
 		public void run() {
-			//for all docs in this div
-			for (int i = div * threadId; i < Math.min(numInstances, div
-					* (threadId + 1)); i++)
+			// for all docs in this div
+			for (int i = div * threadId; i < Math.min(numInstances, div * (threadId + 1)); i++) {
 				try {
-					//grab the document
+					//System.out.println("Processing doc i: "+i);
+					// grab the document
 					Document doc = ps.getAllTestDocs().get(i);
-					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents());
-					//cull the events/eventSets with respect to training events/sets
+					// extract its event sets
+					List<EventSet> events = extractEventSets(doc, cfd, loadingDocContents());
+					// cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
-					//build the instance
-					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							events, isSparse(), usingDocTitles());
-					//normalize it
+					// build the instance
+					Instance instance = createInstance(attributes, relevantEvents, cfd, events, isSparse(),
+							usingDocTitles());
+					// normalize it
 					normInstance(cfd, instance, events, usingDocTitles(), attributes);
-					//add it to the collection of instances to be returned by the thread
+					// add it to the collection of instances to be returned by the thread
 					list.add(instance);
 				} catch (Exception e) {
 					Logger.logln("Error creating Test Instances!", LogOut.STDERR);
-					Logger.logln(ps.getAllTestDocs().get(i).getFilePath()+" author: "+ps.getAllTestDocs().get(i).getAuthor());
+					Logger.logln(ps.getAllTestDocs().get(i).getFilePath() + " author: "
+							+ ps.getAllTestDocs().get(i).getAuthor());
 					Logger.logln(e.getMessage(), LogOut.STDERR);
 					e.printStackTrace();
 				}
+			}
+			if ((threadId == (numInstances/div)-1)&&(div*threadId+div)<numInstances){
+				for (int i = div*threadId+div; i < numInstances; i++){
+					try {
+						//System.out.println("Processing doc i: "+i);
+						// grab the document
+						Document doc = ps.getAllTestDocs().get(i);
+						// extract its event sets
+						List<EventSet> events = extractEventSets(doc, cfd, loadingDocContents());
+						// cull the events/eventSets with respect to training events/sets
+						events = cullWithRespectToTraining(relevantEvents, events, cfd);
+						// build the instance
+						Instance instance = createInstance(attributes, relevantEvents, cfd, events, isSparse(),
+								usingDocTitles());
+						// normalize it
+						normInstance(cfd, instance, events, usingDocTitles(), attributes);
+						// add it to the collection of instances to be returned by the thread
+						list.add(instance);
+					} catch (Exception e) {
+						Logger.logln("Error creating Test Instances!", LogOut.STDERR);
+						Logger.logln(ps.getAllTestDocs().get(i).getFilePath() + " author: "
+								+ ps.getAllTestDocs().get(i).getAuthor());
+						Logger.logln(e.getMessage(), LogOut.STDERR);
+						e.printStackTrace();
+					}
+				}
+			}
+			//System.out.println("div: "+div+" threadId: "+threadId);
 		}
 		
 	}
@@ -810,24 +835,46 @@ public class InstancesBuilder extends Engine {
 		@Override
 		public void run() {
 			//for all docs in this div
-			for (int i = div * threadId; i < Math.min(numInstances, div
-					* (threadId + 1)); i++)
+			for (int i = div * threadId; i < Math.min(numInstances, div * (threadId + 1)); i++) {
 				try {
-					//grab the document
-					//Document doc = ps.getAllTrainDocs().get(i);
-					//create the instance using it
-				    Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
-					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							eventList.get(i), isSparse(), usingDocTitles());
-					//normalize it
-					normInstance(cfd, instance, eventList.get(i), usingDocTitles(),attributes);
-					//add it to this div's list of completed instances
+					// grab the document
+					// Document doc = ps.getAllTrainDocs().get(i);
+					// create the instance using it
+					Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
+					Instance instance = createInstance(attributes, relevantEvents, cfd, eventList.get(i), isSparse(),
+							usingDocTitles());
+					// normalize it
+					normInstance(cfd, instance, eventList.get(i), usingDocTitles(), attributes);
+					// add it to this div's list of completed instances
 					list.add(instance);
 				} catch (Exception e) {
 					Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
-					Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
+					Logger.logln("[THREAD-" + threadId + "] Problematic document: "
+							+ ps.getAllTrainDocs().get(i).getFilePath());
 					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
 				}
+			}
+			if ((threadId == (numInstances/div)-1)&&(div*threadId+div)<numInstances){
+				for (int i = div*threadId+div; i < numInstances; i++){
+					try {
+						// grab the document
+						// Document doc = ps.getAllTrainDocs().get(i);
+						// create the instance using it
+						Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
+						Instance instance = createInstance(attributes, relevantEvents, cfd, eventList.get(i), isSparse(),
+								usingDocTitles());
+						// normalize it
+						normInstance(cfd, instance, eventList.get(i), usingDocTitles(), attributes);
+						// add it to this div's list of completed instances
+						list.add(instance);
+					} catch (Exception e) {
+						Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
+						Logger.logln("[THREAD-" + threadId + "] Problematic document: "
+								+ ps.getAllTrainDocs().get(i).getFilePath());
+						Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+					}
+				}
+			}
 		}
 		
 	}

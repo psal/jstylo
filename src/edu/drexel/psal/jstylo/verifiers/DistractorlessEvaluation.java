@@ -1,5 +1,7 @@
 package edu.drexel.psal.jstylo.verifiers;
 
+import java.io.Serializable;
+
 import weka.classifiers.Evaluation;
 import weka.core.Instance;
 
@@ -11,7 +13,7 @@ import weka.core.Instance;
  * to aid in the evaluation of a verifier's effectiveness. 
  * @author Travis Dutko
  */
-public class DistractorlessEvaluation {
+public class DistractorlessEvaluation implements Serializable{
 
 	private Evaluation resultEval;
 	private Instance testInstance;
