@@ -64,13 +64,12 @@ public class CumulativeFeatureDriver implements Serializable {
 	 */
 	public CumulativeFeatureDriver(CumulativeFeatureDriver other) throws Exception
 	{
-		String path = "tmp.xml";
-		File xml = new File(path);
+		File xml = File.createTempFile("tmp",".xml");
 		PrintWriter pw = new PrintWriter(xml);
 		pw.print(other.toXMLString());
 		pw.flush();
 		pw.close();
-		XMLParser parser = new XMLParser(path);
+		XMLParser parser = new XMLParser(xml.getPath());
 		CumulativeFeatureDriver generated = parser.cfd;
 		this.name = generated.name;
 		this.description = generated.description;
