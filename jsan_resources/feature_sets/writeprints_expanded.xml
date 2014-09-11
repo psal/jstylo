@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<feature-set name="WritePrints (Limited) - Expanded">
+<feature-set name="WritePrints Expanded">
 	<description value="A (partial) set of features used by Zheng et al. Feature classes with many features (e.g. character bigrams etc.) are limited to top 50."/>
 	<feature name="Character count" calc_hist="false">
 		<description value="The total number of characters in the document."/>
@@ -188,8 +188,8 @@
 			</canonicizer>
 		</canonicizers>
 		<cullers>
-			<culler class="edu.drexel.psal.jstylo.eventCullers.MostCommonEventsExtended">
-				<param name="N" value="50"/>
+			<culler class="edu.drexel.psal.jstylo.eventCullers.MinAppearances">
+				<param name="N" value="2"/>
 			</culler>
 		</cullers>
 		<norm value="NONE"/>
@@ -218,8 +218,8 @@
 		<canonicizers>
 		</canonicizers>
 		<cullers>
-			<culler class="edu.drexel.psal.jstylo.eventCullers.MostCommonEventsExtended">
-				<param name="N" value="50"/>
+			<culler class="edu.drexel.psal.jstylo.eventCullers.MinAppearances">
+				<param name="N" value="2"/>
 			</culler>
 		</cullers>
 		<norm value="NONE"/>
@@ -266,8 +266,8 @@
 			</canonicizer>
 		</canonicizers>
 		<cullers>
-			<culler class="edu.drexel.psal.jstylo.eventCullers.MostCommonEventsExtended">
-				<param name="N" value="50"/>
+			<culler class="edu.drexel.psal.jstylo.eventCullers.MinAppearances">
+				<param name="N" value="2"/>
 			</culler>
 		</cullers>
 		<norm value="NONE"/>
@@ -275,8 +275,7 @@
 	</feature>
 	<feature name="Word Bigrams" calc_hist="true">
 		<description value="Frequencies of various word bigrams in the text, case insensitive and without punctuations."/>
-		<event-driver class="com.jgaap.eventDrivers.MNLetterWordEventDriver">
-			<param name="M" value=""/>
+		<event-driver class="com.jgaap.eventDrivers.WordNGramEventDriver">
 			<param name="N" value="2"/>
 		</event-driver>
 		<canonicizers>
@@ -295,8 +294,7 @@
 	</feature>
 	<feature name="Word Trigrams" calc_hist="true">
 		<description value="Frequencies of various word trigrams in the text, case insensitive and without punctuations."/>
-		<event-driver class="com.jgaap.eventDrivers.MNLetterWordEventDriver">
-			<param name="M" value=""/>
+		<event-driver class="com.jgaap.eventDrivers.WordNGramEventDriver">
 			<param name="N" value="3"/>
 		</event-driver>
 		<canonicizers>
@@ -329,8 +327,8 @@
 			</canonicizer>
 		</canonicizers>
 		<cullers>
-			<culler class="edu.drexel.psal.jstylo.eventCullers.MostCommonEventsExtended">
-				<param name="N" value="50"/>
+			<culler class="edu.drexel.psal.jstylo.eventCullers.MinAppearances">
+				<param name="N" value="2"/>
 			</culler>
 		</cullers>
 		<norm value="NONE"/>
