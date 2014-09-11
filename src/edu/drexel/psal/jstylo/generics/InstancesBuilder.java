@@ -234,8 +234,8 @@ public class InstancesBuilder extends Engine {
 		eventList.clear();
 		eventList = null;
 		
-		cfd.clean();
-		cfd = null;
+		//cfd.clean();
+		//cfd = null;
 		
 		System.gc();
 	}
