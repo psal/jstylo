@@ -43,7 +43,7 @@ public class Engine implements API {
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
 
 		List<EventSet> generatedEvents = new ArrayList<EventSet>();
-		// Extract the Events from the documents
+		// Extract the Events from the document
 		try {
 			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents);
 		} catch (Exception e) {

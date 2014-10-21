@@ -4,8 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -20,6 +22,7 @@ import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.FeatureDriver;
+import edu.drexel.psal.jstylo.generics.FileHelper;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 
@@ -149,6 +152,9 @@ public class FeaturesTabDriver {
 								}
 							}
 						}
+						
+						// check to see if "last modified" in 
+						
 						// case 3: add new cfd
 						main.cfd = cfd;
 						main.presetCFDs.add(cfd);
@@ -432,11 +438,65 @@ public class FeaturesTabDriver {
 					return name.endsWith(".xml");
 				}
 			});
-
+			
+			boolean dirExists = true;
+			File cacheBaseDir = new File(JSANConstants.JSAN_CACHE_PREFIX);
+			if (!cacheBaseDir.exists() || !cacheBaseDir.isDirectory()) {
+				try {
+					cacheBaseDir.mkdir();
+				} catch(SecurityException e) {
+					Logger.logln("Failed to create directory "+cacheBaseDir.getAbsolutePath());
+					dirExists = false;
+				}
+			}
 			String path;
 			for (File f : featureSetFiles) {
 				path = f.getAbsolutePath();
 				main.presetCFDs.add(new CumulativeFeatureDriver(path));
+				// THIS is where we check to see if the CFD was modified. Check
+				// in the folder of the cache to see if it was modified.
+				if (!dirExists)
+					continue;
+				
+				File cacheDir = new File(cacheBaseDir, main.presetCFDs.get(main.presetCFDs.size()-1).getName());
+				if (!cacheDir.exists()) {
+					try {
+						if (!cacheDir.mkdir()) {
+							Logger.logln("Failed to create directory "+cacheDir.getAbsolutePath());
+							continue;
+						}
+					} catch (SecurityException e) {
+						Logger.logln("Failed to create directory "+cacheDir.getAbsolutePath());
+						continue;
+					}
+				}
+				File lastModified = new File(cacheDir, "last_modified");
+				if (!lastModified.exists()) {
+					BufferedWriter writer = new BufferedWriter(new FileWriter(lastModified));
+					writer.write(Long.toString(f.lastModified()));
+					writer.close();
+				} else {
+					BufferedReader reader = new BufferedReader(new FileReader(lastModified));
+					String cfdLastModified = reader.readLine();
+					reader.close();
+					long lmLong = Long.parseLong(cfdLastModified);
+					if (lmLong == f.lastModified())
+						continue;
+					// the cache is invalid. clear it out
+					File[] cacheDirFiles = cacheDir.listFiles();
+					if (cacheDirFiles == null)
+						continue; // nothing to remove
+					for (File featureSetFile : cacheDirFiles) {
+						if (featureSetFile.equals(lastModified)) {
+							BufferedWriter writer = new BufferedWriter(
+									new FileWriter(lastModified));
+							writer.write(Long.toString(f.lastModified()));
+							writer.close();
+						} else {
+							FileHelper.deleteRecursive(featureSetFile);
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			Logger.logln("Failed to read feature set files.", LogOut.STDERR);
