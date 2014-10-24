@@ -146,7 +146,7 @@ public class DistractorlessVerifier extends Verifier{
 			thresh = calculateDesiredThreshold(TPThresholdRate);
 		}
 		
-		System.out.println("Thresh: "+thresh);
+		//System.out.println("Thresh: "+thresh);
 		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
@@ -421,6 +421,7 @@ public class DistractorlessVerifier extends Verifier{
 			if (trainingInstances.get(0).attribute(i).type() == Attribute.NOMINAL){
 				continue;
 			} else {
+				//FIXME later figure out why these conditions sometimes prove true.
 				if (!(Double.isNaN(b[i]) || Double.isNaN(a[centroidIndex]))) {
 					// calculate the dot and norm values
 					dot += a[centroidIndex] * b[i];
@@ -428,12 +429,12 @@ public class DistractorlessVerifier extends Verifier{
 					normB += Math.pow(b[i], 2);
 					centroidIndex++;
 				} else {
-					if (Double.isNaN(b[i])){
+					/*if (Double.isNaN(b[i])){
 						System.out.println("b[i] is NaN at i: "+i);
 					}
 					if (Double.isNaN(a[centroidIndex])){
 						System.out.println("a[centroidIndex] is NaN at: "+centroidIndex);
-					}
+					}*/
 					centroidIndex++;
 				}
 			}
