@@ -134,7 +134,7 @@ public class DistractorlessVerifier extends Verifier{
 		
 		// Calculates the average distance between all documents
 		analysisString = runAnalysis();
-
+		
 		Double thresh = 0.0;
 		// Create a list of evaluations--one for each testing instance
 		if (TPThresholdRate == Double.MIN_VALUE){
@@ -145,6 +145,8 @@ public class DistractorlessVerifier extends Verifier{
 			//System.out.println("Generating threshold bassed on desired true positive rate on known data");
 			thresh = calculateDesiredThreshold(TPThresholdRate);
 		}
+		
+		System.out.println("Thresh: "+thresh);
 		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
@@ -291,8 +293,15 @@ public class DistractorlessVerifier extends Verifier{
 		List<Double> thresholds = new ArrayList<Double>();
 		//collect all of the numbers
 		while (s.hasNext()){
-			line = s.nextLine().split(",");
+			String string = s.nextLine();
+			line = string.split(",");
 			double value = Double.parseDouble(line[line.length-1]);
+			/*if (value == Double.NaN){
+				System.out.println("NaN from: "+line);
+			} else {
+				System.out.println("In-process assessment: " + value);
+				System.out.println("Line: "+string);
+			}*/
 			if (value > max){
 				max = value;
 			}
@@ -316,6 +325,8 @@ public class DistractorlessVerifier extends Verifier{
 					break;
 				}
 			}
+			
+			//if we can't find something satisfactory for some reason, return the average
 			if (goal == -1){
 				return (cumulative/count);
 			} else {
@@ -384,12 +395,13 @@ public class DistractorlessVerifier extends Verifier{
 		String s = "";
 		for (int j = 0; j < trainingInstances.numInstances(); j++) {
 			Instance instJ = trainingInstances.get(j);
+			Double dist = calculateDistanceFromCentroid(instJ.toDoubleArray());
 			// format is train author, test author, cosine distance
 			// DO NOT CHANGE
 			// unless you also change the Distractorless.java's evalCSV method to compensate
 			s += String.format(instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
 					+ instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
-					+ calculateDistanceFromCentroid(instJ.toDoubleArray()) + "\n");
+					+ dist + "\n");
 		}
 		return s;
 	}
@@ -409,14 +421,23 @@ public class DistractorlessVerifier extends Verifier{
 			if (trainingInstances.get(0).attribute(i).type() == Attribute.NOMINAL){
 				continue;
 			} else {
-				//calculate the dot and norm values
-				dot += a[centroidIndex]*b[i];
-				normA += Math.pow(a[centroidIndex],2);
-				normB += Math.pow(b[i],2);
-				centroidIndex++;
+				if (!(Double.isNaN(b[i]) || Double.isNaN(a[centroidIndex]))) {
+					// calculate the dot and norm values
+					dot += a[centroidIndex] * b[i];
+					normA += Math.pow(a[centroidIndex], 2);
+					normB += Math.pow(b[i], 2);
+					centroidIndex++;
+				} else {
+					if (Double.isNaN(b[i])){
+						System.out.println("b[i] is NaN at i: "+i);
+					}
+					if (Double.isNaN(a[centroidIndex])){
+						System.out.println("a[centroidIndex] is NaN at: "+centroidIndex);
+					}
+					centroidIndex++;
+				}
 			}
 		}
-		
 		//simple math to calculate the final value
 		double val = 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
 		return val;

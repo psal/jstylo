@@ -840,7 +840,7 @@ public class InstancesBuilder extends Engine {
 					// grab the document
 					// Document doc = ps.getAllTrainDocs().get(i);
 					// create the instance using it
-					Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
+					//Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
 					Instance instance = createInstance(attributes, relevantEvents, cfd, eventList.get(i), isSparse(),
 							usingDocTitles());
 					// normalize it
@@ -848,10 +848,10 @@ public class InstancesBuilder extends Engine {
 					// add it to this div's list of completed instances
 					list.add(instance);
 				} catch (Exception e) {
-					Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
-					Logger.logln("[THREAD-" + threadId + "] Problematic document: "
-							+ ps.getAllTrainDocs().get(i).getFilePath());
-					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+					//Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
+					//Logger.logln("[THREAD-" + threadId + "] Problematic document: "
+					//		+ ps.getAllTrainDocs().get(i).getFilePath());
+					//Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
 				}
 			}
 			if ((threadId == (numInstances/div)-1)&&(div*threadId+div)<numInstances){
@@ -860,7 +860,7 @@ public class InstancesBuilder extends Engine {
 						// grab the document
 						// Document doc = ps.getAllTrainDocs().get(i);
 						// create the instance using it
-						Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
+						//Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
 						Instance instance = createInstance(attributes, relevantEvents, cfd, eventList.get(i), isSparse(),
 								usingDocTitles());
 						// normalize it
@@ -868,10 +868,10 @@ public class InstancesBuilder extends Engine {
 						// add it to this div's list of completed instances
 						list.add(instance);
 					} catch (Exception e) {
-						Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
-						Logger.logln("[THREAD-" + threadId + "] Problematic document: "
-								+ ps.getAllTrainDocs().get(i).getFilePath());
-						Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+						//Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
+						//Logger.logln("[THREAD-" + threadId + "] Problematic document: "
+						//		+ ps.getAllTrainDocs().get(i).getFilePath());
+						//Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
 					}
 				}
 			}
@@ -928,13 +928,13 @@ public class InstancesBuilder extends Engine {
 					* (threadId + 1)); i++){
 				try {
 					//try to extract the events
-				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
+				    //Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
 					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents());
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
-					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!", LogOut.STDERR);
-					Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
-					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+					//Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!", LogOut.STDERR);
+					//Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
+					//Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
 				} 
 			}
 		}
