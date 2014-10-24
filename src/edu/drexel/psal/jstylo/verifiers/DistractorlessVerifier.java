@@ -51,6 +51,7 @@ public class DistractorlessVerifier extends Verifier{
 			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
 		}
 		trainAuthor = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex()).value((int) trainingInstances.instance(0).classValue());
+		System.out.println("TrainAuthor: "+trainAuthor);
 		//initialize data structures
 		analysisString = "";
 		evaluations = new ArrayList<DistractorlessEvaluation>();
@@ -201,6 +202,7 @@ public class DistractorlessVerifier extends Verifier{
 					s+="false negative\n\n";
 					fn++;
 				} else if (result == 3){
+					System.out.println();
 					s+="true negative\n\n";
 					tn++;
 				} else {
@@ -212,7 +214,7 @@ public class DistractorlessVerifier extends Verifier{
 		
 		if (metaVerification){
 			s+=String.format("Overall Result Counts: \nTrue Positives: %d\nFalse Positives: %d\nFalse Negatives: %d\nTrue Negatives: %d\nTotal experiments: %d",
-					tp,fp,tn,fn,(tp+fp+tn+fn));
+					tp,fp,fn,tn,(tp+fp+fn+tn));
 		}
 		
 		return s;
