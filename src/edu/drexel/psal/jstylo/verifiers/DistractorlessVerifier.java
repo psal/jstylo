@@ -86,15 +86,16 @@ public class DistractorlessVerifier extends Verifier{
 		thresholdModifier = Double.MIN_VALUE;
 	}
 	
-	/**
+	/*
 	 * Constructor that also takes a threshold modifier.
+	 * NOT CURRENTLY USED AS IT IS TYPICALLY INEFFECTIVE.
 	 * Plans are in place for developing an automated way to determine the ideal threshold, but for now put the power in the user's hands.
 	 * To big of a positive modifier (ie 1.00) will likely result in a lot of false positives, whereas too low (-1.00) would have a lot of false negatives.
 	 * @param tri
 	 * @param tei
 	 * @param modifier
 	 */
-	public DistractorlessVerifier(Instances tri, Instances tei, double modifier, boolean meta) {
+/*	public DistractorlessVerifier(Instances tri, Instances tei, double modifier, boolean meta) {
 		
 		//grab the instances
 		trainingInstances = tri;
@@ -114,7 +115,7 @@ public class DistractorlessVerifier extends Verifier{
 		//grab threshold modifier
 		thresholdModifier = modifier;
 		TPThresholdRate = Double.MIN_VALUE;
-	}
+	} */
 	
 	public void setTestInstances(Instances tei){
 		testingInstances = tei;
@@ -129,55 +130,18 @@ public class DistractorlessVerifier extends Verifier{
 		calculateCentroid();
 		
 		analysisString+=String.format("problem,test_author,train_author,dist\n");
-		//TODO Perform this "leave one out" for a more sophisticated way of establishing the desired threshold?
-		//List<Document> documents, docs;
-		//Document doc;
-		
-		// =====================================================================
-		// author leave-one-out on own, known documents: This is used to establish the threshold
-		// =====================================================================
-		/*for (String author: ps.getAuthors())
-		{
-			docs = ps.getTrainDocs(author);
-			// iterate over author's docs and each time take one to be the
-			// test doc
-			for (int i = 0; i < docs.size(); i++)
-			{
-				// prepare documents
-				documents = new LinkedList<>();
-				for (int j = 0; j < docs.size(); j++)
-				{
-					doc = docs.get(j);
-					// test doc
-					if (i == j)
-						documents.add(new Document(
-								doc.getFilePath(),
-								null,
-								"Correct: " + doc.getAuthor()));
-					else
-						documents.add(new Document(
-								doc.getFilePath(),
-								doc.getAuthor(),
-								doc.getTitle()));
-				}
-				
-				//run the leave one out classification
-				
-			}
-		}*/
 		
 		// Calculates the average distance between all documents
 		analysisString = runAnalysis();
 
 		Double thresh = 0.0;
 		// Create a list of evaluations--one for each testing instance
-		//FIXME
 		if (TPThresholdRate == Double.MIN_VALUE){
-			System.out.println("Generating threshold based on average times a multiplier");
+			//System.out.println("Generating threshold based on average times a multiplier");
 			thresh = calculateDesiredThreshold(0.0); // grab the threshold from the analysis string
 			thresh = thresh + thresh * thresholdModifier; // apply the modifier
 		} else {
-			System.out.println("Generating threshold bassed on desired true positive rate on known data");
+			//System.out.println("Generating threshold bassed on desired true positive rate on known data");
 			thresh = calculateDesiredThreshold(TPThresholdRate);
 		}
 		
@@ -495,6 +459,11 @@ public class DistractorlessVerifier extends Verifier{
 		return val;
 	}
 	
+	public List<DistractorlessEvaluation> getInternalEvaluations(){
+		
+		return evaluations;
+	}
+	
 	public List<Evaluation> getResultEvaluations(){
 		List<Evaluation> results = new ArrayList<Evaluation>();
 		for (DistractorlessEvaluation de : evaluations){
@@ -506,5 +475,4 @@ public class DistractorlessVerifier extends Verifier{
 	public Evaluation getResultsEval(){
 		return evaluations.get(0).getResultEval();
 	}
-	
 }

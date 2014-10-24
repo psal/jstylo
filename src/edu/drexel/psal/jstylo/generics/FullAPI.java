@@ -332,7 +332,7 @@ public class FullAPI {
 				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
 			}
 		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
-			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),arg,true);
+			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),true,arg);
 		}
 		verifier.verify();
 	}
