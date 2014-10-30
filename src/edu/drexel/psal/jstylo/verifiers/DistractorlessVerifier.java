@@ -222,6 +222,37 @@ public class DistractorlessVerifier extends Verifier{
 		return s;
 	}
 	
+	public String getCleanResultString(){
+		String s = "";
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
+		for (DistractorlessEvaluation de : evaluations){
+			if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				if (result == 0){
+					tp++;
+				} else if (result == 1){
+					fp++;
+				} else if (result == 2){
+					fn++;
+				} else if (result == 3){
+					tn++;
+				} else {
+					;
+				}
+			}
+		}
+		
+		if (metaVerification){
+			s+=String.format("Overall Result Counts: \nTrue Positives: %d\nFalse Positives: %d\nFalse Negatives: %d\nTrue Negatives: %d\nTotal experiments: %d",
+					tp,fp,fn,tn,(tp+fp+fn+tn));
+		}
+		
+		return s;
+	}
+	
 	public int[] getRates(){
 		int tp = 0;
 		int fp = 0;
@@ -315,7 +346,9 @@ public class DistractorlessVerifier extends Verifier{
 		//if we're using the average * multiplier method, just return the average
 		if (rate == 0.0){
 			return (cumulative/count);
-			
+		}else if (rate == 1.0){
+			Collections.sort(thresholds);
+			return thresholds.get(thresholds.size()-1);
 		//otherwise, it's time to do some extra math
 		} else {
 			int goal = -1;
