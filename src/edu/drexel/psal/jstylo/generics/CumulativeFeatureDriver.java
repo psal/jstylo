@@ -25,6 +25,11 @@ import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 public class CumulativeFeatureDriver implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	/**
+	 * Used when serializing it to XML. The initial size is
+	 * initialized to this so it doesn't have to continuously find more memory.
+	 */
+	private static final int INITIAL_WRITE_SIZE = 4096;
 
 	/* ======
 	 * fields
@@ -358,71 +363,155 @@ public class CumulativeFeatureDriver implements Serializable {
 		return true;
 	}
 	
+    /**
+     * Choose what is serialized from the feature set.
+     * @author Andrew DiNunzio
+     *
+     */
+    public enum FeatureSetElement {
+        EVENT_DRIVERS,
+        CANONICIZERS,
+        CULLERS,
+        NORMALIZATION;
+        
+        public static final EnumSet<FeatureSetElement> ALL = EnumSet.allOf(FeatureSetElement.class);
+    }
+	
 	/**
 	 * Saves the cumulative feature driver in XML format to the given path.
 	 * @param path
 	 * 		The path to save to.
 	 */
 	public String toXMLString() {
-		String res = "";
-
-		res += "<?xml version=\"1.0\"?>\n";
-		res += "<feature-set name=\""+name+"\">\n";
-		res += "\t<description value=\""+description+"\"/>\n";
-
-		FeatureDriver fd;
-		for (int i=0; i<features.size(); i++) {
-			fd = features.get(i);
-			res += "\t<feature name=\""+fd.getName()+"\" calc_hist=\""+fd.isCalcHist()+"\">\n";
-
-			// description
-			res += "\t\t<description value=\""+fd.getDescription()+"\"/>\n";
-
-			// event driver
-			EventDriver ed = fd.getUnderlyingEventDriver();
-			res += "\t\t<event-driver class=\""+ed.getClass().getName()+"\">\n";
-			// parameters
-			for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(ed.getClass().getName())) {
-				res += "\t\t\t<param name=\""+param.getFirst()+"\" value=\""+ed.getParameter(param.getFirst())+"\"/>\n";
-			}
-			res += "\t\t</event-driver>\n";
-
-			// canonicizers
-			res += "\t\t<canonicizers>\n";
-			if (fd.getCanonicizers() != null) {
-				for (Canonicizer c: fd.getCanonicizers()) {
-					res += "\t\t\t<canonicizer class=\""+c.getClass().getName()+"\">\n";
-					for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(c.getClass().getName())) {
-						res += "\t\t\t\t<param name=\""+param.getFirst()+"\" value=\""+c.getParameter(param.getFirst())+"\"/>\n";
-					}
-					res += "\t\t\t</canonicizer>\n";
-				}
-			}
-			res += "\t\t</canonicizers>\n";
-
-			// cullers
-			res += "\t\t<cullers>\n";
-			if (fd.getCullers() != null) {
-				for (EventCuller ec: fd.getCullers()) {
-					res += "\t\t\t<culler class=\""+ec.getClass().getName()+"\">\n";
-					for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(ec.getClass().getName())) {
-						res += "\t\t\t\t<param name=\""+param.getFirst()+"\" value=\""+ec.getParameter(param.getFirst())+"\"/>\n";
-					}
-					res += "\t\t\t</culler>\n";
-				}
-			}
-			res += "\t\t</cullers>\n";
-
-			// normalization
-			res += "\t\t<norm value=\""+fd.getNormBaseline()+"\"/>\n";
-			res += "\t\t<factor value=\""+fd.getNormFactor()+"\"/>\n";
-
-			res += "\t</feature>\n";
-		}
-		res += "</feature-set>\n";
-		
-		return res;
+		return toXMLString(FeatureSetElement.ALL);
 	}
+	
+    /**
+     * Serialize part of the CFD based on the featureFlags.
+     * 
+     * Always specify ALL when writing to file.
+     */
+    private String toXMLString(EnumSet<FeatureSetElement> featureFlags) {
+        StringBuilder res = new StringBuilder(INITIAL_WRITE_SIZE);
+
+        res.append("<?xml version=\"1.0\"?>\n");
+        res.append("<feature-set name=\"");
+        	res.append(name);
+        	res.append("\">\n");
+        res.append("\t<description value=\"");
+        	res.append(description);
+        	res.append("\"/>\n");
+
+        FeatureDriver fd;
+        for (int i=0; i<features.size(); i++) {
+            fd = features.get(i);
+            res.append("\t<feature name=\"");
+            	res.append(fd.getName());
+            	res.append("\" calc_hist=\"");
+            	res.append(fd.isCalcHist());
+            	res.append("\">\n");
+
+            // description
+            res.append("\t\t<description value=\"");
+            	res.append(fd.getDescription());
+            	res.append("\"/>\n");
+
+            if (featureFlags.contains(FeatureSetElement.EVENT_DRIVERS)) {
+                // event driver
+                EventDriver ed = fd.getUnderlyingEventDriver();
+                res.append("\t\t<event-driver class=\"");
+                	res.append(ed.getClass().getName());
+                	res.append("\">\n");
+                // parameters
+                for (Pair<String, FeatureDriver.ParamTag> param : FeatureDriver.getClassParams(ed.getClass().getName())) {
+                	res.append("\t\t\t<param name=\"");
+                		res.append(param.getFirst());
+                		res.append("\" value=\"");
+                		res.append(ed.getParameter(param.getFirst()));
+                		res.append("\"/>\n");
+                }
+                res.append("\t\t</event-driver>\n");
+            }
+            
+            if (featureFlags.contains(FeatureSetElement.CANONICIZERS)) {
+                // canonicizers
+                res.append("\t\t<canonicizers>\n");
+                if (fd.getCanonicizers() != null) {
+                    for (Canonicizer c : fd.getCanonicizers()) {
+                        res.append("\t\t\t<canonicizer class=\"");
+                        	res.append(c.getClass().getName());
+                        	res.append("\">\n");
+                        for (Pair<String, FeatureDriver.ParamTag> param : FeatureDriver.getClassParams(c.getClass().getName())) {
+                            res.append("\t\t\t\t<param name=\"");
+                            	res.append(param.getFirst());
+                            	res.append("\" value=\"");
+                            	res.append(c.getParameter(param.getFirst()));
+                            	res.append("\"/>\n");
+                        }
+                        res.append("\t\t\t</canonicizer>\n");
+                    }
+                }
+                res.append("\t\t</canonicizers>\n");
+            }
+
+            if (featureFlags.contains(FeatureSetElement.CULLERS)) {
+                // cullers
+            	res.append("\t\t<cullers>\n");
+                if (fd.getCullers() != null) {
+                    for (EventCuller ec: fd.getCullers()) {
+                        res.append("\t\t\t<culler class=\"");
+                        res.append(ec.getClass().getName());
+                        res.append("\">\n");
+                        for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(ec.getClass().getName())) {
+                            res.append("\t\t\t\t<param name=\"");
+                            	res.append(param.getFirst());
+                            	res.append("\" value=\"");
+                            	res.append(ec.getParameter(param.getFirst()));
+                            	res.append("\"/>\n");
+                        }
+                        res.append("\t\t\t</culler>\n");
+                    }
+                }
+                res.append("\t\t</cullers>\n");
+            }
+            
+            if (featureFlags.contains(FeatureSetElement.NORMALIZATION)) {
+                // normalization
+            	res.append("\t\t<norm value=\"");
+            		res.append(fd.getNormBaseline());
+            		res.append("\"/>\n");
+                res.append("\t\t<factor value=\"");
+                	res.append(fd.getNormFactor());
+                	res.append("\"/>\n");
+            }
+
+            res.append("\t</feature>\n");
+        }
+        res.append("</feature-set>\n");
+        
+        return res.toString();
+    }
+	
+	/**
+	 * 
+	 * @param featureFlags
+	 * @return
+	 */
+    public long longHash(EnumSet<FeatureSetElement> featureFlags) {
+        String xml = toXMLString(featureFlags);
+        long hash = 0;
+        long value;
+        int length = xml.length();
+        int i,j;
+        for (i=0; i < length; i++) {
+            value = xml.charAt(i);
+            for (j = length-(i+1); j > 0; j--)
+                value = (value << 5) - value;
+            hash += value;
+        }
+        return hash;
+    }
+	
 	
 	/**
 	 * XML parser to create a cumulative feature driver out of a XML file.
