@@ -1,5 +1,12 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,6 +30,7 @@ import com.jgaap.generics.Event;
 import com.jgaap.generics.EventHistogram;
 import com.jgaap.generics.EventSet;
 
+import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.eventDrivers.CharCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
@@ -41,8 +49,51 @@ public class Engine implements API {
 	@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
-
-		List<EventSet> generatedEvents = new ArrayList<EventSet>();
+		return extractEventSets(document, cumulativeFeatureDriver, loadDocContents, false);
+	}
+	
+	/**
+	 * Extracts the List of EventSets from a document using the provided CumulativeFeatureDriver.<br>
+	 * @param document the document to have features extracted and made into event sets
+	 * @param cumulativeFeatureDriver the driver containing the features to be extracted and the functionality to do so
+	 * @param loadDocContents whether or not the document contents are already loaded into the object
+	 * @param loadFromCache
+	 * 		Whether or not to use cached features. Should be false if CFD has been modified, since
+	 * 		this does not provide checks on the CFD's cache, just on the documents' caches.
+	 * @return the List of EventSets for the document
+	 * @throws Exception
+	 */
+	public List<EventSet> extractEventSets(Document document,
+			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents,
+			boolean loadFromCache) throws Exception {
+	
+		File cacheDir = new File(JSANConstants.JSAN_CACHE + cumulativeFeatureDriver.getName() + "/");
+		File authorDir = null;
+		if (document.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
+			authorDir = new File(JSANConstants.JSAN_CACHE + cumulativeFeatureDriver.getName() + "/");
+		} else {
+			authorDir = new File(cacheDir, document.getAuthor());
+		}
+		
+		List<EventSet> generatedEvents = null;
+		
+		if (loadFromCache) {
+			File documentFile = new File(authorDir, document.getTitle()+".cache");
+			generatedEvents = getCachedFeatures(document, authorDir, documentFile);
+			if (generatedEvents == null) {
+				// delete the cache for this document!
+				documentFile.delete();
+				
+				// program will continue as normal, extracting events
+			}
+			else {
+				// return the cached features
+				return generatedEvents;
+			}
+		}
+		
+		generatedEvents = new ArrayList<EventSet>();
+		
 		// Extract the Events from the documents
 		try {
 			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents);
@@ -50,9 +101,28 @@ public class Engine implements API {
 			Logger.logln("Failed to extract events from documents!");
 			throw new Exception();
 		}
+
+		// ----------------------------------------------------------------------------------------
+		// createEventSets(..) started making a cache file. Append the meta
+		// data's features to it.
+		// ----------------------------------------------------------------------------------------
+
 		// create metadata event to store document information
 		EventSet documentInfo = new EventSet();
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
+		
+		File docCache = new File(authorDir, document.getTitle() + ".cache");
+		boolean writeToCache = true;
+		if (!docCache.exists()) {
+			// createEventSets didn't record anything in the cache. Don't try to write anything.
+			// perhaps an Exception would be appropriate here instead.
+			writeToCache = false;
+		}
+		// append meta data to cache...
+		BufferedWriter writer = new BufferedWriter(new FileWriter(docCache, true));
+		if (writeToCache) {
+			writer.write(",\n" + documentInfo.getEventSetID() + "\n");
+		}
 
 		/*
 		 * Metadata Event format:
@@ -63,8 +133,12 @@ public class Engine implements API {
 
 		// Extract document title and author
 		Event authorEvent = new Event(document.getAuthor());
+		if (writeToCache)
+			writer.write(document.getAuthor() + "\n");
 		// Event titleEvent = new Event(document.getFilePath());
 		Event titleEvent = new Event(document.getTitle());
+		if (writeToCache)
+			writer.write(document.getTitle() + "\n");
 		documentInfo.addEvent(authorEvent);
 		documentInfo.addEvent(titleEvent);
 
@@ -79,9 +153,15 @@ public class Engine implements API {
 			if (!loadDocContents)
 				try {
 					doc.load();
-					tempEvent = new Event("" + (int) counter.getValue(doc));
+					String event = "" + (int) counter.getValue(doc);
+					tempEvent = new Event(event);
+					if (writeToCache)
+						writer.write(event + "\n");
 				} catch (Exception e) {
 					Logger.logln("Failed to extract sentence count from document!");
+					writer.close();
+					docCache.delete();
+					writeToCache = false;
 					throw new Exception();
 				}
 
@@ -97,9 +177,15 @@ public class Engine implements API {
 			try {
 				if (!loadDocContents)
 					doc.load();
-				tempEvent = new Event("" + (int) counter.getValue(doc));
+				String event = "" + (int) counter.getValue(doc);
+				tempEvent = new Event(event);
+				if (writeToCache)
+					writer.write(event + "\n");
 			} catch (Exception e) {
 				Logger.logln("Failed to extract word count from document!");
+				writer.close();
+				docCache.delete();
+				writeToCache = false;
 				throw new Exception();
 			}
 			documentInfo.addEvent(tempEvent);
@@ -114,9 +200,15 @@ public class Engine implements API {
 			try {
 				if (!loadDocContents)
 					doc.load();
-				tempEvent = new Event("" + (int) counter.getValue(doc));
+				String event = "" + (int) counter.getValue(doc);
+				tempEvent = new Event(event);
+				if (writeToCache)
+					writer.write(event + "\n");
 			} catch (Exception e) {
 				Logger.logln("Failed to extract character count from document!");
+				writer.close();
+				docCache.delete();
+				writeToCache = false;
 				throw new Exception();
 			}
 			documentInfo.addEvent(tempEvent);
@@ -131,19 +223,89 @@ public class Engine implements API {
 			try {
 				if (!loadDocContents)
 					doc.load();
-				tempEvent = new Event("" + (int) counter.getValue(doc));
+				String event = "" + (int) counter.getValue(doc);
+				tempEvent = new Event(event);
+				if (writeToCache)
+					writer.write(event + "\n");
 			} catch (Exception e) {
 				Logger.logln("Failed to extract character count from document!");
+				writer.close();
+				docCache.delete();
+				writeToCache = false;
 				throw new Exception();
 			}
 			documentInfo.addEvent(tempEvent);
 		}
+		
+		writer.close();
 
 		// add the metadata EventSet to the List<EventSet>
 		generatedEvents.add(documentInfo);
 
 		// return the List<EventSet>
 		return generatedEvents;
+	}
+
+	/**
+	 * Loads the cached features for a given document
+	 * @param document
+	 * @param authorDir The directory of the cache files for a given author for a given CFD.
+	 * @return the cached features if possible. Null if a cache doesn't exist or it fails to get them.
+	 * @throws Exception 
+	 */
+	private List<EventSet> getCachedFeatures(Document document, File authorDir, File documentFile) {
+		BufferedReader reader = null;
+		if (documentFile.exists() && !documentFile.isDirectory() && documentFile.canRead()) {
+			try {
+				reader = new BufferedReader(new FileReader(documentFile));
+			} catch (FileNotFoundException e) {
+				// shouldn't ever get here.. just temporarily put this here so I can keep track
+				// of exceptions below.
+				e.printStackTrace();
+			}
+		} else {
+			return null;
+		}
+		
+		try {
+			String cachePath = reader.readLine();
+			long cacheLastModified = Long.parseLong(reader.readLine());
+
+			String path = document.getFilePath();
+			File currDoc = new File(path);
+			long lastModified = currDoc.lastModified();
+
+			if (!(path.equals(cachePath) && lastModified == cacheLastModified)) {
+				// cache is invalid
+				reader.close();
+				return null;
+			}
+			String line = null;
+			List<EventSet> generatedEvents = new ArrayList<EventSet>();
+
+			while ((line = reader.readLine()) != null) {
+				if (line.isEmpty())
+					continue;
+				EventSet es = new EventSet();
+				es.setAuthor(document.getAuthor());
+				es.setDocumentName(document.getTitle());
+				es.setEventSetID(line);
+				String event = null;
+				while ((event = reader.readLine()) != null) {
+					if (line.isEmpty())
+						continue;
+					if (event.equals(","))
+						break;
+					es.addEvent(new Event(event));
+				}
+				generatedEvents.add(es);
+			}
+			reader.close();
+		} catch (IOException e) {
+			return null;
+		}
+		
+		return null;
 	}
 
 	@Override
@@ -977,4 +1139,44 @@ public class Engine implements API {
 		
 		return culledUnknownEventSets;
 	}
+	
+    /**
+     * Recursively delete contents of a directory (if f is a directory),
+     * then delete f.
+     * @param dir   the file/directory to delete
+     * @return true if f was successfully deleted, false otherwise
+     */
+    public static boolean deleteRecursive(File f) {
+    	File cacheDir = new File(JSANConstants.JSAN_CACHE);
+        try {
+			if (f.getCanonicalPath().startsWith(cacheDir.getCanonicalPath())) {
+				return deleteRecursiveUnsafe(f);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return false;
+    }
+    
+
+    /**
+     * Recursively delete contents of a directory (if f is a directory),
+     * then delete f.
+     * @param dir   the file/directory to delete
+     * @return true if f was successfully deleted, false otherwise
+     */
+    private static boolean deleteRecursiveUnsafe(File f) {
+        if (f.exists()) {
+            File[] files = f.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    deleteRecursiveUnsafe(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+        }
+        return f.delete();
+    }
 }

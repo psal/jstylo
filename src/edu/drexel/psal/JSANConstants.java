@@ -8,8 +8,12 @@ public class JSANConstants {
 	public static final String JSAN_RESOURCE_PACKAGE = "/edu/drexel/psal/resources/";
 	public static final String JSAN_GRAPHICS_PREFIX = JSAN_RESOURCE_PACKAGE+"graphics/";
 	public static final String JSAN_EXTERNAL_RESOURCE_PACKAGE = "jsan_resources/";
+	public static final String JSAN_CACHE = JSAN_EXTERNAL_RESOURCE_PACKAGE + "cache/";
 	public static final String JSAN_CORPORA_PREFIX = JSAN_EXTERNAL_RESOURCE_PACKAGE+"corpora/";
 	public static final String JSAN_PROBLEMSETS_PREFIX = JSAN_EXTERNAL_RESOURCE_PACKAGE+"problem_sets/";
 	public static final String JSAN_FEATURESETS_PREFIX = JSAN_EXTERNAL_RESOURCE_PACKAGE+"feature_sets/";
 	public static final String JGAAP_RESOURCE_WORDNET = JSAN_EXTERNAL_RESOURCE_PACKAGE+"wordnet/";
+	
+	public static final String DUMMY_NAME = "~* you *~"; // NOTE DO NOT CHANGE THIS unless you have a very good reason to do so.
+
 }
