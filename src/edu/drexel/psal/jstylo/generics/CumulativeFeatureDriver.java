@@ -13,7 +13,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.jgaap.generics.*;
 
-import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 
 /**
@@ -46,17 +45,6 @@ public class CumulativeFeatureDriver implements Serializable {
 	 * Description of the feature set.
 	 */
 	private String description;
-	
-	
-	/**
-	 * Whether or not features should be loaded from cached files,
-	 * before any cullers are applied, instead of generating them.
-	 * 
-	 * Do not set this variable unless something invalidates the cache
-	 * (by modifying the feature set) or unless it is valid again
-	 * (if the user loads the feature set from file).
-	 */
-	private boolean useFeatureCache = true;
 	
 	/* ============
 	 * constructors
@@ -128,116 +116,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	 */
 	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
 		List<EventSet> esl = new ArrayList<EventSet>();
-		
-		// LOAD THE CACHE FOR THE GIVEN DOCUMENT
-		// As we iterate over the features, we will see if it is in the cache and 
-		// add it to esl as we find them. We must make sure it only loads from the
-		// cache when it is using the same feature set. How can we determine that
-		// the feature set being used is the same? If we load a feature set from XML,
-		// and do not modify it, we can store the name of the loaded feature set
-		// and use that as a sub-directory of our cache directory. Inside,
-		// we determine if the cache is out-dated (if the feature_set has since been
-		// modified). If so, clear the cache (delete all the sub-directories inside).
-		// The good thing about this is, since they are being loaded here, they are
-		// loaded before any cullers are applied, so the caches do not have to reflect
-		// that. It would be beneficial to load from the cache before any 
-		// canonicizers are applied as well, then store to the cache after completion.
-		// Each author gets his/her own directory within the feature-set directory.
-		
-		// Worrying about an out-dated feature_set is not the only problem.
-		// We must keep a file in the directory of each author, specifying the time
-		// each document within was last modified. ms since the epoch is fine.
-		// If a document is renamed, it would not find the cached features for that
-		// document and would scrap that document's cache.
-		// If a document is modified, it would scrap the cache as well.
-		// We also need to include a path to the file, so that it knows where to
-		// look to see when it was last modified.
-		
-		// ALSO, it is necessary to keep a flag checking if the feature set was
-		// modified by the user in any way after loading it. If so, then the
-		// cache should be assumed to be invalid. Though this does not stop the
-		// user from modifying it outside the program, the time stamp should
-		// invalidate it when that is the case. In the case where it is invalidated
-		// via API calls, the cache should not be destroyed. If the user saves over
-		// the feature_set xml file, its "last modified" will change, and the invalid
-		// cache will be removed then. The flag will signal to not use the cache though.
-		
-		// It may be beneficial to have the object creation (for each EventSet)
-		// done in a BackgroundWorker as it reads through a text file.
-		
-		// So what should the cache folder look like? I figure,
-		// WORKING_DIR/jsan_resources/cache/[feature_set]/[author_a]/a_01.cache
-		//                                                          /a_02.cache
-		//                                               /last_modified.txt
-		
-		// the *.cache files in the author directory would look something like:
-	
-		// C:/some/path/to/the/document/a_01.txt
-		// 1275265349422
-		// Unique Words Count	[EventSet ID]
-		// Unique-Words-Count{268}
-		// ,
-		// Sentence Count
-		// Sentence-Count{30}
-		// ,
-		// Top 25 NGrams
-		// Top-25-NGrams{th}
-		// Top-25-NGrams{at}
-		// Top-25-NGrams{th}
-		// ...
-		
-		// Where the first line is the path to the file, and
-		// the second line is the time the document was last modified.
-		
-		if (useFeatureCache) {
-			File cacheDir = new File(JSANConstants.JSAN_CACHE_PREFIX);
-			File featureDir = new File(cacheDir, getName());
-			if (featureDir.exists()) {
-				File authorDir = new File(featureDir, doc.getAuthor());
-				if (authorDir.exists()) {
-					File cachedDoc = new File(authorDir, doc.getTitle()+".cache");
-					if (cachedDoc.exists()) {
-						BufferedReader reader = new BufferedReader (new FileReader(cachedDoc));
-						String filePath = reader.readLine();
-						String lastModifiedString = reader.readLine();
-						long lastModified = Long.parseLong(lastModifiedString);
-						File previousCachedFile = new File(filePath);
-						String newFilePath = doc.getFilePath();
-						File newFile = new File(newFilePath);
-						if (previousCachedFile.equals(newFile)) {
-							if (lastModified == newFile.lastModified()) {
-								String line;
-								EventSet es = new EventSet();
-								es.setAuthor(doc.getAuthor());
-								es.setDocumentName(doc.getTitle());
-								String ID = reader.readLine();
-								es.setEventSetID(ID);
-								while ((line = reader.readLine()) != null) {
-									if (line.equals(""))
-										continue;
-									// extract event set
-									if (line.equals(",")) {
-										esl.add(es);
-										es = new EventSet();
-										es.setDocumentName(doc.getTitle());
-										ID = reader.readLine();
-										es.setEventSetID(ID);
-										continue;
-									}									
-									es.addEvent(new Event(line));
-								}
-								esl.add(es); // the last one is not followed by a comma
-								reader.close();
-								return esl;
-							}
-						}
-						reader.close();
-					}
-				}
-			}
-		}
-		
-		for (int i=0; i<features.size(); i++) {			
+		for (int i=0; i<features.size(); i++) {
 			EventDriver ed = features.get(i).getUnderlyingEventDriver();
 			Document currDoc = doc instanceof StringDocument ?
 					new StringDocument((StringDocument) doc) :
@@ -289,48 +168,6 @@ public class CumulativeFeatureDriver implements Serializable {
 				es.addEvent(new Event(prefix+"{"+e.getEvent()+"}"));
 			}
 			esl.add(es);
-		}
-		
-		if (useFeatureCache) {
-			File cacheDir = new File(JSANConstants.JSAN_CACHE_PREFIX);
-			File featureDir = new File(cacheDir, getName());
-			if (!featureDir.exists()) {
-				if (!featureDir.mkdir()) {
-					Logger.logln("Failed to make directory "+featureDir.getAbsolutePath());
-					return esl;
-				}
-			}
-			File authorDir = new File(featureDir, doc.getAuthor());
-			if (!authorDir.exists()) {
-				if (!authorDir.mkdir()) {
-					Logger.logln("Failed to make directory "+authorDir.getAbsolutePath());
-					return esl;
-				}
-			}
-			
-			StringBuilder builder = new StringBuilder();
-			File currentDoc = new File(doc.getFilePath());
-			builder.append(currentDoc.getAbsolutePath());
-			builder.append('\n');
-			builder.append(Long.toString(currentDoc.lastModified()));
-			builder.append('\n');
-			for (int i=0; i < esl.size(); i++) {
-				if (i != 0) {
-					builder.append(",\n");
-				}
-				EventSet es = esl.get(i);
-				builder.append(es.getEventSetID());
-				builder.append('\n');
-				for (Event e : es) {
-					builder.append(e.getEvent());
-					builder.append('\n');
-				}
-			}
-			String fileContents = builder.toString();
-			File cachedDoc = new File(authorDir, doc.getTitle()+".cache");
-			BufferedWriter writer = new BufferedWriter(new FileWriter(cachedDoc));
-			writer.write(fileContents);
-			writer.close();
 		}
 		return esl;
 	}
