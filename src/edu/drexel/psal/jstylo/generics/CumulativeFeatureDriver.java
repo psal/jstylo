@@ -13,6 +13,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.jgaap.generics.*;
 
+import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 
 /**
@@ -113,6 +114,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	
 	/**
 	 * Returns a list of all event sets extracted per each feature driver.
+	 * Does not make use of cache.
 	 * @param doc
 	 * 		Input document.
 	 * @return
@@ -121,6 +123,23 @@ public class CumulativeFeatureDriver implements Serializable {
 	 */
 	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
 		List<EventSet> esl = new ArrayList<EventSet>();
+		
+		File cacheDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
+		File authorDir = null;
+		if (doc.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
+			authorDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
+		} else {
+			authorDir = new File(cacheDir, doc.getAuthor());
+		}
+		
+		if (!authorDir.exists()) {
+			authorDir.mkdirs();
+		}
+		
+		File docCache = new File(authorDir, doc.getTitle() + ".cache");
+		//docCache.createNewFile();
+		BufferedWriter writer = new BufferedWriter(new FileWriter(docCache));
+		
 		for (int i=0; i<features.size(); i++) {
 			EventDriver ed = features.get(i).getUnderlyingEventDriver();
 			Document currDoc = doc instanceof StringDocument ?
@@ -144,6 +163,7 @@ public class CumulativeFeatureDriver implements Serializable {
 					currDoc.load();
 				} catch (Exception e) {
 					Logger.logln("Failed to load document contents!");
+					writer.close();
 					throw new Exception();
 				}
 			}
@@ -152,6 +172,7 @@ public class CumulativeFeatureDriver implements Serializable {
 				currDoc.processCanonicizers();
 			} catch (LanguageParsingException | CanonicizationException e1) {
 				Logger.logln("Failed to canonicize the document!");
+				writer.close();
 				throw new Exception();
 			}
 			
@@ -162,18 +183,27 @@ public class CumulativeFeatureDriver implements Serializable {
 				tmpEs = ed.createEventSet(currDoc);
 			} catch (EventGenerationException e1) {
 				Logger.logln("Failed to create EventSet!");
+				writer.close();
 				throw new Exception();
 			}
-			tmpEs.setEventSetID(features.get(i).getName()); 
+			
+			tmpEs.setEventSetID(features.get(i).getName());
 			EventSet es = new EventSet();
 			es.setAuthor(doc.getAuthor());
 			es.setDocumentName(doc.getTitle());
 			es.setEventSetID(tmpEs.getEventSetID());
+			writer.write(es.getEventSetID() + "\n");
 			for (Event e: tmpEs){
+				writer.write(prefix+"{"+e.getEvent()+"}" + "\n");
 				es.addEvent(new Event(prefix+"{"+e.getEvent()+"}"));
 			}
 			esl.add(es);
+			if (i == features.size() - 1)
+				writer.write("\n");
+			else
+				writer.write(",\n");
 		}
+		writer.close();
 		return esl;
 	}
 	
@@ -184,19 +214,19 @@ public class CumulativeFeatureDriver implements Serializable {
 			{
 				List<EventCuller> cullers = fd.getCullers();
 				for (EventCuller ec : cullers){
-					ec = null;
+					ec = null;		// TODO: this doesn't do anything does it? ec is a copy of a pointer, not the pointer itself
 				}
 				cullers.clear();
-				cullers = null;
+				cullers = null;		// TODO: likewise..
 				
 				EventDriver eventDriver = fd.getUnderlyingEventDriver();
 				if (eventDriver instanceof StanfordDriver){
 					((StanfordDriver) eventDriver).destroyTagger();
 				}
 				
-				eventDriver = null;
+				eventDriver = null;	// TODO: likewise..
 			}
-			fd = null;
+			fd = null;				// TODO: likewise..
 		}
 	}
 	

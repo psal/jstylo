@@ -1,8 +1,14 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import com.jgaap.generics.Document;
@@ -11,9 +17,10 @@ import com.jgaap.generics.EventCuller;
 import com.jgaap.generics.EventDriver;
 import com.jgaap.generics.EventSet;
 
+import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
-
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -253,6 +260,7 @@ public class InstancesBuilder extends Engine {
 
 		// initalize empty List<List<EventSet>>
 		eventList = new ArrayList<List<EventSet>>(knownDocsSize);
+		boolean loadFromCache = isCFDCacheValid();
 		
 		// if the num of threads is bigger then the number of docs, set it to
 		// the max number of docs (extract each document's features in its own
@@ -274,7 +282,7 @@ public class InstancesBuilder extends Engine {
 		featThreads = new FeatureExtractionThread[threadsToUse];
 		for (int thread = 0; thread < threadsToUse; thread++) //create the threads
 			featThreads[thread] = new FeatureExtractionThread(div, thread,
-					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd));
+					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd), loadFromCache);
 		for (int thread = 0; thread < threadsToUse; thread++) //start them
 			featThreads[thread].start();
 		for (int thread = 0; thread < threadsToUse; thread++) //join them
@@ -291,6 +299,48 @@ public class InstancesBuilder extends Engine {
 		
 		//return it now
 		eventList = temp;
+	}
+
+	/**
+	 * Determines if we can load cached features. Cullers are not taken into account, since the
+	 * features are cached and cached features are loaded before cullers are applied.
+	 * @return False if the CFD has been modified (besides cullers) since the cache was made.
+	 * 		True otherwise.
+	 */
+	private boolean isCFDCacheValid() {
+		long currentHash = cfd.longHash(EnumSet.of(FeatureSetElement.CANONICIZERS, FeatureSetElement.EVENT_DRIVERS, FeatureSetElement.NORMALIZATION));
+		File cacheDir = new File(JSANConstants.JSAN_CACHE + cfd.getName());
+		File cacheFile = new File(cacheDir, "cfdHash.txt");
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(cacheFile));
+		} catch (FileNotFoundException e) {
+			return false;
+		}
+		long cachedHash = 0;
+		try {
+			cachedHash = Long.parseLong(reader.readLine());
+			reader.close();
+		} catch (NumberFormatException | IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		if (cachedHash == currentHash) {
+			return true;
+		} else {
+			// delete the cache and create a new one here.
+			deleteRecursive(cacheDir);
+			cacheDir.mkdir();
+			BufferedWriter writer = null;
+			try {
+				writer = new BufferedWriter(new FileWriter(cacheFile));
+				writer.write(currentHash + "\n");
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
 	}
 
 	/**
@@ -843,6 +893,7 @@ public class InstancesBuilder extends Engine {
 		int div; //the number of docs to be processed per thread
 		int threadId; //the div index of this thread
 		int knownDocsSize; //the number of docs total
+		boolean loadFromCache; // whether or not to load from the cache. Basically just a check if the CFD is unmodified
 		List<Document> knownDocs; //the docs to be extracted
 		CumulativeFeatureDriver cfd; //the cfd to do the extracting with
 
@@ -857,11 +908,20 @@ public class InstancesBuilder extends Engine {
 		public FeatureExtractionThread(int div, int threadId,
 				int knownDocsSize, List<Document> knownDocs,
 				CumulativeFeatureDriver cfd) {
-			
+			this(div, threadId, knownDocsSize, knownDocs, cfd, false);
+
+		}
+		
+		// Constructor
+		public FeatureExtractionThread(int div, int threadId,
+				int knownDocsSize, List<Document> knownDocs,
+				CumulativeFeatureDriver cfd, boolean useCache) {
+
 			this.div = div;
 			this.threadId = threadId;
 			this.knownDocsSize = knownDocsSize;
 			this.knownDocs = knownDocs;
+			this.loadFromCache = useCache;
 			try {
 				this.cfd = new CumulativeFeatureDriver(cfd);
 			} catch (Exception e) {
@@ -877,9 +937,8 @@ public class InstancesBuilder extends Engine {
 			for (int i = div * threadId; i < Math.min(knownDocsSize, div
 					* (threadId + 1)); i++){
 				try {
-					//try to extract the events
 				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
-					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents());
+				    List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(), loadFromCache);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!", LogOut.STDERR);
@@ -888,5 +947,6 @@ public class InstancesBuilder extends Engine {
 				} 
 			}
 		}
+
 	}
 }
