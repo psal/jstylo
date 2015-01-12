@@ -259,7 +259,7 @@ public class Engine implements API {
 			try {
 				reader = new BufferedReader(new FileReader(documentFile));
 			} catch (FileNotFoundException e) {
-				// shouldn't ever get here.. just temporarily put this here so I can keep track
+				// shouldn't ever get here.. just put this here so I can keep track
 				// of exceptions below.
 				e.printStackTrace();
 			}
@@ -283,21 +283,59 @@ public class Engine implements API {
 			String line = null;
 			List<EventSet> generatedEvents = new ArrayList<EventSet>();
 
+			boolean readingMetaData = false;
+			
 			while ((line = reader.readLine()) != null) {
 				if (line.isEmpty())
 					continue;
+				if (line.equals("|")) {
+					readingMetaData = true;
+					continue;
+				}
 				EventSet es = new EventSet();
 				es.setAuthor(document.getAuthor());
 				es.setDocumentName(document.getTitle());
 				es.setEventSetID(line);
+				
+				/*if (readingMetaData) {
+					String event = null;
+					while ((event = reader.readLine()) != null) {
+						if (line.isEmpty())
+							continue;
+						if (event.equals(",")) //delimiter for event sets
+							break;
+						es.addEvent(new Event(event));
+					}
+				} else {
+					String prefix = reader.readLine();
+					String event = null;
+					while ((event = reader.readLine()) != null) {
+						if (line.isEmpty())
+							continue;
+						if (event.equals(",")) //delimiter for event sets
+							break;
+						es.addEvent(new Event(prefix + "{" + event + "}"));
+					}
+				}*/
+				
+				String prefix = readingMetaData ? null : reader.readLine();
 				String event = null;
 				while ((event = reader.readLine()) != null) {
 					if (line.isEmpty())
 						continue;
-					if (event.equals(","))
+					if (event.equals(",")) //delimiter for event sets
 						break;
-					es.addEvent(new Event(event));
+					if (readingMetaData)
+						es.addEvent(new Event(event));
+					else {
+						int spaceIndex = event.lastIndexOf(' ');
+						int eventCount = Integer.parseInt(event.substring(spaceIndex + 1));
+						event = event.substring(0, spaceIndex);
+						for (int i=0; i<eventCount; i++)
+							es.addEvent(new Event(prefix + "{" + event + "}"));
+					}
 				}
+				
 				generatedEvents.add(es);
 			}
 			reader.close();

@@ -122,6 +122,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	 * @throws Exception 
 	 */
 	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
+		
 		List<EventSet> esl = new ArrayList<EventSet>();
 		
 		File cacheDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
@@ -137,7 +138,6 @@ public class CumulativeFeatureDriver implements Serializable {
 		}
 		
 		File docCache = new File(authorDir, doc.getTitle() + ".cache");
-		//docCache.createNewFile();
 		BufferedWriter writer = new BufferedWriter(new FileWriter(docCache));
 		
 		for (int i=0; i<features.size(); i++) {
@@ -178,6 +178,7 @@ public class CumulativeFeatureDriver implements Serializable {
 			
 			// extract event set
 			String prefix = features.get(i).displayName().replace(" ", "-");
+			writer.write(prefix + "\n");
 			EventSet tmpEs = null;
 			try {
 				tmpEs = ed.createEventSet(currDoc);
@@ -193,13 +194,26 @@ public class CumulativeFeatureDriver implements Serializable {
 			es.setDocumentName(doc.getTitle());
 			es.setEventSetID(tmpEs.getEventSetID());
 			writer.write(es.getEventSetID() + "\n");
+			HashMap<String, Integer> map = new HashMap<String, Integer>(); // count number of multiple events
 			for (Event e: tmpEs){
-				writer.write(prefix+"{"+e.getEvent()+"}" + "\n");
-				es.addEvent(new Event(prefix+"{"+e.getEvent()+"}"));
+				String event = e.getEvent();
+				//writer.write(e.getEvent() + "\n");
+				if (map.containsKey(event)) {
+					map.put(event, map.get(event) + 1);
+				} else {
+					map.put(event, 1);
+				}
+				es.addEvent(new Event(prefix+"{"+event+"}"));
 			}
+			
+			// Write the hash map to the cache
+			for (Map.Entry<String,Integer> s : map.entrySet()) {
+				writer.write(s.getKey() + " " + s.getValue() + "\n");
+			}
+			
 			esl.add(es);
 			if (i == features.size() - 1)
-				writer.write("\n");
+				writer.write("\n|\n");
 			else
 				writer.write(",\n");
 		}
