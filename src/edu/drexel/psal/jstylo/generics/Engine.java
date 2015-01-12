@@ -46,6 +46,25 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 @SuppressWarnings("deprecation")
 public class Engine implements API {
 
+	/**
+	 *	Flag to determine if extracted features should be saved to / loaded from a cache.
+	 */
+	private static boolean USE_CACHE = true;
+	
+	/**
+	 *	Set flag to determine if extracted features should be saved to / loaded from a cache.
+	 */
+	public static void setUseCache(boolean useCache) {
+		USE_CACHE = useCache;
+	}
+	
+	/**
+	 *	Get status of flag that determines if extracted features should be saved to / loaded from a cache.
+	 */
+	public static boolean isUsingCache() {
+		return USE_CACHE;
+	}
+	
 	@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
@@ -77,7 +96,7 @@ public class Engine implements API {
 		
 		List<EventSet> generatedEvents = null;
 		
-		if (loadFromCache) {
+		if (isUsingCache() && loadFromCache) {
 			File documentFile = new File(authorDir, document.getTitle()+".cache");
 			generatedEvents = getCachedFeatures(document, documentFile);
 			if (generatedEvents == null) {
@@ -112,7 +131,8 @@ public class Engine implements API {
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
 		
 		File docCache = new File(authorDir, document.getTitle() + ".cache");
-		boolean writeToCache = true;
+		boolean writeToCache = isUsingCache();
+		
 		if (!docCache.exists()) {
 			// createEventSets didn't record anything in the cache. Don't try to write anything.
 			// perhaps an Exception would be appropriate here instead.

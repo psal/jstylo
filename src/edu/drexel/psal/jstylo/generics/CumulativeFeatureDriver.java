@@ -123,6 +123,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	 */
 	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
 		
+		boolean isUsingCache = Engine.isUsingCache();
 		List<EventSet> esl = new ArrayList<EventSet>();
 		
 		File cacheDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
@@ -143,9 +144,12 @@ public class CumulativeFeatureDriver implements Serializable {
 		File docCache = new File(authorDir, doc.getTitle() + ".cache");
 		File docOriginal = new File(doc.getFilePath());
 		
-		BufferedWriter writer = new BufferedWriter(new FileWriter(docCache));
-		writer.write(docOriginal.getCanonicalPath() + '\n');
-		writer.write(Long.toString(docOriginal.lastModified()) + '\n');
+		BufferedWriter writer = null;
+		if (isUsingCache) {
+			writer = new BufferedWriter(new FileWriter(docCache));
+			writer.write(docOriginal.getCanonicalPath() + '\n');
+			writer.write(Long.toString(docOriginal.lastModified()) + '\n');
+		}
 		
 		for (int i=0; i<features.size(); i++) {
 			EventDriver ed = features.get(i).getUnderlyingEventDriver();
@@ -170,7 +174,8 @@ public class CumulativeFeatureDriver implements Serializable {
 					currDoc.load();
 				} catch (Exception e) {
 					Logger.logln("Failed to load document contents!");
-					writer.close();
+					if (isUsingCache)
+						writer.close();
 					throw new Exception();
 				}
 			}
@@ -179,7 +184,8 @@ public class CumulativeFeatureDriver implements Serializable {
 				currDoc.processCanonicizers();
 			} catch (LanguageParsingException | CanonicizationException e1) {
 				Logger.logln("Failed to canonicize the document!");
-				writer.close();
+				if (isUsingCache)
+					writer.close();
 				throw new Exception();
 			}
 			
@@ -190,7 +196,8 @@ public class CumulativeFeatureDriver implements Serializable {
 				tmpEs = ed.createEventSet(currDoc);
 			} catch (EventGenerationException e1) {
 				Logger.logln("Failed to create EventSet!");
-				writer.close();
+				if (isUsingCache)
+					writer.close();
 				throw new Exception();
 			}
 			
@@ -199,8 +206,10 @@ public class CumulativeFeatureDriver implements Serializable {
 			es.setAuthor(doc.getAuthor());
 			es.setDocumentName(doc.getTitle());
 			es.setEventSetID(tmpEs.getEventSetID());
-			writer.write(es.getEventSetID() + "\n");
-			writer.write(prefix + "\n");
+			if (isUsingCache) {
+				writer.write(es.getEventSetID() + "\n");
+				writer.write(prefix + "\n");
+			}
 			
 			// The hashmap makes it so the cache files are smaller and quicker to traverse.
 			// Ex. Instead of seeing:
@@ -212,7 +221,7 @@ public class CumulativeFeatureDriver implements Serializable {
 			//		Letters{a}	... (with, say, 8 more)
 			// you would just see:
 			//		Letters
-			//		Letters
+			//		Letters			(yes there are two. The first is the ID, the second is the prefix)
 			//		d 3
 			//		f 8
 			//		a 9
@@ -228,18 +237,21 @@ public class CumulativeFeatureDriver implements Serializable {
 				es.addEvent(new Event(prefix+"{"+event+"}"));
 			}
 			
-			// Write the hash map to the cache
-			for (Map.Entry<String,Integer> s : map.entrySet()) {
-				writer.write(s.getKey() + " " + s.getValue() + "\n");
+			if (isUsingCache) {
+				// Write the hash map to the cache
+				for (Map.Entry<String, Integer> s : map.entrySet()) {
+					writer.write(s.getKey() + " " + s.getValue() + "\n");
+				}
+				if (i == features.size() - 1)
+					writer.write(",\n|\n");
+				else
+					writer.write(",\n");
 			}
-			
+
 			esl.add(es);
-			if (i == features.size() - 1)
-				writer.write(",\n|\n");
-			else
-				writer.write(",\n");
 		}
-		writer.close();
+		if (isUsingCache)
+			writer.close();
 		return esl;
 	}
 	

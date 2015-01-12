@@ -260,7 +260,7 @@ public class InstancesBuilder extends Engine {
 
 		// initalize empty List<List<EventSet>>
 		eventList = new ArrayList<List<EventSet>>(knownDocsSize);
-		boolean loadFromCache = isCFDCacheValid();
+		boolean loadFromCache = Engine.isUsingCache() ? isCFDCacheValid() : false;
 		
 		// if the num of threads is bigger then the number of docs, set it to
 		// the max number of docs (extract each document's features in its own
@@ -304,6 +304,9 @@ public class InstancesBuilder extends Engine {
 	/**
 	 * Determines if we can load cached features. Cullers are not taken into account, since the
 	 * features are cached and cached features are loaded before cullers are applied.
+	 * 
+	 * If the cache is not valid, it will make a new cfdHash file for the CFD, so any future
+	 * cached features will be associated with the updated CFD.
 	 * @return False if the CFD has been modified (besides cullers) since the cache was made.
 	 * 		True otherwise.
 	 */
