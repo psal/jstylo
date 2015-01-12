@@ -315,6 +315,15 @@ public class InstancesBuilder extends Engine {
 		try {
 			reader = new BufferedReader(new FileReader(cacheFile));
 		} catch (FileNotFoundException e) {
+			cacheDir.mkdirs();
+			BufferedWriter writer = null;
+			try {
+				writer = new BufferedWriter(new FileWriter(cacheFile));
+				writer.write(currentHash + "\n");
+				writer.close();
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
 			return false;
 		}
 		long cachedHash = 0;
@@ -863,7 +872,7 @@ public class InstancesBuilder extends Engine {
 					//grab the document
 					//Document doc = ps.getAllTrainDocs().get(i);
 					//create the instance using it
-				    //Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
+				    Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
 					Instance instance = createInstance(attributes, relevantEvents, cfd,
 							eventList.get(i), isSparse(), usingDocTitles());
 					//normalize it
@@ -937,7 +946,7 @@ public class InstancesBuilder extends Engine {
 			for (int i = div * threadId; i < Math.min(knownDocsSize, div
 					* (threadId + 1)); i++){
 				try {
-				    //Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
+				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
 				    List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(), loadFromCache);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {

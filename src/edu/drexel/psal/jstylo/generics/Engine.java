@@ -79,9 +79,9 @@ public class Engine implements API {
 		
 		if (loadFromCache) {
 			File documentFile = new File(authorDir, document.getTitle()+".cache");
-			generatedEvents = getCachedFeatures(document, authorDir, documentFile);
+			generatedEvents = getCachedFeatures(document, documentFile);
 			if (generatedEvents == null) {
-				// delete the cache for this document!
+				// delete the cache for this document! It is invalid
 				documentFile.delete();
 				
 				// program will continue as normal, extracting events
@@ -121,7 +121,7 @@ public class Engine implements API {
 		// append meta data to cache...
 		BufferedWriter writer = new BufferedWriter(new FileWriter(docCache, true));
 		if (writeToCache) {
-			writer.write(",\n" + documentInfo.getEventSetID() + "\n");
+			writer.write(documentInfo.getEventSetID() + "\n");
 		}
 
 		/*
@@ -249,12 +249,14 @@ public class Engine implements API {
 	/**
 	 * Loads the cached features for a given document
 	 * @param document
-	 * @param authorDir The directory of the cache files for a given author for a given CFD.
+	 * @param documentFile	The cache file for the document.
 	 * @return the cached features if possible. Null if a cache doesn't exist or it fails to get them.
 	 * @throws Exception 
 	 */
-	private List<EventSet> getCachedFeatures(Document document, File authorDir, File documentFile) {
+	private List<EventSet> getCachedFeatures(Document document, File documentFile) {
+		List<EventSet> generatedEvents = null;
 		BufferedReader reader = null;
+		
 		if (documentFile.exists() && !documentFile.isDirectory() && documentFile.canRead()) {
 			try {
 				reader = new BufferedReader(new FileReader(documentFile));
@@ -275,16 +277,14 @@ public class Engine implements API {
 			File currDoc = new File(path);
 			long lastModified = currDoc.lastModified();
 
-			if (!(path.equals(cachePath) && lastModified == cacheLastModified)) {
+			if (!(currDoc.getCanonicalPath().equals(cachePath) && lastModified == cacheLastModified)) {
 				// cache is invalid
 				reader.close();
 				return null;
 			}
 			String line = null;
-			List<EventSet> generatedEvents = new ArrayList<EventSet>();
-
+			generatedEvents = new ArrayList<EventSet>();
 			boolean readingMetaData = false;
-			
 			while ((line = reader.readLine()) != null) {
 				if (line.isEmpty())
 					continue;
@@ -297,27 +297,7 @@ public class Engine implements API {
 				es.setDocumentName(document.getTitle());
 				es.setEventSetID(line);
 				
-				/*if (readingMetaData) {
-					String event = null;
-					while ((event = reader.readLine()) != null) {
-						if (line.isEmpty())
-							continue;
-						if (event.equals(",")) //delimiter for event sets
-							break;
-						es.addEvent(new Event(event));
-					}
-				} else {
-					String prefix = reader.readLine();
-					String event = null;
-					while ((event = reader.readLine()) != null) {
-						if (line.isEmpty())
-							continue;
-						if (event.equals(",")) //delimiter for event sets
-							break;
-						es.addEvent(new Event(prefix + "{" + event + "}"));
-					}
-				}*/
-				
+				// the meta data events do not have a "prefix"
 				String prefix = readingMetaData ? null : reader.readLine();
 				String event = null;
 				while ((event = reader.readLine()) != null) {
@@ -340,10 +320,11 @@ public class Engine implements API {
 			}
 			reader.close();
 		} catch (IOException e) {
+			e.printStackTrace();
 			return null;
 		}
 		
-		return null;
+		return generatedEvents;
 	}
 
 	@Override
@@ -357,7 +338,7 @@ public class Engine implements API {
 			IDs.add(es.getEventSetID());
 		}
 		
-		//remove the metdata prior to culling
+		//remove the metadata prior to culling
 		ArrayList<EventSet> docMetaData = new ArrayList<EventSet>();
 		for (List<EventSet> les : eventSets){
 			docMetaData.add(les.remove(les.size()-1));
@@ -740,7 +721,7 @@ public class Engine implements API {
 			//whether or not we actually need this eventSet
 			boolean eventSetIsRelevant = false;
 			
-			//find out if it is a histogram ot not
+			//find out if it is a histogram o not
 			if (cumulativeFeatureDriver.featureDriverAt(
 					documentData.indexOf(es)).isCalcHist()) {
 				

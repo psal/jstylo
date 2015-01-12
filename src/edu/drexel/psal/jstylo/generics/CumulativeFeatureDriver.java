@@ -137,8 +137,15 @@ public class CumulativeFeatureDriver implements Serializable {
 			authorDir.mkdirs();
 		}
 		
+		// We will start making the cache file in this method. The metadata will be appended
+		// in the Engine's extractEventSets() method..
+					
 		File docCache = new File(authorDir, doc.getTitle() + ".cache");
+		File docOriginal = new File(doc.getFilePath());
+		
 		BufferedWriter writer = new BufferedWriter(new FileWriter(docCache));
+		writer.write(docOriginal.getCanonicalPath() + '\n');
+		writer.write(Long.toString(docOriginal.lastModified()) + '\n');
 		
 		for (int i=0; i<features.size(); i++) {
 			EventDriver ed = features.get(i).getUnderlyingEventDriver();
@@ -178,7 +185,6 @@ public class CumulativeFeatureDriver implements Serializable {
 			
 			// extract event set
 			String prefix = features.get(i).displayName().replace(" ", "-");
-			writer.write(prefix + "\n");
 			EventSet tmpEs = null;
 			try {
 				tmpEs = ed.createEventSet(currDoc);
@@ -194,10 +200,26 @@ public class CumulativeFeatureDriver implements Serializable {
 			es.setDocumentName(doc.getTitle());
 			es.setEventSetID(tmpEs.getEventSetID());
 			writer.write(es.getEventSetID() + "\n");
+			writer.write(prefix + "\n");
+			
+			// The hashmap makes it so the cache files are smaller and quicker to traverse.
+			// Ex. Instead of seeing:
+			//		Letters
+			//		Letters{d}
+			//		Letters{d}
+			//		Letters{d}
+			//		Letters{f}	... (with arbitrarily 7 more)
+			//		Letters{a}	... (with, say, 8 more)
+			// you would just see:
+			//		Letters
+			//		Letters
+			//		d 3
+			//		f 8
+			//		a 9
+			
 			HashMap<String, Integer> map = new HashMap<String, Integer>(); // count number of multiple events
 			for (Event e: tmpEs){
 				String event = e.getEvent();
-				//writer.write(e.getEvent() + "\n");
 				if (map.containsKey(event)) {
 					map.put(event, map.get(event) + 1);
 				} else {
@@ -213,7 +235,7 @@ public class CumulativeFeatureDriver implements Serializable {
 			
 			esl.add(es);
 			if (i == features.size() - 1)
-				writer.write("\n|\n");
+				writer.write(",\n|\n");
 			else
 				writer.write(",\n");
 		}
