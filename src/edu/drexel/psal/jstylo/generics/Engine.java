@@ -131,16 +131,12 @@ public class Engine implements API {
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
 		
 		File docCache = new File(authorDir, document.getTitle() + ".cache");
-		boolean writeToCache = isUsingCache();
+		boolean writeToCache = isUsingCache() && docCache.exists();
 		
-		if (!docCache.exists()) {
-			// createEventSets didn't record anything in the cache. Don't try to write anything.
-			// perhaps an Exception would be appropriate here instead.
-			writeToCache = false;
-		}
 		// append meta data to cache...
-		BufferedWriter writer = new BufferedWriter(new FileWriter(docCache, true));
+		BufferedWriter writer = null;
 		if (writeToCache) {
+			writer = new BufferedWriter(new FileWriter(docCache, true));
 			writer.write(documentInfo.getEventSetID() + "\n");
 		}
 
@@ -179,7 +175,8 @@ public class Engine implements API {
 						writer.write(event + "\n");
 				} catch (Exception e) {
 					Logger.logln("Failed to extract sentence count from document!");
-					writer.close();
+					if (writeToCache)
+						writer.close();
 					docCache.delete();
 					writeToCache = false;
 					throw new Exception();
@@ -203,7 +200,8 @@ public class Engine implements API {
 					writer.write(event + "\n");
 			} catch (Exception e) {
 				Logger.logln("Failed to extract word count from document!");
-				writer.close();
+				if (writeToCache)
+					writer.close();
 				docCache.delete();
 				writeToCache = false;
 				throw new Exception();
@@ -226,7 +224,8 @@ public class Engine implements API {
 					writer.write(event + "\n");
 			} catch (Exception e) {
 				Logger.logln("Failed to extract character count from document!");
-				writer.close();
+				if (writeToCache)
+					writer.close();
 				docCache.delete();
 				writeToCache = false;
 				throw new Exception();
@@ -249,15 +248,16 @@ public class Engine implements API {
 					writer.write(event + "\n");
 			} catch (Exception e) {
 				Logger.logln("Failed to extract character count from document!");
-				writer.close();
+				if (writeToCache)
+					writer.close();
 				docCache.delete();
 				writeToCache = false;
 				throw new Exception();
 			}
 			documentInfo.addEvent(tempEvent);
 		}
-		
-		writer.close();
+		if (writeToCache)
+			writer.close();
 
 		// add the metadata EventSet to the List<EventSet>
 		generatedEvents.add(documentInfo);
@@ -290,14 +290,17 @@ public class Engine implements API {
 		}
 		
 		try {
-			String cachePath = reader.readLine();
-			long cacheLastModified = Long.parseLong(reader.readLine());
+			// cachedPath is the path to the document that was used when the cache for that
+			// document was created. cachedLastModified is the last modified time stamp on the
+			// document that was cached.
+			String cachedPath = reader.readLine();
+			long cachedLastModified = Long.parseLong(reader.readLine());
 
 			String path = document.getFilePath();
 			File currDoc = new File(path);
 			long lastModified = currDoc.lastModified();
 
-			if (!(currDoc.getCanonicalPath().equals(cachePath) && lastModified == cacheLastModified)) {
+			if (!(currDoc.getCanonicalPath().equals(cachedPath) && lastModified == cachedLastModified)) {
 				// cache is invalid
 				reader.close();
 				return null;
@@ -741,7 +744,7 @@ public class Engine implements API {
 			//whether or not we actually need this eventSet
 			boolean eventSetIsRelevant = false;
 			
-			//find out if it is a histogram o not
+			//find out if it is a histogram or not
 			if (cumulativeFeatureDriver.featureDriverAt(
 					documentData.indexOf(es)).isCalcHist()) {
 				

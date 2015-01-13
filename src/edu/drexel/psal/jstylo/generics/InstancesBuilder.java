@@ -13,14 +13,11 @@ import java.util.List;
 
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
-import com.jgaap.generics.EventCuller;
-import com.jgaap.generics.EventDriver;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
-import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -258,7 +255,7 @@ public class InstancesBuilder extends Engine {
 		List<Document> knownDocs = ps.getAllTrainDocs();
 		int knownDocsSize = knownDocs.size();
 
-		// initalize empty List<List<EventSet>>
+		// initialize empty List<List<EventSet>>
 		eventList = new ArrayList<List<EventSet>>(knownDocsSize);
 		boolean loadFromCache = Engine.isUsingCache() ? isCFDCacheValid() : false;
 		
@@ -340,9 +337,14 @@ public class InstancesBuilder extends Engine {
 		if (cachedHash == currentHash) {
 			return true;
 		} else {
-			// delete the cache and create a new one here.
+			// Delete the cache and create a new one.
+			// It is necessary to delete the entire cache (instead of just letting the cache
+			// files be overwritten), because there may be some cache files not being used in this
+			// case, and if some are not overwritten, but the CFD hash is updated, an invalid
+			// cache could be used at some point thereafter.
+			
 			deleteRecursive(cacheDir);
-			cacheDir.mkdir();
+			cacheDir.mkdirs();
 			BufferedWriter writer = null;
 			try {
 				writer = new BufferedWriter(new FileWriter(cacheFile));
@@ -351,6 +353,7 @@ public class InstancesBuilder extends Engine {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
 			return false;
 		}
 	}
