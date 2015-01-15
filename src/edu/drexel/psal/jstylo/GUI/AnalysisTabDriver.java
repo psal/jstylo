@@ -1,5 +1,6 @@
 package edu.drexel.psal.jstylo.GUI;
 
+import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
@@ -810,7 +811,7 @@ public class AnalysisTabDriver {
 						+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
 				updateResultsView();
 				
-				boolean loadFromCache = GUIMain.inst.getBoolPreference("useCache") && main.ib.validateCFDCache();
+				boolean loadFromCache = JSANConstants.USE_CACHE && main.ib.validateCFDCache();
 				
 				try {
 					main.ib.extractEventsThreaded(loadFromCache);
