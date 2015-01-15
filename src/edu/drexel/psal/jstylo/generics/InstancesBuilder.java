@@ -16,7 +16,6 @@ import com.jgaap.generics.Event;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.GUI.GUIMain;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.core.Attribute;

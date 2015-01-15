@@ -14,7 +14,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.jgaap.generics.*;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.GUI.GUIMain;
 import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 
 /**
@@ -124,7 +123,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	 */
 	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
 		
-		boolean isUsingCache = GUIMain.inst.getBoolPreference("useCache");
+		boolean isUsingCache = JSANConstants.USE_CACHE;
 		List<EventSet> esl = new ArrayList<EventSet>();
 		
 		File cacheDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");

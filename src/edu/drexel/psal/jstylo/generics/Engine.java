@@ -31,7 +31,6 @@ import com.jgaap.generics.EventHistogram;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.GUI.GUIMain;
 import edu.drexel.psal.jstylo.eventDrivers.CharCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
@@ -46,12 +45,6 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
  */
 @SuppressWarnings("deprecation")
 public class Engine implements API {
-	
-	/*@Override
-	public List<EventSet> extractEventSets(Document document,
-			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
-		return extractEventSets(document, cumulativeFeatureDriver, loadDocContents, false);
-	}*/
 	
 	/**
 	 * Extracts the List of EventSets from a document using the provided CumulativeFeatureDriver.<br>
@@ -78,7 +71,7 @@ public class Engine implements API {
 		
 		List<EventSet> generatedEvents = null;
 		
-		if (GUIMain.inst.getBoolPreference("useCache") && loadFromCache) {
+		if (JSANConstants.USE_CACHE && loadFromCache) {
 			File documentFile = new File(authorDir, document.getTitle()+".cache");
 			generatedEvents = getCachedFeatures(document, documentFile);
 			if (generatedEvents == null) {
@@ -113,7 +106,7 @@ public class Engine implements API {
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
 		
 		File docCache = new File(authorDir, document.getTitle() + ".cache");
-		boolean writeToCache = GUIMain.inst.getBoolPreference("useCache") && docCache.exists();
+		boolean writeToCache = JSANConstants.USE_CACHE && docCache.exists();
 		
 		// append meta data to cache...
 		BufferedWriter writer = null;

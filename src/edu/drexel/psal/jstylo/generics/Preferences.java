@@ -25,7 +25,7 @@ import java.util.Map;
 public class Preferences{
 
 	//older versions will be replaced with the default of the newest version
-	private static final double currentVersion = 0.76;
+	private static final double currentVersion = 0.77;
 	
 	//where the file can be found
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
@@ -55,8 +55,7 @@ public class Preferences{
 		"rebuildInstances",
 		"analysisType",
 		"featureSet",
-		"classifiers",
-		"useCache"};
+		"classifiers"};
 	
 	//Used for default values in the event of a missing/outdated file
 	//or when building a Preferences object without a file for internal use
@@ -74,8 +73,7 @@ public class Preferences{
 			"rebuildInstances=0\n" +
 			"analysisType=0\n" +
 			"featureSet=0\n" +
-			"classifiers="+classifiersString+"\n" +
-			"useCache=1\n";
+			"classifiers="+classifiersString+"\n";
 	
 	//the main data structure
 	private Map<String,String> preferences;

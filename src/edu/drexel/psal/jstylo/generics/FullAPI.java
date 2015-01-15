@@ -2,7 +2,7 @@ package edu.drexel.psal.jstylo.generics;
 
 import java.util.Map;
 
-import edu.drexel.psal.jstylo.GUI.GUIMain;
+import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
@@ -201,7 +201,7 @@ public class FullAPI {
 	public void prepareInstances() {
 
 		try {
-			boolean loadFromCache = GUIMain.inst.getBoolPreference("useCache") && ib.validateCFDCache();
+			boolean loadFromCache = JSANConstants.USE_CACHE && ib.validateCFDCache();
 			ib.extractEventsThreaded(loadFromCache); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on
