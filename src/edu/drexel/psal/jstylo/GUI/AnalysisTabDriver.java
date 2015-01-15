@@ -797,6 +797,7 @@ public class AnalysisTabDriver {
 				main.ib = tempBuilder;
 				main.ib.setProblemSet(main.ps);
 				main.ib.setLoadDocContents(false);
+
 				try {
 					main.ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(main.cfd));
 				} catch (Exception e2) {
@@ -808,8 +809,11 @@ public class AnalysisTabDriver {
 				content += getTimestamp() + " Extracting features from training corpus ("
 						+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
 				updateResultsView();
+				
+				boolean loadFromCache = GUIMain.inst.getBoolPreference("useCache") && main.ib.validateCFDCache();
+				
 				try {
-					main.ib.extractEventsThreaded();
+					main.ib.extractEventsThreaded(loadFromCache);
 				} catch (Exception e) {
 					Logger.logln("Could not extract features from training corpus!", LogOut.STDERR);
 					e.printStackTrace();
@@ -899,7 +903,7 @@ public class AnalysisTabDriver {
 					
 					//create the instances
 					try {
-						main.ib.createTestInstancesThreaded();
+						main.ib.createTestInstancesThreaded(loadFromCache);
 					} catch (Exception e) {
 						Logger.logln("Could not create instances from test documents!", LogOut.STDERR);
 						e.printStackTrace();

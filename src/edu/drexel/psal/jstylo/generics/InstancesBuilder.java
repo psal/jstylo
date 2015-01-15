@@ -16,6 +16,7 @@ import com.jgaap.generics.Event;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.GUI.GUIMain;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.core.Attribute;
@@ -249,7 +250,7 @@ public class InstancesBuilder extends Engine {
 	 * Culls the eventSets as well.
 	 * @throws Exception
 	 */
-	public void extractEventsThreaded() throws Exception {
+	public void extractEventsThreaded(boolean loadFromCache) throws Exception {
 
 		//pull in documents and find out how many there are
 		List<Document> knownDocs = ps.getAllTrainDocs();
@@ -257,7 +258,6 @@ public class InstancesBuilder extends Engine {
 
 		// initialize empty List<List<EventSet>>
 		eventList = new ArrayList<List<EventSet>>(knownDocsSize);
-		boolean loadFromCache = Engine.isUsingCache() ? isCFDCacheValid() : false;
 		
 		// if the num of threads is bigger then the number of docs, set it to
 		// the max number of docs (extract each document's features in its own
@@ -302,12 +302,12 @@ public class InstancesBuilder extends Engine {
 	 * Determines if we can load cached features. Cullers are not taken into account, since the
 	 * features are cached and cached features are loaded before cullers are applied.
 	 * 
-	 * If the cache is not valid, it will make a new cfdHash file for the CFD, so any future
-	 * cached features will be associated with the updated CFD.
+	 * If the cache is not valid, it will clear it and make a new cfdHash file for the CFD, so
+	 * any future cached features will be associated with the updated CFD.
 	 * @return False if the CFD has been modified (besides cullers) since the cache was made.
 	 * 		True otherwise.
 	 */
-	private boolean isCFDCacheValid() {
+	public boolean validateCFDCache() {
 		long currentHash = cfd.longHash(EnumSet.of(FeatureSetElement.CANONICIZERS, FeatureSetElement.EVENT_DRIVERS, FeatureSetElement.NORMALIZATION));
 		File cacheDir = new File(JSANConstants.JSAN_CACHE + cfd.getName());
 		File cacheFile = new File(cacheDir, "cfdHash.txt");
@@ -426,7 +426,7 @@ public class InstancesBuilder extends Engine {
 	 * Creates Test instances from all of the information gathered (if there are any)
 	 * @throws Exception
 	 */
-	public void createTestInstancesThreaded() throws Exception {
+	public void createTestInstancesThreaded(boolean loadFromCache) throws Exception {
 		// create the empty Test instances object
 		testInstances = new Instances("TestInstances", attributes, ps
 				.getAllTestDocs().size());
@@ -455,7 +455,8 @@ public class InstancesBuilder extends Engine {
 			//Perform some parallelization magic
 			testThreads = new CreateTestInstancesThread[threadsToUse];
 			for (int thread = 0; thread < threadsToUse; thread++)
-				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances, new CumulativeFeatureDriver(cfd));
+				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances,
+						new CumulativeFeatureDriver(cfd), loadFromCache);
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread].start();
 			for (int thread = 0; thread < threadsToUse; thread++)
@@ -789,15 +790,18 @@ public class InstancesBuilder extends Engine {
 		int threadId; //the div this thread is dealing with
 		int numInstances; //the total number of instances to be created
 		CumulativeFeatureDriver cfd; //the cfd used to assess features
+		boolean loadFromCache;
 		
 		//Constructor
-		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd){
+		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd,
+				boolean loadFromCache){
 			cfd=cd;
 			dataset = data;
 			list = new ArrayList<Instance>();
 			div = d;
 			threadId = t;
 			numInstances = n;
+			this.loadFromCache = loadFromCache;
 		}
 		
 		//returns the list of instances created by this thread
@@ -815,7 +819,7 @@ public class InstancesBuilder extends Engine {
 					//grab the document
 					Document doc = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents());
+					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(), loadFromCache);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance

@@ -24,7 +24,7 @@ public interface API {
 	 * @return the List of EventSets for the document
 	 */ 
 	public List<EventSet> extractEventSets(Document document,
-			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception;
+			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents, boolean loadFromCache) throws Exception;
 	
 	/**
 	 * Determines which EventSets to use for the given documents based on the chosen cullers.<br>

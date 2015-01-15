@@ -31,6 +31,7 @@ import com.jgaap.generics.EventHistogram;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.GUI.GUIMain;
 import edu.drexel.psal.jstylo.eventDrivers.CharCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
@@ -45,31 +46,12 @@ import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
  */
 @SuppressWarnings("deprecation")
 public class Engine implements API {
-
-	/**
-	 *	Flag to determine if extracted features should be saved to / loaded from a cache.
-	 */
-	private static boolean USE_CACHE = true;
 	
-	/**
-	 *	Set flag to determine if extracted features should be saved to / loaded from a cache.
-	 */
-	public static void setUseCache(boolean useCache) {
-		USE_CACHE = useCache;
-	}
-	
-	/**
-	 *	Get status of flag that determines if extracted features should be saved to / loaded from a cache.
-	 */
-	public static boolean isUsingCache() {
-		return USE_CACHE;
-	}
-	
-	@Override
+	/*@Override
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
 		return extractEventSets(document, cumulativeFeatureDriver, loadDocContents, false);
-	}
+	}*/
 	
 	/**
 	 * Extracts the List of EventSets from a document using the provided CumulativeFeatureDriver.<br>
@@ -96,7 +78,7 @@ public class Engine implements API {
 		
 		List<EventSet> generatedEvents = null;
 		
-		if (isUsingCache() && loadFromCache) {
+		if (GUIMain.inst.getBoolPreference("useCache") && loadFromCache) {
 			File documentFile = new File(authorDir, document.getTitle()+".cache");
 			generatedEvents = getCachedFeatures(document, documentFile);
 			if (generatedEvents == null) {
@@ -131,7 +113,7 @@ public class Engine implements API {
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
 		
 		File docCache = new File(authorDir, document.getTitle() + ".cache");
-		boolean writeToCache = isUsingCache() && docCache.exists();
+		boolean writeToCache = GUIMain.inst.getBoolPreference("useCache") && docCache.exists();
 		
 		// append meta data to cache...
 		BufferedWriter writer = null;

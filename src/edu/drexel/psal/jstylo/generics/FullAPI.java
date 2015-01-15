@@ -2,6 +2,7 @@ package edu.drexel.psal.jstylo.generics;
 
 import java.util.Map;
 
+import edu.drexel.psal.jstylo.GUI.GUIMain;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
@@ -200,11 +201,12 @@ public class FullAPI {
 	public void prepareInstances() {
 
 		try {
-			ib.extractEventsThreaded(); //extracts events from documents
+			boolean loadFromCache = GUIMain.inst.getBoolPreference("useCache") && ib.validateCFDCache();
+			ib.extractEventsThreaded(loadFromCache); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on
 			ib.createTrainingInstancesThreaded(); //creates train Instances
-			ib.createTestInstancesThreaded(); //creates test Instances (if present)
+			ib.createTestInstancesThreaded(loadFromCache); //creates test Instances (if present)
 			ib.killThreads();
 		} catch (Exception e) {
 			System.out.println("Failed to prepare instances");
