@@ -109,7 +109,7 @@ public class CacheTests
      * Recursively delete contents of a directory (if f is a directory),
      * then delete f.
      * @param f   			the file/directory to delete
-     * @param deleteTop		true if it should delete f after deleting its contents (if any).
+     * @param deleteMe		true if it should delete f after deleting its contents (if any).
      * 
      * @return	true if the contents were successfully deleted. If deleteTop is true, returns true
      * 			if f was successfully deleted.

@@ -8,6 +8,3 @@ bin/*
 
 /anonymouth_prop.prop
 /JStylo_prop.prop
-
-junit_resources/temp/**
-jsan_resources/cache/**
