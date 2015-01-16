@@ -13,6 +13,7 @@ public class JSANConstants {
 	public static final String JSAN_PROBLEMSETS_PREFIX = JSAN_EXTERNAL_RESOURCE_PACKAGE+"problem_sets/";
 	public static final String JSAN_FEATURESETS_PREFIX = JSAN_EXTERNAL_RESOURCE_PACKAGE+"feature_sets/";
 	public static final String JGAAP_RESOURCE_WORDNET = JSAN_EXTERNAL_RESOURCE_PACKAGE+"wordnet/";
+	public static final String JUNIT_RESOURCE_PACKAGE = "junit_resources/";
 	public static final boolean USE_CACHE = true;
 	
 	public static final String DUMMY_NAME = "~* you *~"; // NOTE DO NOT CHANGE THIS unless you have a very good reason to do so.
