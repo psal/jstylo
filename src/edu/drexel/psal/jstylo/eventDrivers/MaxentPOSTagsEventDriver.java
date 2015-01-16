@@ -39,12 +39,15 @@ public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDri
 	protected static MaxentTagger tagger = null;
     protected static String taggerPath = "com/jgaap/resources/models/postagger/english-left3words-distsim.tagger";
 	//protected static String taggerPath = "com/jgaap/resources/models/postagger/german-fast.tagger";
-	
+	private static String lastTaggerPath = taggerPath;
+    
 	public static String getTaggerPath() {
 		return taggerPath;
 	}
 
 	public static void setTaggerPath(String taggerPath) {
+		if (getTaggerPath() != null && !(getTaggerPath().isEmpty()))
+			MaxentPOSTagsEventDriver.lastTaggerPath = getTaggerPath();
 		MaxentPOSTagsEventDriver.taggerPath = taggerPath;
 	}
 
@@ -92,8 +95,10 @@ public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDri
 		MaxentTagger t = null;
 		try {
 			//tagger = new MaxentTagger();
-			
-			t = new MaxentTagger(taggerPath,new TaggerConfig("-model", taggerPath),false);
+			if (getTaggerPath() == null || getTaggerPath().isEmpty()) {
+				setTaggerPath(lastTaggerPath);
+			}
+			t = new MaxentTagger(getTaggerPath(), new TaggerConfig("-model", getTaggerPath()),false);
 			
 		} catch (Exception e) {
 			Logger.logln("MaxentTagger failed to load tagger from ",LogOut.STDERR);
@@ -102,10 +107,12 @@ public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDri
 		return t;
 	}
 	//TODO
-	public void destroyTagger() { 
-		TTags tt = tagger.getTags();
+	public void destroyTagger() {
+		TTags tt;
+		if (tagger != null)
+			tt = tagger.getTags();
 		
-		taggerPath = null;
+		setTaggerPath(null);
 		tagger = null;
 	}
 }

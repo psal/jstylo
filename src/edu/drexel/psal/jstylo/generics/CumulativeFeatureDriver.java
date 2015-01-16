@@ -262,19 +262,19 @@ public class CumulativeFeatureDriver implements Serializable {
 			{
 				List<EventCuller> cullers = fd.getCullers();
 				for (EventCuller ec : cullers){
-					ec = null;		// TODO: this doesn't do anything does it? ec is a copy of a pointer, not the pointer itself
+					ec = null;
 				}
 				cullers.clear();
-				cullers = null;		// TODO: likewise..
+				cullers = null;
 				
 				EventDriver eventDriver = fd.getUnderlyingEventDriver();
 				if (eventDriver instanceof StanfordDriver){
 					((StanfordDriver) eventDriver).destroyTagger();
 				}
 				
-				eventDriver = null;	// TODO: likewise..
+				eventDriver = null;
 			}
-			fd = null;				// TODO: likewise..
+			fd = null;
 		}
 	}
 	
