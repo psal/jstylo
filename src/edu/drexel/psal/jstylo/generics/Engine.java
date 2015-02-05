@@ -66,7 +66,7 @@ public class Engine implements API {
 		if (document.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
 			authorDir = new File(JSANConstants.JSAN_CACHE + cumulativeFeatureDriver.getName() + "/");
 		} else {
-			authorDir = new File(cacheDir, document.getAuthor());
+			authorDir = new File(cacheDir, "_" + document.getAuthor());
 		}
 		
 		List<EventSet> generatedEvents = null;

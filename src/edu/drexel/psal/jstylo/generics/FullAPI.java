@@ -1,6 +1,9 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.util.List;
 import java.util.Map;
+
+import com.jgaap.generics.Document;
 
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
@@ -202,6 +205,7 @@ public class FullAPI {
 
 		try {
 			boolean loadFromCache = JSANConstants.USE_CACHE && ib.validateCFDCache();
+			Chunker.chunkAllTrainDocs(ib.getProblemSet());
 			ib.extractEventsThreaded(loadFromCache); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on

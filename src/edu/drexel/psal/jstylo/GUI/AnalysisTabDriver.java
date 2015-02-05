@@ -4,6 +4,7 @@ import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
+import edu.drexel.psal.jstylo.generics.Chunker;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.InstancesBuilder;
 import edu.drexel.psal.jstylo.generics.Logger;
@@ -812,6 +813,7 @@ public class AnalysisTabDriver {
 				updateResultsView();
 				
 				boolean loadFromCache = JSANConstants.USE_CACHE && main.ib.validateCFDCache();
+				Chunker.chunkAllTrainDocs(main.ib.getProblemSet());
 				
 				try {
 					main.ib.extractEventsThreaded(loadFromCache);

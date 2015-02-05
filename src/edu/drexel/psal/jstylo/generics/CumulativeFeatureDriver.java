@@ -131,7 +131,7 @@ public class CumulativeFeatureDriver implements Serializable {
 		if (doc.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
 			authorDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
 		} else {
-			authorDir = new File(cacheDir, doc.getAuthor());
+			authorDir = new File(cacheDir, "_" + doc.getAuthor());
 		}
 		
 		if (!authorDir.exists()) {
