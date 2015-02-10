@@ -208,7 +208,7 @@ public class CumulativeFeatureDriver implements Serializable {
 			es.setEventSetID(tmpEs.getEventSetID());
 			if (isUsingCache) {
 				writer.write(es.getEventSetID() + "\n");
-				writer.write(prefix + "\n");
+				//writer.write(prefix + "\n");
 			}
 			
 			// The hashmap makes it so the cache files are smaller and quicker to traverse.
@@ -226,22 +226,25 @@ public class CumulativeFeatureDriver implements Serializable {
 			//		f 8
 			//		a 9
 			
-			HashMap<String, Integer> map = new HashMap<String, Integer>(); // count number of multiple events
+			//HashMap<String, Integer> map = new HashMap<String, Integer>(); // count number of multiple events
 			for (Event e: tmpEs){
 				String event = e.getEvent();
-				if (map.containsKey(event)) {
+				/*if (map.containsKey(event)) {
 					map.put(event, map.get(event) + 1);
 				} else {
 					map.put(event, 1);
-				}
+				}*/
 				es.addEvent(new Event(prefix+"{"+event+"}"));
+				if (isUsingCache) {
+					writer.write(prefix+"{"+event+"}\n");
+				}
 			}
 			
 			if (isUsingCache) {
 				// Write the hash map to the cache
-				for (Map.Entry<String, Integer> s : map.entrySet()) {
+				/*for (Map.Entry<String, Integer> s : map.entrySet()) {
 					writer.write(s.getKey() + " " + s.getValue() + "\n");
-				}
+				}*/
 				if (i == features.size() - 1)
 					writer.write(",\n|\n");
 				else

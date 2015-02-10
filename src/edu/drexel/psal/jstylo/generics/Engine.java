@@ -282,12 +282,12 @@ public class Engine implements API {
 			}
 			String line = null;
 			generatedEvents = new ArrayList<EventSet>();
-			boolean readingMetaData = false;
+			//boolean readingMetaData = false;
 			while ((line = reader.readLine()) != null) {
 				if (line.isEmpty())
 					continue;
 				if (line.equals("|")) {
-					readingMetaData = true;
+					//readingMetaData = true;
 					continue;
 				}
 				EventSet es = new EventSet();
@@ -296,22 +296,22 @@ public class Engine implements API {
 				es.setEventSetID(line);
 				
 				// the meta data events do not have a "prefix"
-				String prefix = readingMetaData ? null : reader.readLine();
+				//String prefix = readingMetaData ? null : reader.readLine();
 				String event = null;
 				while ((event = reader.readLine()) != null) {
 					if (line.isEmpty())
 						continue;
 					if (event.equals(",")) //delimiter for event sets
 						break;
-					if (readingMetaData)
-						es.addEvent(new Event(event));
-					else {
+					//if (readingMetaData)
+					es.addEvent(new Event(event));
+					/*else {
 						int spaceIndex = event.lastIndexOf(' ');
 						int eventCount = Integer.parseInt(event.substring(spaceIndex + 1));
 						event = event.substring(0, spaceIndex);
 						for (int i=0; i<eventCount; i++)
 							es.addEvent(new Event(prefix + "{" + event + "}"));
-					}
+					}*/
 				}
 				
 				generatedEvents.add(es);

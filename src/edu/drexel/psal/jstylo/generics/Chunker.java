@@ -47,10 +47,14 @@ public final class Chunker {
 		return chunkTrainDocs;
 	}
 	/**
-	 * Set whether or not the chunker should be "on" or "off"
+	 * Set whether or not the chunker should be "on" or "off".
+	 * This will not change any problem sets previously chunked (i.e. they will still point
+	 * to the chunked documents).
 	 * @param shouldChunk	What to set the chunker to. true = on; false = off.
 	 */
 	public static void shouldChunkTrainDocs(boolean shouldChunk) {
+		// TODO: maybe upon calling this, the original documents should replace the chunked ones
+		// for the problem set...
 		chunkTrainDocs = shouldChunk;
 	}
 	
@@ -116,7 +120,7 @@ public final class Chunker {
 				Logger.logln("WARNING: Test document was null or empty. Using chunkDefaultSize as default chunk size.");
 				chunkSize = chunkDefaultSize;
 			} else {
-				chunkSize = testDocument.split(" ").length; // (?<! ) 
+				chunkSize = testDocument.split("(?<! ) ").length; // (?<! ) 
 			}
 
 			// Make sure the chunk size is within the specified boundaries.
@@ -379,7 +383,7 @@ public final class Chunker {
 		for (Document d : trainDocs) {
 			sb.append(readFile(d.getFilePath()) + " ");
 		}
-		String[] words = sb.toString().trim().split(" "); // (?<! ) 
+		String[] words = sb.toString().trim().split("(?<! ) "); // (?<! ) 
 
 		if (words.length < JSANConstants.REQUIRED_NUM_OF_WORDS) {
 			Logger.logln("WARNING: Too few words in author " + author + "'s documents. Expected "
