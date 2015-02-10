@@ -29,10 +29,10 @@ import edu.drexel.psal.JSANConstants;
  */
 public final class Chunker {
 	
-	private static int chunkMinSize = 50;
+	private static int chunkMinSize = 475;
 	private static int chunkDefaultSize = 500;
 	private static int chunkMaxSize = Integer.MAX_VALUE;
-	private static boolean chunkTrainDocs = false;
+	private static boolean chunkTrainDocs = true;
 	
 	/**
 	 * The max difference between cached chunk size and desired chunk size allowed before re-chunking.
