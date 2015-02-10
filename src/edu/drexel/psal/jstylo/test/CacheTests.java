@@ -1,16 +1,22 @@
 package edu.drexel.psal.jstylo.test;
 
 import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.generics.Chunker;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
+import edu.drexel.psal.jstylo.test.GenericProblemSetCreator.TrainingAuthor;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
 import org.junit.*;
+
+import com.jgaap.generics.Document;
 
 /**
  *
@@ -18,13 +24,137 @@ import org.junit.*;
  */
 public class CacheTests
 {
-	/*
+	/**
 	 * Do some pre-test stuff, like clean out the temp directory.
 	 */
 	@BeforeClass
 	public static void testSetup(){
 		File tempDir = Paths.get(JSANConstants.JUNIT_RESOURCE_PACKAGE, "temp").toFile();
 		deleteRecursive(tempDir, false);
+	}
+	
+	/**
+	 * Set some things before each test.
+	 */
+	@Before
+	public void setUp() {
+		Chunker.shouldChunkTrainDocs(true);
+	}
+	
+	/**
+	 * After each test, do some clean-up
+	 */
+	@After
+	public void tearDown() {
+		deleteRecursive(Paths.get(JSANConstants.JUNIT_RESOURCE_PACKAGE, "temp").toFile(), false);
+	}
+	
+	/**
+	 * Test to make sure that chunking does not change the results.
+	 */
+	@Test
+	public void testWithoutChunking() {
+		Chunker.shouldChunkTrainDocs(false);
+		if (Files.exists(Paths.get(JSANConstants.JSAN_CACHE), LinkOption.NOFOLLOW_LINKS))
+			deleteRecursive(Paths.get(JSANConstants.JSAN_CACHE).toFile(), true);
+		ProblemSet ps = new ProblemSet(Paths.get(JSANConstants.JSAN_PROBLEMSETS_PREFIX, "drexel_1_small.xml").toString());
+		Document d = ps.trainDocAt("a", "a_01.txt");
+		Assert.assertNotNull("No document a_01.txt found.", d);
+		ps.removeTrainDocAt("a", d);
+		ps.addTestDoc("a", d);
+        Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
+		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+        test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        String results1 = test.getStatString();
+        System.out.println(results1);
+        
+        try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        
+        test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+        test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        String results2 = test.getStatString();
+        System.out.println(results2);
+        
+        Assert.assertEquals("Cached results different from non-cached results", results1, results2);
+	}
+	
+	/**
+	 * Test to make sure that chunking does not change the results.
+	 */
+	@Test
+	public void testWithChunking() {
+		if (Files.exists(Paths.get(JSANConstants.JSAN_CACHE), LinkOption.NOFOLLOW_LINKS))
+			deleteRecursive(Paths.get(JSANConstants.JSAN_CACHE).toFile(), true);
+		ProblemSet ps = new ProblemSet(Paths.get(JSANConstants.JSAN_PROBLEMSETS_PREFIX, "drexel_1_small.xml").toString());
+		Document d = ps.trainDocAt("a", "a_01.txt");
+		Assert.assertNotNull("No document a_01.txt found.", d);
+		ps.removeTrainDocAt("a", d);
+		ps.addTestDoc("a", d);
+        Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
+		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+        test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        String results1 = test.getStatString();
+        System.out.println(results1);
+        
+        try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        
+        test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+        test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        String results2 = test.getStatString();
+        System.out.println(results2);
+        
+        Assert.assertEquals("Cached results different from non-cached results", results1, results2);
+        
+        // make it rechunk, then test to make sure the results are the same.
+        deleteRecursive(Paths.get(JSANConstants.JSAN_CHUNK_DIR).toFile(), true);
+        test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+        test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        String results3 = test.getStatString();
+        Assert.assertEquals("Cached results different from non-cached results", results2, results3);
+        
+        // now, keep the chunks, but delete the cache, and try again.
+        File cacheDir = Paths.get(JSANConstants.JSAN_CACHE).toFile();
+        for (File f : cacheDir.listFiles()) {
+        	if (f.getName() != "chunked") {
+        		deleteRecursive(f,true);
+        	}
+        }
+        test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+        test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        String results4 = test.getStatString();
+        Assert.assertEquals("Cached results different from non-cached results", results3, results4);
 	}
 	
 	/*
@@ -115,10 +245,13 @@ public class CacheTests
      * 			if f was successfully deleted.
      */
     public static boolean deleteRecursive(File f, boolean deleteMe) {
-    	File dir = new File(JSANConstants.JUNIT_RESOURCE_PACKAGE);
-        try {
-			if (f.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
-				return deleteRecursiveUnsafe(f, deleteMe);
+    	File[] safeDirs = {new File(JSANConstants.JUNIT_RESOURCE_PACKAGE),
+    					new File(JSANConstants.JSAN_CACHE)};
+		try {
+			for (File dir : safeDirs) {
+				if (f.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
+					return deleteRecursiveUnsafe(f, deleteMe);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
