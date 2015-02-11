@@ -15,7 +15,6 @@ public class JSANConstants {
 	public static final String JSAN_CHUNK_DIR = JSAN_CACHE + "chunked/";
 	public static final String JGAAP_RESOURCE_WORDNET = JSAN_EXTERNAL_RESOURCE_PACKAGE+"wordnet/";
 	public static final String JUNIT_RESOURCE_PACKAGE = "junit_resources/";
-	public static final boolean USE_CACHE = true;
 	
 	public static final int REQUIRED_NUM_OF_WORDS = 3500;
 	

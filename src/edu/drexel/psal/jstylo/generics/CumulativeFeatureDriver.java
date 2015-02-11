@@ -11,6 +11,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.helpers.DefaultHandler;
 
+import weka.classifiers.lazy.IBk;
+
 import com.jgaap.generics.*;
 
 import edu.drexel.psal.JSANConstants;
@@ -121,9 +123,8 @@ public class CumulativeFeatureDriver implements Serializable {
 	 * 		List of all event sets extracted per each event driver.
 	 * @throws Exception 
 	 */
-	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
+	public List<EventSet> createEventSets(Document doc, boolean loadDocContents, boolean usingCache) throws Exception {
 		
-		boolean isUsingCache = JSANConstants.USE_CACHE;
 		List<EventSet> esl = new ArrayList<EventSet>();
 		
 		File cacheDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
@@ -145,7 +146,7 @@ public class CumulativeFeatureDriver implements Serializable {
 		File docOriginal = new File(doc.getFilePath());
 		
 		BufferedWriter writer = null;
-		if (isUsingCache) {
+		if (usingCache) {
 			writer = new BufferedWriter(new FileWriter(docCache));
 			writer.write(docOriginal.getCanonicalPath() + '\n');
 			writer.write(Long.toString(docOriginal.lastModified()) + '\n');
@@ -174,7 +175,7 @@ public class CumulativeFeatureDriver implements Serializable {
 					currDoc.load();
 				} catch (Exception e) {
 					Logger.logln("Failed to load document contents!");
-					if (isUsingCache)
+					if (usingCache)
 						writer.close();
 					throw new Exception();
 				}
@@ -184,7 +185,7 @@ public class CumulativeFeatureDriver implements Serializable {
 				currDoc.processCanonicizers();
 			} catch (LanguageParsingException | CanonicizationException e1) {
 				Logger.logln("Failed to canonicize the document!");
-				if (isUsingCache)
+				if (usingCache)
 					writer.close();
 				throw new Exception();
 			}
@@ -196,7 +197,7 @@ public class CumulativeFeatureDriver implements Serializable {
 				tmpEs = ed.createEventSet(currDoc);
 			} catch (EventGenerationException e1) {
 				Logger.logln("Failed to create EventSet!");
-				if (isUsingCache)
+				if (usingCache)
 					writer.close();
 				throw new Exception();
 			}
@@ -206,7 +207,7 @@ public class CumulativeFeatureDriver implements Serializable {
 			es.setAuthor(doc.getAuthor());
 			es.setDocumentName(doc.getTitle());
 			es.setEventSetID(tmpEs.getEventSetID());
-			if (isUsingCache) {
+			if (usingCache) {
 				writer.write(es.getEventSetID() + "\n");
 				//writer.write(prefix + "\n");
 			}
@@ -235,12 +236,12 @@ public class CumulativeFeatureDriver implements Serializable {
 					map.put(event, 1);
 				}*/
 				es.addEvent(new Event(prefix+"{"+event+"}"));
-				if (isUsingCache) {
+				if (usingCache) {
 					writer.write(prefix+"{"+event+"}\n");
 				}
 			}
 			
-			if (isUsingCache) {
+			if (usingCache) {
 				// Write the hash map to the cache
 				/*for (Map.Entry<String, Integer> s : map.entrySet()) {
 					writer.write(s.getKey() + " " + s.getValue() + "\n");
@@ -253,7 +254,7 @@ public class CumulativeFeatureDriver implements Serializable {
 
 			esl.add(es);
 		}
-		if (isUsingCache)
+		if (usingCache)
 			writer.close();
 		return esl;
 	}

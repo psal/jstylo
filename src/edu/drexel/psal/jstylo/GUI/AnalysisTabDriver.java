@@ -812,11 +812,12 @@ public class AnalysisTabDriver {
 						+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
 				updateResultsView();
 				
-				boolean loadFromCache = JSANConstants.USE_CACHE && main.ib.validateCFDCache();
+				if (main.ib.isUsingCache())
+					main.ib.validateCFDCache();
 				Chunker.chunkAllTrainDocs(main.ib.getProblemSet());
 				
 				try {
-					main.ib.extractEventsThreaded(loadFromCache);
+					main.ib.extractEventsThreaded();
 				} catch (Exception e) {
 					Logger.logln("Could not extract features from training corpus!", LogOut.STDERR);
 					e.printStackTrace();
@@ -906,7 +907,7 @@ public class AnalysisTabDriver {
 					
 					//create the instances
 					try {
-						main.ib.createTestInstancesThreaded(loadFromCache);
+						main.ib.createTestInstancesThreaded();
 					} catch (Exception e) {
 						Logger.logln("Could not create instances from test documents!", LogOut.STDERR);
 						e.printStackTrace();

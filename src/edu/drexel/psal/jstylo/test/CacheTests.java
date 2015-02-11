@@ -63,6 +63,57 @@ public class CacheTests
 	 * Test to make sure that chunking does not change the results.
 	 */
 	@Test
+	public void testNoCache() {
+		ProblemSet ps = new ProblemSet(Paths.get(JSANConstants.JSAN_PROBLEMSETS_PREFIX, "drexel_1_small.xml").toString());
+		Document d = ps.trainDocAt("a", "a_01.txt");
+		Assert.assertNotNull("No document a_01.txt found.", d);
+		ps.removeTrainDocAt("a", d);
+		ps.addTestDoc("a", d);
+        Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
+		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false)
+                .useCache(false).build();
+		long bef1 = System.currentTimeMillis();
+		test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        long aft1 = System.currentTimeMillis();
+        String results1 = test.getStatString();
+        System.out.println(results1);
+        
+        test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
+                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false)
+                .useCache(false).build();
+		long bef2 = System.currentTimeMillis();
+		test.prepareInstances();
+        test.prepareAnalyzer();
+        test.run();
+        long aft2 = System.currentTimeMillis();
+        String results2 = test.getStatString();
+        System.out.println(results2);
+        
+        long time1 = aft1 - bef1;
+        long time2 = aft2 - bef2;
+        
+        // This assertion may be too lenient. Just trying to make sure that the time it takes the
+        // second time is close to the time it takes the first time (in other words, so we know for sure
+        // it did not use any extracted features)
+        double percentDiff = (double)(Math.abs(time1 - time2))/time2;
+        System.out.println("Percent difference between two runs: " + percentDiff);
+        
+        //File cache = Paths.get(JSANConstants.JSAN_CACHE).toFile();
+        
+        // TODO: Assert that the cache folder doesn't even exist
+        // (with the exception of the chunking folder)
+        //Assert.assertFalse(cache.exists());
+	}
+	
+	/**
+	 * Test to make sure that chunking does not change the results.
+	 */
+	@Test
 	public void testWithoutChunking() {
 		// TODO: this test is basically encapsulated in testWithChunking... so maybe get rid of this?
 		Chunker.shouldChunkTrainDocs(false);

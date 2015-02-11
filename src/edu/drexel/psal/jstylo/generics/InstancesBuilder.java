@@ -46,6 +46,19 @@ public class InstancesBuilder extends Engine {
 	private List<List<EventSet>> eventList;	//the events/sets created from the extracted features
 	private List<EventSet> relevantEvents;	//the events/sets to pay attention to
 	private ArrayList<Attribute> attributes;	//the relevant events converted into attributes
+	
+	// when the CFD cache is invalid, this will serve as an indicator to not use it until
+	// it is revalidated.
+	private boolean isCacheValid = false;
+	
+	// Return whether the CFD cache is valid or not
+	private boolean isCacheValid() {
+		return isCacheValid;
+	}
+	// Set whether or not the CFD cache is valid
+	private void setCacheValid(boolean isValid) {
+		isCacheValid = isValid;
+	}
 
 	//ThreadArrays so that we can stop them if the user cancels something mid process
 	FeatureExtractionThread[] featThreads;
@@ -78,6 +91,7 @@ public class InstancesBuilder extends Engine {
 		private boolean useDocTitles = false;
 		private boolean loadDocContents = false;
 		private Preferences p = null;
+		public boolean useCache = true;
 		
 		public Builder psPath(String psp){
 			psPath = psp;
@@ -106,6 +120,11 @@ public class InstancesBuilder extends Engine {
 		
 		public Builder useDocTitles(boolean udt){
 			useDocTitles = udt;
+			return this;
+		}
+		
+		public Builder useCache(boolean uc){
+			useCache = uc;
 			return this;
 		}
 		
@@ -190,6 +209,11 @@ public class InstancesBuilder extends Engine {
 			preferences.setPreference("loadDocContents", "1");
 		else
 			preferences.setPreference("loadDocContents","0");
+		
+		if (b.useCache)
+			preferences.setPreference("useCache", "1");
+		else
+			preferences.setPreference("useCache", "0");
 	}
 	
 	/**
@@ -249,8 +273,8 @@ public class InstancesBuilder extends Engine {
 	 * Culls the eventSets as well.
 	 * @throws Exception
 	 */
-	public void extractEventsThreaded(boolean loadFromCache) throws Exception {
-
+	public void extractEventsThreaded() throws Exception {
+		
 		//pull in documents and find out how many there are
 		List<Document> knownDocs = ps.getAllTrainDocs();
 		int knownDocsSize = knownDocs.size();
@@ -278,7 +302,7 @@ public class InstancesBuilder extends Engine {
 		featThreads = new FeatureExtractionThread[threadsToUse];
 		for (int thread = 0; thread < threadsToUse; thread++) //create the threads
 			featThreads[thread] = new FeatureExtractionThread(div, thread,
-					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd), loadFromCache);
+					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd), isUsingCache(), isCacheValid());
 		for (int thread = 0; thread < threadsToUse; thread++) //start them
 			featThreads[thread].start();
 		for (int thread = 0; thread < threadsToUse; thread++) //join them
@@ -323,6 +347,7 @@ public class InstancesBuilder extends Engine {
 			} catch (IOException e2) {
 				e2.printStackTrace();
 			}
+			setCacheValid(false);
 			return false;
 		}
 		long cachedHash = 0;
@@ -331,9 +356,11 @@ public class InstancesBuilder extends Engine {
 			reader.close();
 		} catch (NumberFormatException | IOException e) {
 			e.printStackTrace();
+			setCacheValid(false);
 			return false;
 		}
 		if (cachedHash == currentHash) {
+			setCacheValid(true);
 			return true;
 		} else {
 			// Delete the cache and create a new one.
@@ -352,7 +379,7 @@ public class InstancesBuilder extends Engine {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+			setCacheValid(false);
 			return false;
 		}
 	}
@@ -425,7 +452,7 @@ public class InstancesBuilder extends Engine {
 	 * Creates Test instances from all of the information gathered (if there are any)
 	 * @throws Exception
 	 */
-	public void createTestInstancesThreaded(boolean loadFromCache) throws Exception {
+	public void createTestInstancesThreaded() throws Exception {
 		// create the empty Test instances object
 		testInstances = new Instances("TestInstances", attributes, ps
 				.getAllTestDocs().size());
@@ -455,7 +482,7 @@ public class InstancesBuilder extends Engine {
 			testThreads = new CreateTestInstancesThread[threadsToUse];
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances,
-						new CumulativeFeatureDriver(cfd), loadFromCache);
+						new CumulativeFeatureDriver(cfd), isUsingCache(), isCacheValid());
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread].start();
 			for (int thread = 0; thread < threadsToUse; thread++)
@@ -568,6 +595,16 @@ public class InstancesBuilder extends Engine {
 	}
 	
 	/**
+	 * @param useCache whether or not we should use the cache for feature extraction
+	 */
+	public void setUseCache(boolean useCache) {
+		if (useCache)
+			preferences.setPreference("useCache", "1");
+		else
+			preferences.setPreference("useCache", "0");
+	}
+	
+	/**
 	 * @return Returns the problem set used by the InstancesBuilder
 	 */
 	public ProblemSet getProblemSet(){
@@ -648,6 +685,14 @@ public class InstancesBuilder extends Engine {
 	 */
 	public boolean usingDocTitles(){
 		return preferences.getBoolPreference("useDocTitles");
+	}
+	
+	
+	/**
+	 * @return whether or not we're using the cache for feature extraction
+	 */
+	public boolean isUsingCache() {
+		return preferences.getBoolPreference("useCache");
 	}
 	
 	/**
@@ -789,18 +834,20 @@ public class InstancesBuilder extends Engine {
 		int threadId; //the div this thread is dealing with
 		int numInstances; //the total number of instances to be created
 		CumulativeFeatureDriver cfd; //the cfd used to assess features
-		boolean loadFromCache;
+		boolean useCache;
+		boolean isCacheValid;
 		
 		//Constructor
 		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd,
-				boolean loadFromCache){
+				boolean useCache, boolean isCacheValid){
 			cfd=cd;
 			dataset = data;
 			list = new ArrayList<Instance>();
 			div = d;
 			threadId = t;
 			numInstances = n;
-			this.loadFromCache = loadFromCache;
+			this.useCache = useCache;
+			this.isCacheValid = isCacheValid;
 		}
 		
 		//returns the list of instances created by this thread
@@ -818,7 +865,7 @@ public class InstancesBuilder extends Engine {
 					//grab the document
 					Document doc = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(), loadFromCache);
+					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(), useCache, isCacheValid);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance
@@ -911,7 +958,8 @@ public class InstancesBuilder extends Engine {
 		int div; //the number of docs to be processed per thread
 		int threadId; //the div index of this thread
 		int knownDocsSize; //the number of docs total
-		boolean loadFromCache; // whether or not to load from the cache. Basically just a check if the CFD is unmodified
+		boolean useCache; // whether or not to load from the cache.
+		boolean isCacheValid; // whether or not the CFD cache is valid
 		List<Document> knownDocs; //the docs to be extracted
 		CumulativeFeatureDriver cfd; //the cfd to do the extracting with
 
@@ -926,20 +974,21 @@ public class InstancesBuilder extends Engine {
 		public FeatureExtractionThread(int div, int threadId,
 				int knownDocsSize, List<Document> knownDocs,
 				CumulativeFeatureDriver cfd) {
-			this(div, threadId, knownDocsSize, knownDocs, cfd, false);
+			this(div, threadId, knownDocsSize, knownDocs, cfd, false, false);
 
 		}
 		
 		// Constructor
 		public FeatureExtractionThread(int div, int threadId,
 				int knownDocsSize, List<Document> knownDocs,
-				CumulativeFeatureDriver cfd, boolean useCache) {
+				CumulativeFeatureDriver cfd, boolean useCache, boolean isCacheValid) {
 
 			this.div = div;
 			this.threadId = threadId;
 			this.knownDocsSize = knownDocsSize;
 			this.knownDocs = knownDocs;
-			this.loadFromCache = useCache;
+			this.useCache = useCache;
+			this.isCacheValid = isCacheValid;
 			try {
 				this.cfd = new CumulativeFeatureDriver(cfd);
 			} catch (Exception e) {
@@ -956,7 +1005,8 @@ public class InstancesBuilder extends Engine {
 					* (threadId + 1)); i++){
 				try {
 				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
-				    List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(), loadFromCache);
+				    List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(),
+				    		useCache, isCacheValid);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!", LogOut.STDERR);

@@ -51,15 +51,15 @@ public class Engine implements API {
 	 * @param document the document to have features extracted and made into event sets
 	 * @param cumulativeFeatureDriver the driver containing the features to be extracted and the functionality to do so
 	 * @param loadDocContents whether or not the document contents are already loaded into the object
-	 * @param loadFromCache
-	 * 		Whether or not to use cached features. Should be false if CFD has been modified, since
-	 * 		this does not provide checks on the CFD's cache, just on the documents' caches.
+	 * @param isUsingCache whether or not we want to use and cache extracted features
+	 * @param isCacheValid whether or not the CFD cache is valid. If not using cache, this value can be
+	 * 		  true or false; it doesn't matter.
 	 * @return the List of EventSets for the document
 	 * @throws Exception
 	 */
 	public List<EventSet> extractEventSets(Document document,
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents,
-			boolean loadFromCache) throws Exception {
+			boolean isUsingCache, boolean isCacheValid) throws Exception {
 	
 		File cacheDir = new File(JSANConstants.JSAN_CACHE + cumulativeFeatureDriver.getName() + "/");
 		File authorDir = null;
@@ -71,7 +71,7 @@ public class Engine implements API {
 		
 		List<EventSet> generatedEvents = null;
 		
-		if (JSANConstants.USE_CACHE && loadFromCache) {
+		if (isUsingCache && isCacheValid) {
 			File documentFile = new File(authorDir, document.getTitle()+".cache");
 			generatedEvents = getCachedFeatures(document, documentFile);
 			if (generatedEvents == null) {
@@ -90,7 +90,7 @@ public class Engine implements API {
 		
 		// Extract the Events from the documents
 		try {
-			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents);
+			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents, isUsingCache);
 		} catch (Exception e) {
 			Logger.logln("Failed to extract events from documents!");
 			throw new Exception();
@@ -106,7 +106,7 @@ public class Engine implements API {
 		documentInfo.setEventSetID("<DOCUMENT METADATA>");
 		
 		File docCache = new File(authorDir, document.getTitle() + ".cache");
-		boolean writeToCache = JSANConstants.USE_CACHE && docCache.exists();
+		boolean writeToCache = isUsingCache && docCache.exists();
 		
 		// append meta data to cache...
 		BufferedWriter writer = null;
