@@ -25,7 +25,7 @@ import edu.drexel.psal.JSANConstants;
 
 /**
  * Chunks the training documents into chunks (close to) the size of the (first) test document
- * @author Andrew
+ * @author Andrew DiNunzio
  */
 public final class Chunker {
 	
@@ -38,6 +38,18 @@ public final class Chunker {
 	 * The max difference between cached chunk size and desired chunk size allowed before re-chunking.
 	 */
 	private static double chunkMaxDifferential = 0.05;
+	
+	/**
+	 * Once the training documents are first chunked, the "original" documents
+	 * are stored here. The next time the documents are chunked, they will be loaded from the
+	 * stored "original" training documents. That way it does not try to chunk a list of chunked
+	 * documents. If the training documents are changed (not the contents, but the list of documents),
+	 * including any user sample documents or any training documents by any other author, that author's list
+	 * must be updated to that new list.
+	 * 
+	 * How many chunks could this chunker chunk if this chunker could chunk chunks?
+	 */
+	private static Map<String, List<Document>> originalAuthorMap = new HashMap<String, List<Document>>();
 	
 	/**
 	 * Returns true if the chunker is "on".
@@ -59,18 +71,6 @@ public final class Chunker {
 	}
 	
 	/**
-	 * Once the training documents are first chunked, the "original" documents
-	 * are stored here. The next time the documents are chunked, they will be loaded from the
-	 * stored "original" training documents. That way it does not try to chunk a list of chunked
-	 * documents. If the training documents are changed (not the contents, but the list of documents),
-	 * including any user sample documents or any training documents by any other author, that author's list
-	 * must be updated to that new list.
-	 * 
-	 * How many chunks could this chunker chunk if this chunker could chunk chunks?
-	 */
-	private static Map<String, List<Document>> originalAuthorMap = new HashMap<String, List<Document>>();
-	
-	/**
 	 * Set the training documents the chunker should chunk for a given author.
 	 * If the training documents are changed (not the contents, but the list of documents), including
 	 * any user sample documents or any training documents by any other author, this list must
@@ -89,6 +89,20 @@ public final class Chunker {
 	 */
 	public static void setOriginalAuthorMap(Map<String, List<Document>> map) {
 		originalAuthorMap = map;
+	}
+	
+	/**
+	 * @param author The author who you'd like to retrieve the original docs for.
+	 * @return The original documents for the given author
+	 */
+	public static List<Document> getOriginalAuthorDocs(String author) {
+		return originalAuthorMap.get(author);
+	}
+	/**
+	 * @return the original author map, set before any chunking occurred.
+	 */
+	public static Map<String, List<Document>> getOriginalAuthorMap() {
+		return originalAuthorMap;
 	}
 	
 	/**
