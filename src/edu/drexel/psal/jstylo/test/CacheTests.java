@@ -22,6 +22,8 @@ import com.jgaap.generics.Document;
  */
 public class CacheTests
 {
+	private static final String CHUNKED_DIR_NAME = "chunked";
+	
 	/**
 	 * Do some pre-test stuff, like clean out the temp directory.
 	 */
@@ -103,11 +105,18 @@ public class CacheTests
         double percentDiff = (double)(Math.abs(time1 - time2))/time2;
         System.out.println("Percent difference between two runs: " + percentDiff);
         
-        //File cache = Paths.get(JSANConstants.JSAN_CACHE).toFile();
-        
-        // TODO: Assert that the cache folder doesn't even exist
-        // (with the exception of the chunking folder)
-        //Assert.assertFalse(cache.exists());
+        File cache = Paths.get(JSANConstants.JSAN_CACHE).toFile();
+        File[] contents = cache.listFiles();
+        Assert.assertNotNull("No files in cache. Chunking directory should be there.", contents);
+        boolean foundChunkingDirectory = false;
+        for (File f : contents) {
+        	if(f.isDirectory() && f.getName().equals(CacheTests.CHUNKED_DIR_NAME))
+        		foundChunkingDirectory = true;
+        	else {
+        		Assert.fail("The caching system made directories/files when caching was turned off.");
+        	}
+        }
+        Assert.assertTrue("Chunking was turned on, but no chunking directory was found.", foundChunkingDirectory);
 	}
 	
 	/**

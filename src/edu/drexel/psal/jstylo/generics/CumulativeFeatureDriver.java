@@ -119,6 +119,8 @@ public class CumulativeFeatureDriver implements Serializable {
 	 * Does not make use of cache.
 	 * @param doc
 	 * 		Input document.
+	 * @param usingCache
+	 * 		Whether or not to cache the results to file.
 	 * @return
 	 * 		List of all event sets extracted per each event driver.
 	 * @throws Exception 
@@ -127,26 +129,30 @@ public class CumulativeFeatureDriver implements Serializable {
 		
 		List<EventSet> esl = new ArrayList<EventSet>();
 		
-		File cacheDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
-		File authorDir = null;
-		if (doc.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
-			authorDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
-		} else {
-			authorDir = new File(cacheDir, "_" + doc.getAuthor());
-		}
-		
-		if (!authorDir.exists()) {
-			authorDir.mkdirs();
-		}
-		
-		// We will start making the cache file in this method. The metadata will be appended
-		// in the Engine's extractEventSets() method..
-					
-		File docCache = new File(authorDir, doc.getTitle() + ".cache");
-		File docOriginal = new File(doc.getFilePath());
-		
+		File docCache = null;
+		File docOriginal = null;
 		BufferedWriter writer = null;
+		
 		if (usingCache) {
+			File cacheDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
+			File authorDir = null;
+			if (doc.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
+				authorDir = new File(JSANConstants.JSAN_CACHE + getName() + "/");
+			} else {
+				authorDir = new File(cacheDir, "_" + doc.getAuthor());
+			}
+
+			if (!authorDir.exists()) {
+				authorDir.mkdirs();
+			}
+
+			// We will start making the cache file in this method. The metadata
+			// will be appended
+			// in the Engine's extractEventSets() method..
+
+			docCache = new File(authorDir, doc.getTitle() + ".cache");
+			docOriginal = new File(doc.getFilePath());
+
 			writer = new BufferedWriter(new FileWriter(docCache));
 			writer.write(docOriginal.getCanonicalPath() + '\n');
 			writer.write(Long.toString(docOriginal.lastModified()) + '\n');
@@ -209,32 +215,16 @@ public class CumulativeFeatureDriver implements Serializable {
 			es.setEventSetID(tmpEs.getEventSetID());
 			if (usingCache) {
 				writer.write(es.getEventSetID() + "\n");
-				//writer.write(prefix + "\n");
 			}
 			
-			// The hashmap makes it so the cache files are smaller and quicker to traverse.
-			// Ex. Instead of seeing:
-			//		Letters
-			//		Letters{d}
-			//		Letters{d}
-			//		Letters{d}
-			//		Letters{f}	... (with arbitrarily 7 more)
-			//		Letters{a}	... (with, say, 8 more)
-			// you would just see:
-			//		Letters
-			//		Letters			(yes there are two. The first is the ID, the second is the prefix)
-			//		d 3
-			//		f 8
-			//		a 9
+			// TODO: I tried to use a hash map to compress the output cache file. 
+			//		This hash map did not work. It caused inconsistencies between cached features
+			//		and extracted features. Not sure why, but I wrote tests for it in CacheTests.
+			//		Any further optimizations / compressions must pass those tests.
 			
-			//HashMap<String, Integer> map = new HashMap<String, Integer>(); // count number of multiple events
 			for (Event e: tmpEs){
 				String event = e.getEvent();
-				/*if (map.containsKey(event)) {
-					map.put(event, map.get(event) + 1);
-				} else {
-					map.put(event, 1);
-				}*/
+
 				es.addEvent(new Event(prefix+"{"+event+"}"));
 				if (usingCache) {
 					writer.write(prefix+"{"+event+"}\n");
@@ -242,13 +232,6 @@ public class CumulativeFeatureDriver implements Serializable {
 			}
 			
 			if (usingCache) {
-				// Write the hash map to the cache
-				/*for (Map.Entry<String, Integer> s : map.entrySet()) {
-					writer.write(s.getKey() + " " + s.getValue() + "\n");
-				}*/
-				if (i == features.size() - 1)
-					writer.write(",\n|\n");
-				else
 					writer.write(",\n");
 			}
 
