@@ -332,7 +332,7 @@ public class InstancesBuilder extends Engine {
 	 */
 	public boolean validateCFDCache() {
 		long currentHash = cfd.longHash(EnumSet.of(FeatureSetElement.CANONICIZERS, FeatureSetElement.EVENT_DRIVERS, FeatureSetElement.NORMALIZATION));
-		File cacheDir = new File(JSANConstants.JSAN_CACHE + cfd.getName());
+		File cacheDir = new File(JSANConstants.JSAN_CACHE + "_" + cfd.getName());
 		File cacheFile = new File(cacheDir, "cfdHash.txt");
 		BufferedReader reader = null;
 		try {

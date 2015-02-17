@@ -61,10 +61,10 @@ public class Engine implements API {
 			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents,
 			boolean isUsingCache, boolean isCacheValid) throws Exception {
 	
-		File cacheDir = new File(JSANConstants.JSAN_CACHE + cumulativeFeatureDriver.getName() + "/");
+		File cacheDir = new File(JSANConstants.JSAN_CACHE + "_" + cumulativeFeatureDriver.getName() + "/");
 		File authorDir = null;
 		if (document.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
-			authorDir = new File(JSANConstants.JSAN_CACHE + cumulativeFeatureDriver.getName() + "/");
+			authorDir = new File(cacheDir, "you");
 		} else {
 			authorDir = new File(cacheDir, "_" + document.getAuthor());
 		}
