@@ -182,7 +182,7 @@ public final class Chunker {
 				File[] chunkFiles = chunkDir.listFiles(new FileFilter() {
 					@Override
 					public boolean accept(File arg0) {
-						return arg0.getName().matches("\\d{3,}.txt");
+						return arg0.getName().matches("^\\w+ \\d{3,}.txt$");
 					}
 				});
 				if (chunkFiles != null) {
@@ -433,7 +433,7 @@ public final class Chunker {
 				if (j < nWords - 1)
 					sb.append(" ");
 			}
-			File chunkFile = new File(chunkDir, String.format("%03d.txt", i));
+			File chunkFile = new File(chunkDir, String.format("%s %03d.txt", author, i));
 			try {
 				writer = new BufferedWriter(new FileWriter(
 						chunkFile.getAbsolutePath()));
