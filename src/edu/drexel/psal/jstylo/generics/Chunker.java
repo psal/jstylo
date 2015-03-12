@@ -25,19 +25,28 @@ import edu.drexel.psal.JSANConstants;
 
 /**
  * Chunks the training documents into chunks (close to) the size of the (first) test document
+ * 
+ * TODO: this isn't safe to use with multiple problem sets at once. Consider making this a
+ * class that each problem set could have a field for. Then each call it would just pass itself in
+ * to the method (so that copying a reference to the problem set wouldn't invalidate the field).
+ * Or maybe it'd be better to just put the original author map as part of the ProblemSet....
+ * 
+ * If you add or remove or change the filepath for any training or sample docs,
+ * you must update the "original" map as well. Otherwise those changes will be lost when it reverts
+ * back to the old "original".
  * @author Andrew DiNunzio
  */
 public final class Chunker {
 	
-	private static int chunkMinSize = 475;
-	private static int chunkDefaultSize = 500;
-	private static int chunkMaxSize = Integer.MAX_VALUE;
+	private static final int chunkMinSize = 475;
+	private static final int chunkDefaultSize = 500;
+	private static final int chunkMaxSize = Integer.MAX_VALUE;
 	private static boolean chunkTrainDocs = true;
 	
 	/**
 	 * The max difference between cached chunk size and desired chunk size allowed before re-chunking.
 	 */
-	private static double chunkMaxDifferential = 0.05;
+	private static final double chunkMaxDifferential = 0.05;
 	
 	/**
 	 * Once the training documents are first chunked, the "original" documents
@@ -194,7 +203,7 @@ public final class Chunker {
 				if (documentList.size() > 0) {
 					ps.setTrainDocs(entry.getKey(), documentList);
 				} else {
-					Logger.logln("Warning: Unable to use previously chunked documents. Using sample docs as is.");
+					Logger.logln("WARNING: Unable to use previously chunked documents. Using training docs as is.");
 				}
 
 			} else {
@@ -203,7 +212,7 @@ public final class Chunker {
 				Engine.deleteRecursive(chunkDir);
 				makeChunkHash(chunkDir, entry.getValue(), chunkSize);
 
-				// this minChunkSize is different than the MIN_CHUNK_SIZE. The
+				// minChunkSize is different than this.chunkMinSize. The
 				// constant is absolute,
 				// where this is just trying to provide some flexibility when
 				// chunking it to a size
@@ -218,7 +227,7 @@ public final class Chunker {
 				if (newTrainDocs != null) {
 					ps.setTrainDocs(entry.getKey(), newTrainDocs);
 				} else {
-					Logger.logln("WARNING: Unable to chunk documents. Using sample docs as is.");
+					Logger.logln("WARNING: Unable to chunk documents. Using training docs as is.");
 				}
 			}
 		} // end of for loop over author map
@@ -231,7 +240,7 @@ public final class Chunker {
 		// do not instantiate
 	}
 	
-	private static Comparator<Document> sortComparator = new Comparator<Document>() {
+	private static final Comparator<Document> sortComparator = new Comparator<Document>() {
 		@Override
 		public int compare(Document o1, Document o2) {
 			return o1.getTitle().compareTo(o2.getTitle());
@@ -242,6 +251,8 @@ public final class Chunker {
 	 * Check to see if the previously chunked files can still be used.
 	 * If it has to rechunk the files, it cannot make use of the cache for the documents, so
 	 * there is some leeway in the chunk size differential.
+	 * @param chunkDir 			The directory that contains the author's chunked documents
+	 * @param trainDocs			The author's current documents to check the cache against.
 	 * @param desiredChunkSize	The desired size of the chunks. This will be compared to the chunk size
 	 *			when the cached chunk files were created.
 	 * @param maxDifferential	The max differential allowed between the size of chunks when the 
@@ -253,11 +264,11 @@ public final class Chunker {
 		/*
 		 * The chunk hash works as follows.
 		 * 
-		 * The first line is the number of words per chunk that was used when the sample docs were chunked.
+		 * The first line is the number of words per chunk that was used when the training docs were chunked.
 		 * This number can be slightly off from the current desired chunk size 
 		 * 
 		 * The second line onward is just a list of "last modified" values for the sorted (by title) list
-		 * of sample documents. Each line is compared to the "last modified" values of the current sample docs.
+		 * of training documents. Each line is compared to the "last modified" values of the current training docs.
 		 */
 		
 		if (!chunkDir.exists() || !chunkDir.isDirectory()) {
@@ -287,19 +298,19 @@ public final class Chunker {
 			// sort the documents by title
 			Collections.sort(trainDocs, sortComparator);
 
-			for (Document sampleDoc : trainDocs) {
+			for (Document trainDoc : trainDocs) {
 				String line = reader.readLine();
 				if (line == null) {
 					reader.close();
 					return false;
 				}
 				long cachedLastModified = Long.parseLong(line);
-				if (new File(sampleDoc.getFilePath()).lastModified() != cachedLastModified) {
+				if (new File(trainDoc.getFilePath()).lastModified() != cachedLastModified) {
 					reader.close();
 					return false;
 				}
 			}
-			// If there were more documents when the sample docs were last chunked,
+			// If there were more documents when the training docs were last chunked,
 			// 		the chunked files are invalid.
 			String line = null;
 			while ((line = reader.readLine()) != null) {
@@ -326,7 +337,7 @@ public final class Chunker {
 		return isValid;
 	}
 	/**
-	 * This will create the hash file for the chunked sample documents. This hash file ensures
+	 * This will create the hash file for the chunked training documents. This hash file ensures
 	 * that an invalid set of chunked files will not be used.
 	 * @param author
 	 * @param trainDocs
@@ -366,8 +377,8 @@ public final class Chunker {
 			writer.write(desiredChunkSize + "\n");
 			// sort the documents by title
 			Collections.sort(trainDocs, sortComparator);
-			for (Document sampleDoc : trainDocs) {
-				String lastModified = Long.toString(new File(sampleDoc.getFilePath()).lastModified());
+			for (Document trainDoc : trainDocs) {
+				String lastModified = Long.toString(new File(trainDoc.getFilePath()).lastModified());
 				writer.write(lastModified + "\n");
 			}
 		} catch (IOException e1) {
@@ -382,7 +393,7 @@ public final class Chunker {
 	}
 	
 	/**
-	 * Chunk the sample documents into roughly equal sized chunks (except perhaps the last one)
+	 * Chunk the training documents into roughly equal sized chunks (except perhaps the last one)
 	 * @param author	the author of the trainDocs. The docs should all be by this one author.
 	 * @param trainDocs	the training documents for the given author
 	 * @param chunkSize the size the chunks should default to
