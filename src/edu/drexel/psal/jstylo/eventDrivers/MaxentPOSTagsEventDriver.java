@@ -7,6 +7,7 @@ import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger; 
+import edu.stanford.nlp.tagger.maxent.TTags;
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 import java.io.*;
@@ -18,7 +19,7 @@ import java.util.*;
  * @author Ariel Stolerman
  */
 
-public class MaxentPOSTagsEventDriver extends EventDriver {
+public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDriver{
 	private static final long serialVersionUID = 1L;
 	@Override
 	public String displayName() {
@@ -38,12 +39,15 @@ public class MaxentPOSTagsEventDriver extends EventDriver {
 	protected static MaxentTagger tagger = null;
     protected static String taggerPath = "com/jgaap/resources/models/postagger/english-left3words-distsim.tagger";
 	//protected static String taggerPath = "com/jgaap/resources/models/postagger/german-fast.tagger";
-	
+	private static String lastTaggerPath = taggerPath;
+    
 	public static String getTaggerPath() {
 		return taggerPath;
 	}
 
 	public static void setTaggerPath(String taggerPath) {
+		if (getTaggerPath() != null && !(getTaggerPath().isEmpty()))
+			MaxentPOSTagsEventDriver.lastTaggerPath = getTaggerPath();
 		MaxentPOSTagsEventDriver.taggerPath = taggerPath;
 	}
 
@@ -67,6 +71,19 @@ public class MaxentPOSTagsEventDriver extends EventDriver {
 				es.addEvent(new Event(tw.tag()));
 		}
 		
+		//TODO trying to clean out the sub objects
+		int n = sentences.size();
+		for (int i = 0; i<n; i++){
+			List<HasWord> sentence =sentences.remove(0);
+			int m = sentence.size();
+			for (int j = 0; j<m; j++){
+				HasWord hw = sentence.remove(0);
+				hw = null;
+			}
+			sentence.clear();
+			sentence = null;
+		}
+		sentences = null;
 		return es;
 	}
 	
@@ -78,13 +95,24 @@ public class MaxentPOSTagsEventDriver extends EventDriver {
 		MaxentTagger t = null;
 		try {
 			//tagger = new MaxentTagger();
-			
-			t = new MaxentTagger(taggerPath,new TaggerConfig("-model", taggerPath),false);
+			if (getTaggerPath() == null || getTaggerPath().isEmpty()) {
+				setTaggerPath(lastTaggerPath);
+			}
+			t = new MaxentTagger(getTaggerPath(), new TaggerConfig("-model", getTaggerPath()),false);
 			
 		} catch (Exception e) {
 			Logger.logln("MaxentTagger failed to load tagger from ",LogOut.STDERR);
 			e.printStackTrace();
 		}
 		return t;
+	}
+	//TODO
+	public void destroyTagger() {
+		TTags tt;
+		if (tagger != null)
+			tt = tagger.getTags();
+		
+		setTaggerPath(null);
+		tagger = null;
 	}
 }

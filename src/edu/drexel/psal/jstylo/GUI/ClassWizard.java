@@ -119,7 +119,7 @@ public class ClassWizard extends javax.swing.JFrame {
 						a.setValue("<ON/OFF>");
 						break;
 					} else {
-						a.setValue(currentOps[i+1]);
+						a.setValue(currentOps[i+1].replace(" ", ""));
 						i++;
 						break;
 					}
@@ -230,7 +230,7 @@ public class ClassWizard extends javax.swing.JFrame {
 							tempLabel.setPreferredSize(new Dimension(550,30));
 							tempLabel.setEditable(false);
 							
-							JTextField tempField = new JTextField(" "+args.get(i).getValue());
+							JTextField tempField = new JTextField(args.get(i).getValue());
 							tempField.setPreferredSize(new Dimension(550,30));
 							tempField.setEditable(true);
 							 							

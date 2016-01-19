@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/jaws-bin.jar"/>
 	<classpathentry kind="lib" path="lib/Jama-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/stanford-postagger-2012-01-06.jar"/>

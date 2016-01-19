@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  * 
- * This is primarily a data storage class which adds soem convenience functionality to the program.
+ * This is primarily a data storage class which adds some convenience functionality to the program.
  * At the moment, all options in the analysis tab are saved in this data structure, then to a text file, and
  * then loaded upon startup. In other words, it restores the previous run settings whenever this file is present.
  * It also includes several parameters which are used exclusively by the API, either the remote one or the full one.
@@ -25,7 +25,7 @@ import java.util.Map;
 public class Preferences{
 
 	//older versions will be replaced with the default of the newest version
-	private static final double currentVersion = 0.75;
+	private static final double currentVersion = 0.78;
 	
 	//where the file can be found
 	private static final String preferenceFilePath = "./jsan_resources/JStylo_prop.prop";
@@ -49,6 +49,7 @@ public class Preferences{
 		"useLogFile",
 		"useSparse",
 		"useDocTitles",
+		"useCache",
 		"loadDocContents",
 		"printVectors",
 		"calcInfoGain",
@@ -68,6 +69,7 @@ public class Preferences{
 			"useLogFile=0\n" +
 			"useSparse=1\n" +
 			"useDocTitles=0\n" +
+			"useCache=1\n" +
 			"loadDocContents=0\n" +
 			"printVectors=0\n" +
 			"calcInfoGain=1\n" +

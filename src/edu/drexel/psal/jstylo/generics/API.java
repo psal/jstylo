@@ -21,10 +21,13 @@ public interface API {
 	 * @param document the document to have features extracted and made into event sets
 	 * @param cumulativeFeatureDriver the driver containing the features to be extracted and the functionality to do so
 	 * @param loadDocContents whether or not the document contents are already loaded into the object
+	 * @param isUsingCache whether or not we want to use the cache for feature extraction
+	 * @param isCacheValid if using the cache, whether or not the CFD cache is valid. If not using the
+	 * 			cache, can be either true or false; it does not matter.
 	 * @return the List of EventSets for the document
 	 */ 
 	public List<EventSet> extractEventSets(Document document,
-			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception;
+			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents, boolean isUsingCache, boolean isCacheValid) throws Exception;
 	
 	/**
 	 * Determines which EventSets to use for the given documents based on the chosen cullers.<br>

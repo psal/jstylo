@@ -198,7 +198,8 @@ public class FeatureWizard extends javax.swing.JFrame {
 			featuresJTree.setSelectionRow(i);
 			Object[] path = featuresJTree.getSelectionPath().getPath();
 			String elem = ((DefaultMutableTreeNode) path[path.length-1]).toString();
-			if (elem.equals(ed.displayName()))
+			elem.replaceAll("\\d", "");
+			if (elem.equals(ed.displayName().replaceAll("\\d", "")))
 				break;
 		}
 		// update parameter values

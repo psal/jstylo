@@ -58,6 +58,13 @@ public class Logger {
 		}
 	}
 	
+	public static void setLogPrefix(String s){
+		filePrefix = s;
+	}
+	
+	public static void setLogDir(String dir){
+		fileDirPath = dir;
+	}
 	/**
 	 * Enumerator for logger output.
 	 */

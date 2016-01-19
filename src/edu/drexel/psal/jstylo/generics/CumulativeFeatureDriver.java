@@ -11,7 +11,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.helpers.DefaultHandler;
 
+import weka.classifiers.lazy.IBk;
+
 import com.jgaap.generics.*;
+
+import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 
 /**
  * The cumulative feature driver class is designed to create a concatenated result of several feature drivers.
@@ -23,6 +28,11 @@ import com.jgaap.generics.*;
 public class CumulativeFeatureDriver implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	/**
+	 * Used when serializing it to XML. The initial size is
+	 * initialized to this so it doesn't have to continuously find more memory.
+	 */
+	private static final int INITIAL_WRITE_SIZE = 4096;
 
 	/* ======
 	 * fields
@@ -62,13 +72,12 @@ public class CumulativeFeatureDriver implements Serializable {
 	 */
 	public CumulativeFeatureDriver(CumulativeFeatureDriver other) throws Exception
 	{
-		String path = "tmp.xml";
-		File xml = new File(path);
+		File xml = File.createTempFile("tmp",".xml");
 		PrintWriter pw = new PrintWriter(xml);
 		pw.print(other.toXMLString());
 		pw.flush();
 		pw.close();
-		XMLParser parser = new XMLParser(path);
+		XMLParser parser = new XMLParser(xml.getPath());
 		CumulativeFeatureDriver generated = parser.cfd;
 		this.name = generated.name;
 		this.description = generated.description;
@@ -107,14 +116,48 @@ public class CumulativeFeatureDriver implements Serializable {
 	
 	/**
 	 * Returns a list of all event sets extracted per each feature driver.
+	 * Does not make use of cache.
 	 * @param doc
 	 * 		Input document.
+	 * @param usingCache
+	 * 		Whether or not to cache the results to file.
 	 * @return
 	 * 		List of all event sets extracted per each event driver.
 	 * @throws Exception 
 	 */
-	public List<EventSet> createEventSets(Document doc, boolean loadDocContents) throws Exception {
+	public List<EventSet> createEventSets(Document doc, boolean loadDocContents, boolean usingCache) throws Exception {
+		
 		List<EventSet> esl = new ArrayList<EventSet>();
+		
+		File docCache = null;
+		File docOriginal = null;
+		BufferedWriter writer = null;
+		
+		if (usingCache) {
+			File cacheDir = new File(JSANConstants.JSAN_CACHE + "_" + getName() + "/");
+			File authorDir = null;
+			if (doc.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
+				authorDir = new File(cacheDir, "you");
+			} else {
+				authorDir = new File(cacheDir, "_" + doc.getAuthor());
+			}
+
+			if (!authorDir.exists()) {
+				authorDir.mkdirs();
+			}
+
+			// We will start making the cache file in this method. The metadata
+			// will be appended
+			// in the Engine's extractEventSets() method..
+
+			docCache = new File(authorDir, doc.getTitle() + ".cache");
+			docOriginal = new File(doc.getFilePath());
+
+			writer = new BufferedWriter(new FileWriter(docCache));
+			writer.write(docOriginal.getCanonicalPath() + '\n');
+			writer.write(Long.toString(docOriginal.lastModified()) + '\n');
+		}
+		
 		for (int i=0; i<features.size(); i++) {
 			EventDriver ed = features.get(i).getUnderlyingEventDriver();
 			Document currDoc = doc instanceof StringDocument ?
@@ -138,6 +181,8 @@ public class CumulativeFeatureDriver implements Serializable {
 					currDoc.load();
 				} catch (Exception e) {
 					Logger.logln("Failed to load document contents!");
+					if (usingCache)
+						writer.close();
 					e.printStackTrace();
 					throw new Exception();
 				}
@@ -147,6 +192,8 @@ public class CumulativeFeatureDriver implements Serializable {
 				currDoc.processCanonicizers();
 			} catch (LanguageParsingException | CanonicizationException e1) {
 				Logger.logln("Failed to canonicize the document!");
+				if (usingCache)
+					writer.close();
 				throw new Exception();
 			}
 			
@@ -157,21 +204,67 @@ public class CumulativeFeatureDriver implements Serializable {
 				tmpEs = ed.createEventSet(currDoc);
 			} catch (EventGenerationException e1) {
 				Logger.logln("Failed to create EventSet!");
+				if (usingCache)
+					writer.close();
 				throw new Exception();
 			}
-			tmpEs.setEventSetID(features.get(i).getName()); 
+			
+			tmpEs.setEventSetID(features.get(i).getName());
 			EventSet es = new EventSet();
 			es.setAuthor(doc.getAuthor());
 			es.setDocumentName(doc.getTitle());
 			es.setEventSetID(tmpEs.getEventSetID());
-			for (Event e: tmpEs){
-				es.addEvent(new Event(prefix+"{"+e.getEvent()+"}"));
+			if (usingCache) {
+				writer.write(es.getEventSetID() + "\n");
 			}
+			
+			// TODO: I tried to use a hash map to compress the output cache file. 
+			//		This hash map did not work. It caused inconsistencies between cached features
+			//		and extracted features. Not sure why, but I wrote tests for it in CacheTests.
+			//		Any further optimizations / compressions must pass those tests.
+			
+			for (Event e: tmpEs){
+				String event = e.getEvent();
+
+				es.addEvent(new Event(prefix+"{"+event+"}"));
+				if (usingCache) {
+					writer.write(prefix+"{"+event+"}\n");
+				}
+			}
+			
+			if (usingCache) {
+					writer.write(",\n");
+			}
+
 			esl.add(es);
 		}
+		if (usingCache)
+			writer.close();
 		return esl;
 	}
 	
+	public void clean(){
+		int n = numOfFeatureDrivers();
+		for (int i = 0; i < n; i++){
+			FeatureDriver fd = removeFeatureDriverAt(0);
+			{
+				List<EventCuller> cullers = fd.getCullers();
+				for (EventCuller ec : cullers){
+					ec = null;
+				}
+				cullers.clear();
+				cullers = null;
+				
+				EventDriver eventDriver = fd.getUnderlyingEventDriver();
+				if (eventDriver instanceof StanfordDriver){
+					((StanfordDriver) eventDriver).destroyTagger();
+				}
+				
+				eventDriver = null;
+			}
+			fd = null;
+		}
+	}
 	
 	/* =======
 	 * queries
@@ -336,71 +429,155 @@ public class CumulativeFeatureDriver implements Serializable {
 		return true;
 	}
 	
+    /**
+     * Choose what is serialized from the feature set.
+     * @author Andrew DiNunzio
+     *
+     */
+    public enum FeatureSetElement {
+        EVENT_DRIVERS,
+        CANONICIZERS,
+        CULLERS,
+        NORMALIZATION;
+        
+        public static final EnumSet<FeatureSetElement> ALL = EnumSet.allOf(FeatureSetElement.class);
+    }
+	
 	/**
 	 * Saves the cumulative feature driver in XML format to the given path.
 	 * @param path
 	 * 		The path to save to.
 	 */
 	public String toXMLString() {
-		String res = "";
-
-		res += "<?xml version=\"1.0\"?>\n";
-		res += "<feature-set name=\""+name+"\">\n";
-		res += "\t<description value=\""+description+"\"/>\n";
-
-		FeatureDriver fd;
-		for (int i=0; i<features.size(); i++) {
-			fd = features.get(i);
-			res += "\t<feature name=\""+fd.getName()+"\" calc_hist=\""+fd.isCalcHist()+"\">\n";
-
-			// description
-			res += "\t\t<description value=\""+fd.getDescription()+"\"/>\n";
-
-			// event driver
-			EventDriver ed = fd.getUnderlyingEventDriver();
-			res += "\t\t<event-driver class=\""+ed.getClass().getName()+"\">\n";
-			// parameters
-			for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(ed.getClass().getName())) {
-				res += "\t\t\t<param name=\""+param.getFirst()+"\" value=\""+ed.getParameter(param.getFirst())+"\"/>\n";
-			}
-			res += "\t\t</event-driver>\n";
-
-			// canonicizers
-			res += "\t\t<canonicizers>\n";
-			if (fd.getCanonicizers() != null) {
-				for (Canonicizer c: fd.getCanonicizers()) {
-					res += "\t\t\t<canonicizer class=\""+c.getClass().getName()+"\">\n";
-					for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(c.getClass().getName())) {
-						res += "\t\t\t\t<param name=\""+param.getFirst()+"\" value=\""+c.getParameter(param.getFirst())+"\"/>\n";
-					}
-					res += "\t\t\t</canonicizer>\n";
-				}
-			}
-			res += "\t\t</canonicizers>\n";
-
-			// cullers
-			res += "\t\t<cullers>\n";
-			if (fd.getCullers() != null) {
-				for (EventCuller ec: fd.getCullers()) {
-					res += "\t\t\t<culler class=\""+ec.getClass().getName()+"\">\n";
-					for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(ec.getClass().getName())) {
-						res += "\t\t\t\t<param name=\""+param.getFirst()+"\" value=\""+ec.getParameter(param.getFirst())+"\"/>\n";
-					}
-					res += "\t\t\t</culler>\n";
-				}
-			}
-			res += "\t\t</cullers>\n";
-
-			// normalization
-			res += "\t\t<norm value=\""+fd.getNormBaseline()+"\"/>\n";
-			res += "\t\t<factor value=\""+fd.getNormFactor()+"\"/>\n";
-
-			res += "\t</feature>\n";
-		}
-		res += "</feature-set>\n";
-		
-		return res;
+		return toXMLString(FeatureSetElement.ALL);
 	}
+	
+    /**
+     * Serialize part of the CFD based on the featureFlags.
+     * 
+     * Always specify ALL when writing to file.
+     */
+    private String toXMLString(EnumSet<FeatureSetElement> featureFlags) {
+        StringBuilder res = new StringBuilder(INITIAL_WRITE_SIZE);
+
+        res.append("<?xml version=\"1.0\"?>\n");
+        res.append("<feature-set name=\"");
+        	res.append(name);
+        	res.append("\">\n");
+        res.append("\t<description value=\"");
+        	res.append(description);
+        	res.append("\"/>\n");
+
+        FeatureDriver fd;
+        for (int i=0; i<features.size(); i++) {
+            fd = features.get(i);
+            res.append("\t<feature name=\"");
+            	res.append(fd.getName());
+            	res.append("\" calc_hist=\"");
+            	res.append(fd.isCalcHist());
+            	res.append("\">\n");
+
+            // description
+            res.append("\t\t<description value=\"");
+            	res.append(fd.getDescription());
+            	res.append("\"/>\n");
+
+            if (featureFlags.contains(FeatureSetElement.EVENT_DRIVERS)) {
+                // event driver
+                EventDriver ed = fd.getUnderlyingEventDriver();
+                res.append("\t\t<event-driver class=\"");
+                	res.append(ed.getClass().getName());
+                	res.append("\">\n");
+                // parameters
+                for (Pair<String, FeatureDriver.ParamTag> param : FeatureDriver.getClassParams(ed.getClass().getName())) {
+                	res.append("\t\t\t<param name=\"");
+                		res.append(param.getFirst());
+                		res.append("\" value=\"");
+                		res.append(ed.getParameter(param.getFirst()));
+                		res.append("\"/>\n");
+                }
+                res.append("\t\t</event-driver>\n");
+            }
+            
+            if (featureFlags.contains(FeatureSetElement.CANONICIZERS)) {
+                // canonicizers
+                res.append("\t\t<canonicizers>\n");
+                if (fd.getCanonicizers() != null) {
+                    for (Canonicizer c : fd.getCanonicizers()) {
+                        res.append("\t\t\t<canonicizer class=\"");
+                        	res.append(c.getClass().getName());
+                        	res.append("\">\n");
+                        for (Pair<String, FeatureDriver.ParamTag> param : FeatureDriver.getClassParams(c.getClass().getName())) {
+                            res.append("\t\t\t\t<param name=\"");
+                            	res.append(param.getFirst());
+                            	res.append("\" value=\"");
+                            	res.append(c.getParameter(param.getFirst()));
+                            	res.append("\"/>\n");
+                        }
+                        res.append("\t\t\t</canonicizer>\n");
+                    }
+                }
+                res.append("\t\t</canonicizers>\n");
+            }
+
+            if (featureFlags.contains(FeatureSetElement.CULLERS)) {
+                // cullers
+            	res.append("\t\t<cullers>\n");
+                if (fd.getCullers() != null) {
+                    for (EventCuller ec: fd.getCullers()) {
+                        res.append("\t\t\t<culler class=\"");
+                        res.append(ec.getClass().getName());
+                        res.append("\">\n");
+                        for (Pair<String,FeatureDriver.ParamTag> param: FeatureDriver.getClassParams(ec.getClass().getName())) {
+                            res.append("\t\t\t\t<param name=\"");
+                            	res.append(param.getFirst());
+                            	res.append("\" value=\"");
+                            	res.append(ec.getParameter(param.getFirst()));
+                            	res.append("\"/>\n");
+                        }
+                        res.append("\t\t\t</culler>\n");
+                    }
+                }
+                res.append("\t\t</cullers>\n");
+            }
+            
+            if (featureFlags.contains(FeatureSetElement.NORMALIZATION)) {
+                // normalization
+            	res.append("\t\t<norm value=\"");
+            		res.append(fd.getNormBaseline());
+            		res.append("\"/>\n");
+                res.append("\t\t<factor value=\"");
+                	res.append(fd.getNormFactor());
+                	res.append("\"/>\n");
+            }
+
+            res.append("\t</feature>\n");
+        }
+        res.append("</feature-set>\n");
+        
+        return res.toString();
+    }
+	
+	/**
+	 * 
+	 * @param featureFlags
+	 * @return
+	 */
+    public long longHash(EnumSet<FeatureSetElement> featureFlags) {
+        String xml = toXMLString(featureFlags);
+        long hash = 0;
+        long value;
+        int length = xml.length();
+        int i,j;
+        for (i=0; i < length; i++) {
+            value = xml.charAt(i);
+            for (j = length-(i+1); j > 0; j--)
+                value = (value << 5) - value;
+            hash += value;
+        }
+        return hash;
+    }
+	
 	
 	/**
 	 * XML parser to create a cumulative feature driver out of a XML file.
