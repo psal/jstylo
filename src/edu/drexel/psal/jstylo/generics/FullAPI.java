@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.jgaap.generics.Document;
-
-import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
@@ -215,7 +212,6 @@ public class FullAPI {
 		selected = b.type;
 		numFolds = b.numFolds;
 		classifierPath = b.classifierPath;
-		
 	}
 	
 	///////////////////////////////// Methods
@@ -346,7 +342,7 @@ public class FullAPI {
 				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
 			}
 		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
-			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),arg,true);
+			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),true,arg);
 		}
 		verifier.verify();
 	}
@@ -571,7 +567,7 @@ public class FullAPI {
 				.psPath("C:/Users/Mordio/Downloads/Work/modifiedVerify.xml").classifier(s)
 				.numThreads(8).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(true).isSparse(false).verifierName("Distractorless").build();
 		test.prepareInstances();
-		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(), test.getTestInstances(),0.17, false);
+		Verifier v = new DistractorlessVerifier(test.getTrainingInstances(), test.getTestInstances(),false, 0.17);
 		v.verify();
 	
 		System.out.println(v.getResultString());

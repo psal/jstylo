@@ -1,15 +1,18 @@
 package edu.drexel.psal.jstylo.verifiers;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Scanner;
+
+import edu.drexel.psal.jstylo.generics.ProblemSet;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
 import weka.core.Instance;
 import weka.core.Instances;
 
-public class Distractorless {
+public class Distractorless implements Serializable{
 
 	/*
 	 * These values are used to create a "fake" weka evaluation for statistical purposes.
@@ -73,7 +76,7 @@ public class Distractorless {
 	 * Reads the CSV file in the given path and evaluates the results with the
 	 * given threshold.
 	 */
-	public static Evaluation evalCSV(String analysisString, double threshold)
+	public static Evaluation evalCSV(String analysisString, double threshold, boolean meta)
 			throws Exception
 	{
 		Evaluation eval = new Evaluation(insts);
@@ -100,7 +103,19 @@ public class Distractorless {
 			testAuthor = line[1];
 			dist = Double.parseDouble(line[2]);
 			
-			updateEval(eval, testAuthor, trainAuthor, dist, threshold);
+			if (!meta){
+				if (line.length == 3) {
+					updateEval(eval, testAuthor, trainAuthor, dist, threshold, false);
+				} else {
+					updateEval(eval, ProblemSet.getDummyAuthor(), trainAuthor, dist, threshold, false);
+				}
+			} else {
+				if (line.length == 3){
+					updateEval(eval, testAuthor, trainAuthor, dist, threshold,false);
+				} else {
+					updateEval(eval, testAuthor, trainAuthor, dist, threshold,true);
+				}
+			}
 		}
 		scan.close();
 		
@@ -111,18 +126,26 @@ public class Distractorless {
 	 * updates the input evaluation according to the given parameters.
 	 */
 	public static void updateEval(Evaluation eval, String testAuthor,
-			String trainAuthor, double dist, double threshold) throws Exception
+			String trainAuthor, double dist, double threshold, boolean meta) throws Exception
 	{
-		if (testAuthor.equals(trainAuthor)) {
-			if (dist < threshold)
-				incTP(eval);
-			else
-				incFN(eval);
+		if (meta == false) {
+			if (testAuthor.equals(trainAuthor)) {
+				if (dist < threshold)
+					incTP(eval);
+				else
+					incFN(eval);
+			} else {
+				if (dist < threshold)
+					incFP(eval);
+				else
+					incTN(eval);
+			}
 		} else {
-			if (dist < threshold)
+			if (dist < threshold) {
 				incFP(eval);
-			else
+			} else {
 				incTN(eval);
+			}
 		}
 	}
 	

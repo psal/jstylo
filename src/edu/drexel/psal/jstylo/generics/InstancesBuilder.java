@@ -18,6 +18,7 @@ import com.jgaap.generics.EventSet;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -262,8 +263,9 @@ public class InstancesBuilder extends Engine {
 		eventList.clear();
 		eventList = null;
 		
-		cfd.clean();
-		cfd = null;
+		//FIXME if something's going wrong, check here
+		//cfd.clean();
+		//cfd = null;
 		
 		System.gc();
 	}
@@ -499,7 +501,7 @@ public class InstancesBuilder extends Engine {
 			//add all of the instance objects to the Instances object
 			for (Instance inst: generatedInstances){
 				testInstances.add(inst);
-			}		
+			}
 		}
 	}
 
@@ -861,14 +863,13 @@ public class InstancesBuilder extends Engine {
 		//Run method
 		@Override
 		public void run() {
-			//for all docs in this div
-			for (int i = div * threadId; i < Math.min(numInstances, div
-					* (threadId + 1)); i++)
+			// for all docs in this div
+			for (int i = div * threadId; i < Math.min(numInstances, div * (threadId + 1)); i++) {
 				try {
 					//grab the document
 					Document doc = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(), useCache, isCacheValid);
+					List<EventSet> events = extractEventSets(doc, cfd, loadingDocContents(), useCache, isCacheValid);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance
@@ -884,8 +885,8 @@ public class InstancesBuilder extends Engine {
 					Logger.logln(e.getMessage(), LogOut.STDERR);
 					e.printStackTrace();
 				}
+			}
 		}
-		
 	}
 	
 	/**
@@ -925,8 +926,7 @@ public class InstancesBuilder extends Engine {
 		@Override
 		public void run() {
 			//for all docs in this div
-			for (int i = div * threadId; i < Math.min(numInstances, div
-					* (threadId + 1)); i++)
+			for (int i = div * threadId; i < Math.min(numInstances, div * (threadId + 1)); i++) {
 				try {
 					//grab the document
 					//Document doc = ps.getAllTrainDocs().get(i);
@@ -939,12 +939,34 @@ public class InstancesBuilder extends Engine {
 					//add it to this div's list of completed instances
 					list.add(instance);
 				} catch (Exception e) {
-					Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
-					Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
-					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+					//Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
+					//Logger.logln("[THREAD-" + threadId + "] Problematic document: "
+					//		+ ps.getAllTrainDocs().get(i).getFilePath());
+					//Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
 				}
+			}
+			if ((threadId == (numInstances/div)-1)&&(div*threadId+div)<numInstances){
+				for (int i = div*threadId+div; i < numInstances; i++){
+					try {
+						// grab the document
+						// Document doc = ps.getAllTrainDocs().get(i);
+						// create the instance using it
+						//Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
+						Instance instance = createInstance(attributes, relevantEvents, cfd, eventList.get(i), isSparse(),
+								usingDocTitles());
+						// normalize it
+						normInstance(cfd, instance, eventList.get(i), usingDocTitles(), attributes);
+						// add it to this div's list of completed instances
+						list.add(instance);
+					} catch (Exception e) {
+						Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
+						Logger.logln("[THREAD-" + threadId + "] Problematic document: "
+								+ ps.getAllTrainDocs().get(i).getFilePath());
+						Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+					}
+				}
+			}
 		}
-		
 	}
 	
 	/**
@@ -1007,7 +1029,7 @@ public class InstancesBuilder extends Engine {
 			for (int i = div * threadId; i < Math.min(knownDocsSize, div
 					* (threadId + 1)); i++){
 				try {
-				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
+				    //Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
 				    List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(),
 				    		useCache, isCacheValid);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
@@ -1018,6 +1040,5 @@ public class InstancesBuilder extends Engine {
 				} 
 			}
 		}
-
 	}
 }
