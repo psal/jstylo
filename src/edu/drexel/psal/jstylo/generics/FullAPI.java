@@ -3,7 +3,6 @@ package edu.drexel.psal.jstylo.generics;
 import java.util.Map;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
-import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -225,8 +224,9 @@ public class FullAPI {
 			if (tmpObject instanceof Classifier) { //if it's a weka classifier
 				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
 						.newInstance());
-			} else if (tmpObject instanceof WriteprintsAnalyzer) { //otherwise it's a writeprints analyzer
-				analysisDriver = new WriteprintsAnalyzer(); 
+			} else  { //otherwise it is unsupported
+				System.err.println("tried to add Analyzer we do not support");
+				throw new Exception();
 			}
 		} catch (Exception e) {
 			System.out.println("Failed to prepare Analyzer");

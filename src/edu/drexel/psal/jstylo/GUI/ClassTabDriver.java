@@ -1,7 +1,6 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
-import edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
@@ -80,10 +79,6 @@ public class ClassTabDriver {
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
 							main.ib.setUseDocTitles(false);
 							main.analysisCalcInfoGainJCheckBox.setSelected(true);
-						} else if (tmpObject instanceof WriteprintsAnalyzer){
-							tmpAnalyzer = new WriteprintsAnalyzer();
-							main.ib.setUseDocTitles(true);
-							main.analysisCalcInfoGainJCheckBox.setSelected(false);
 						} else {
 							Logger.logln("Tried to add an Analyzer we do not yet support");
 						}	

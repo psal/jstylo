@@ -178,9 +178,6 @@ public class CumulativeFeatureDriver implements Serializable {
 			FeatureDriver fd = removeFeatureDriverAt(0);
 			{
 				List<EventCuller> cullers = fd.getCullers();
-				for (EventCuller ec : cullers){
-					ec = null;
-				}
 				cullers.clear();
 				cullers = null;
 				

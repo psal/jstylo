@@ -196,7 +196,7 @@ public class ProblemSet implements Serializable {
 	}
 	
 	public Map<String,List<String>> getTitles() {
-		HashMap map = new HashMap<String,List<String>>();
+		HashMap<String,List<String>> map = new HashMap<String,List<String>>();
 		for (String author : trainDocsMap.keySet()){
 			map.put(author, new ArrayList<String>());
 			for (Document doc : trainDocsMap.get(author)){

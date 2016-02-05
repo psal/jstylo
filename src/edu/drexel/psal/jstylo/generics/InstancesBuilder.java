@@ -7,12 +7,9 @@ import java.util.List;
 
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
-import com.jgaap.generics.EventCuller;
-import com.jgaap.generics.EventDriver;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
-import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
 
 import weka.core.Attribute;
 import weka.core.Instance;
