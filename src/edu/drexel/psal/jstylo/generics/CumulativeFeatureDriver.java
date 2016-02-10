@@ -623,17 +623,4 @@ public class CumulativeFeatureDriver implements Serializable {
 		}
 		
 	}
-
-	/*
-	public static void main(String[] args) throws Exception {
-		FeatureWizardDriver.populateAll();
-		CumulativeFeatureDriver cfd = new CumulativeFeatureDriver(new File("feature_sets/example_feature_set.xml").getAbsolutePath());
-		cfd = new CumulativeFeatureDriver();
-		FeatureDriver fd = new FeatureDriver("word-lengths", true, new edu.drexel.psal.jstylo.eventDrivers.WordLengthEventDriver());
-		cfd.addFeatureDriver(fd);
-		ProblemSet ps = new ProblemSet("./problem_sets/sample_problem_set.xml");
-		WekaInstancesBuilder w = new WekaInstancesBuilder(false);
-		w.prepareTrainingSet(ps.getTrainDocs("aa"), cfd);
-		System.out.println(w.getTrainingSet());
-	}*/
 }

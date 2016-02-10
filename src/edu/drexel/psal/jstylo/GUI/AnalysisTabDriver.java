@@ -4,7 +4,7 @@ import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
-import edu.drexel.psal.jstylo.generics.InstancesBuilder;
+import edu.drexel.psal.jstylo.generics.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
@@ -165,7 +165,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = InstancesBuilder.writeToARFF(path, main.ib.getTrainingInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTrainingInstances());
 					if (succeeded) {
 						Logger.log("Saved training features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -206,7 +206,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".csv"))
 						path += ".csv";
-					boolean succeeded = InstancesBuilder.writeToCSV(path, main.ib.getTrainingInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTrainingInstances());
 					if (succeeded) {
 						Logger.log("Saved training features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -247,7 +247,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = InstancesBuilder.writeToARFF(path, main.ib.getTestInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTestInstances());
 					if (succeeded) {
 						Logger.log("Saved test features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -288,7 +288,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".csv"))
 						path += ".csv";
-					boolean succeeded = InstancesBuilder.writeToCSV(path, main.ib.getTestInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTestInstances());
 					if (succeeded) {
 						Logger.log("Saved test features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -792,7 +792,7 @@ public class AnalysisTabDriver {
 				contentJTextArea.setText(content);
 
 				// create the instances builder
-				InstancesBuilder tempBuilder = new InstancesBuilder(main.ib);
+				LocalParallelFeatureExtractionAPI tempBuilder = new LocalParallelFeatureExtractionAPI(main.ib);
 				main.ib.reset();
 				main.ib = tempBuilder;
 				main.ib.setProblemSet(main.ps);

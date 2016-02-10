@@ -11,7 +11,7 @@ import java.util.*;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
-import edu.drexel.psal.jstylo.generics.InstancesBuilder;
+import edu.drexel.psal.jstylo.generics.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
@@ -54,7 +54,7 @@ public class GUIMain extends javax.swing.JFrame {
 	protected ProblemSet ps;
 	protected CumulativeFeatureDriver cfd;
 	protected List<CumulativeFeatureDriver> presetCFDs;
-	protected InstancesBuilder ib;
+	protected LocalParallelFeatureExtractionAPI ib;
 	protected Analyzer analysisDriver;
 	protected List<Analyzer> analyzers;
 	protected Thread analysisThread;
@@ -246,7 +246,7 @@ public class GUIMain extends javax.swing.JFrame {
 		FeaturesTabDriver.initPresetCFDs(this);
 		FeatureWizardDriver.populateAll();
 		analyzers = new ArrayList<Analyzer>();
-		ib = new InstancesBuilder(Preferences.loadPreferences());
+		ib = new LocalParallelFeatureExtractionAPI(Preferences.loadPreferences());
 		results = new ArrayList<String>();
 	}
 	

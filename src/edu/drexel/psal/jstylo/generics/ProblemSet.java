@@ -989,10 +989,4 @@ public class ProblemSet implements Serializable {
 		return relPath;
 	}
 	
-	/*
-	public static void main(String[] args) throws Exception {
-		ProblemSet ps = new ProblemSet("enron_demo.xml");
-		System.out.println(ps.toXMLString());
-		//ps.writeToXML("d:/tmp/a.xml");
-	}*/
 }

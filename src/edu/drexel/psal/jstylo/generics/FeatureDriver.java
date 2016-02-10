@@ -400,7 +400,7 @@ public class FeatureDriver implements Serializable{
 		// JGAAP canonicizers
 		
 		
-		// JStulo canonicizers
+		// JStylo canonicizers
 		if (className.equals("edu.drexel.psal.jstylo.canonicizers.RemoveFirstNLines")) {
 			res.add(new Pair<String,ParamTag>("N",ParamTag.INTEGER));
 		}

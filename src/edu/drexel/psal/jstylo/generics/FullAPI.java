@@ -129,13 +129,15 @@ public class FullAPI {
 		
 	}
 	
+	
+	
 	///////////////////////////////// Data
 	
 	//which evaluation to perform enumeration
 	public static enum analysisType {CROSS_VALIDATION,TRAIN_TEST_UNKNOWN,TRAIN_TEST_KNOWN};
 	
 	//Persistant/necessary data
-	InstancesBuilder ib; //does the feature extraction
+	LocalParallelFeatureExtractionAPI ib; //does the feature extraction
 	String classifierPath; //creates analyzer
 	Analyzer analysisDriver; //does the train/test/crossVal
 	analysisType selected; //type of evaluation
@@ -151,7 +153,7 @@ public class FullAPI {
 	 * @param b the builder
 	 */
 	private FullAPI(Builder b){
-		ib = new InstancesBuilder();
+		ib = new LocalParallelFeatureExtractionAPI();
 		
 		if (b.p == null){
 			ib.setPreferences(Preferences.buildDefaultPreferences());
@@ -400,7 +402,7 @@ public class FullAPI {
 	/**
 	 * @return the InstancesBuilder which is responsible for the feature extraction
 	 */
-	public InstancesBuilder getUnderlyingInstancesBuilder(){
+	public LocalParallelFeatureExtractionAPI getUnderlyingInstancesBuilder(){
 		return ib;
 	}
 	
@@ -486,7 +488,7 @@ public class FullAPI {
 	 * @param insts the instances object to be saved
 	 */
 	public static void writeArff(String path, Instances insts){
-		InstancesBuilder.writeToARFF(path,insts);
+		LocalParallelFeatureExtractionAPI.writeToARFF(path,insts);
 	}
 	
 	///////////////////////////////// Main method for testing purposes

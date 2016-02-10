@@ -21,7 +21,7 @@ import weka.core.converters.CSVSaver;
  * An API for the feature extraction process. Designed for running on a single machine
  * @author Travis Dutko
  */
-public class InstancesBuilder extends Engine {
+public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 
 	//////////////////////////////////////////// Data
 	public static final int DEFAULT_THREADS = 4;
@@ -120,8 +120,8 @@ public class InstancesBuilder extends Engine {
 			return this;
 		}
 		
-		public InstancesBuilder build(){
-			return new InstancesBuilder(this);
+		public LocalParallelFeatureExtractionAPI build(){
+			return new LocalParallelFeatureExtractionAPI(this);
 		}
 		
 	}
@@ -133,9 +133,9 @@ public class InstancesBuilder extends Engine {
 	 * Ensure not to try to do anything fancy with it until all required
 	 * information is set
 	 */
-	public InstancesBuilder() {}
+	public LocalParallelFeatureExtractionAPI() {}
 
-	public InstancesBuilder(Preferences p){
+	public LocalParallelFeatureExtractionAPI(Preferences p){
 		preferences = p;
 	}
 	
@@ -145,7 +145,7 @@ public class InstancesBuilder extends Engine {
 	 * 
 	 * @param b the builder to use
 	 */
-	public InstancesBuilder(Builder b){
+	public LocalParallelFeatureExtractionAPI(Builder b){
 		if (b.psPath==null)
 			ps = b.ps;
 		else
@@ -189,7 +189,7 @@ public class InstancesBuilder extends Engine {
 	 * Copy constructor
 	 * @param oib original instances builder
 	 */
-	public InstancesBuilder(InstancesBuilder oib){
+	public LocalParallelFeatureExtractionAPI(LocalParallelFeatureExtractionAPI oib){
 		ps = oib.getProblemSet();
 		cfd = oib.getCFD();
 		preferences = oib.getPreferences();
