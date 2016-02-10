@@ -61,11 +61,4 @@ public class StripEdgesPunctuation extends Canonicizer {
 		scan.close();
 		return res.toCharArray();
 	}
-	
-	public static void main(String[] args) {
-		String s = " Hi there! how are you, man?. I haven't been , here before, have I? hi .again.";
-		String res = String.valueOf((new StripEdgesPunctuation()).process(s.toCharArray()));
-		System.out.println(s);
-		System.out.println(res);
-	}
 }

@@ -255,38 +255,6 @@ public class ListEventDriver extends EventDriver {
 		
 		return newEs;
 	}
-
-	public EventDriver getUnderlyingEvents() {
-		return underlyingEvents;
-	}
-
-	public void setUnderlyingEvents(EventDriver underlyingEvents) {
-		this.underlyingEvents = underlyingEvents;
-	}
-
-	public boolean isSort() {
-		return sort;
-	}
-
-	public void setSort(boolean sort) {
-		this.sort = sort;
-	}
-
-	public boolean isWhiteList() {
-		return whiteList;
-	}
-
-	public void setWhiteList(boolean whiteList) {
-		this.whiteList = whiteList;
-	}
-
-	public boolean isKeepLexiconInMem() {
-		return keepLexiconInMem;
-	}
-
-	public void setKeepLexiconInMem(boolean keepListInMem) {
-		this.keepLexiconInMem = keepListInMem;
-	}
 	
 	// used only to get frequencies
 	protected class Freq extends FrequencyEventsExtended {

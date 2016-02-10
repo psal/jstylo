@@ -82,18 +82,7 @@ public class MaxentPOSNGramsEventDriverGeneric extends EventDriver implements St
 			es.addEvent(new Event(curr));
 		}
 		
-		//TODO trying to clean out the sub objects
-		int p = sentences.size();
-		for (int q = 0; i<p; i++){
-			List<HasWord> sentence =sentences.remove(0);
-			int m = sentence.size();
-			for (int r = 0; r<m; r++){
-				HasWord hw = sentence.remove(0);
-				hw = null;
-			}
-			sentence.clear();
-			sentence = null;
-		}
+		sentences.clear();
 		sentences = null;
 		return es;
 	}
@@ -123,24 +112,9 @@ public class MaxentPOSNGramsEventDriverGeneric extends EventDriver implements St
 		return t;
 	}
 	
-	//TODO
 	public void destroyTagger() { 
 		taggerPath = null;
 		tagger = null;
-	}
-	
-	
-	// main for testing
-	public static void main(String[] args) throws Exception {
-		Document doc = new Document("/Users/sadiaafroz/Desktop/forums/originals/carderscc_01_duplicate_crew_ipboard/data_rechunked/carderscc_01/0x0001337@gmail.com/000.txt","a","a_01.txt");
-		doc.load();
-		MaxentPOSNGramsEventDriverGeneric m = new MaxentPOSNGramsEventDriverGeneric();
-		m.setParameter("N", 1);
-		EventSet es = m.createEventSet(doc);
-		for (int i=0; i<es.size(); i++) {
-			System.out.print(es.eventAt(i)+" ");
-			if (i % 30 == 0) System.out.println();
-		}
 	}
 	
 }

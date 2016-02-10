@@ -305,25 +305,6 @@ public class ApplySpecialKeys extends Canonicizer {
 		}
 		return res;
 	}
-
-
-	/*
-	 * Main for testing
-	 */
-	public static void main(String[] args) throws Exception
-	{
-		ApplySpecialKeys a = new ApplySpecialKeys();
-		Document d = new Document(
-				"d:\\dev\\active-auth\\data_redivided\\" +
-				"timed_ks_3600000-ms-windows\\user02\\user02_day3_28800000","");
-		d.load();
-		String text = d.stringify();
-		System.out.println("before");
-		System.out.println(text);
-		System.out.println();
-		System.out.println("after");
-		System.out.println(new String(a.process(text.toCharArray())));
-	}
 }
 
 

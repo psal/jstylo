@@ -199,22 +199,6 @@ public class ListRegexpEventDriver extends EventDriver {
 		return es;
 	}
 
-	public boolean isWhiteList() {
-		return whiteList;
-	}
-
-	public void setWhiteList(boolean whiteList) {
-		this.whiteList = whiteList;
-	}
-
-	public boolean isKeepLexiconInMem() {
-		return keepLexiconInMem;
-	}
-
-	public void setKeepLexiconInMem(boolean keepListInMem) {
-		this.keepLexiconInMem = keepListInMem;
-	}
-	
 	// used only to get frequencies
 	protected class Freq extends FrequencyEventsExtended {
 		private static final long serialVersionUID = 1L;

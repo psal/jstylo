@@ -61,22 +61,4 @@ public class LeastCommonEventsExtended extends FrequencyEventsExtended {
 		return false;
 	}
 
-	/*
-	// main for testing
-	public static void main(String[] args) throws Exception {
-		EventDriver ed = new NaiveWordEventDriver();
-		Document doc = new Document("./corpora/drexel_1/a/a_01.txt","a","a_01.txt");
-		doc.load();
-		doc.addCanonicizer(new UnifyCase());
-		doc.processCanonicizers();
-		EventSet es = ed.createEventSet(doc);
-		List<EventSet> l = new ArrayList<EventSet>(1);
-		l.add(es);
-		EventCuller c = new LeastCommonEventsCuller();
-		c.setParameter("N", 1);
-		l = c.cull(l);
-		es = l.get(0);
-		System.out.println(es);
-	}
-	*/
 }

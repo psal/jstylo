@@ -117,17 +117,4 @@ public class TreeTaggerNGramsEventDriver  extends EventDriver {
 				return tagger;
 	}
 	
-	/*
-	// main for testing
-	public static void main(String[] args) throws Exception {
-		Document doc = new Document("./corpora/drexel_1/a/a_01.txt","a","a_01.txt");
-		doc.load();
-		MaxentPOSNGramsEventDriver m = new MaxentPOSNGramsEventDriver();
-		m.setParameter("N", 2);
-		EventSet es = m.createEventSet(doc);
-		for (int i=0; i<es.size(); i++) {
-			System.out.print(es.eventAt(i)+" ");
-			if (i % 30 == 0) System.out.println();
-		}
-	}*/
 }

@@ -84,25 +84,4 @@ public class RemoveSpecialKeys extends Canonicizer {
     	return procString.toCharArray();
     }
     
-    
-   /*
-    * Main for testing
-    */
-    public static void main(String[] args) {
-    	String test =
-    			"βββββRebecca	Bailey	rebphotography@yahoo.com	\n" +
-    			"rebphotographpyΒβββhy@yahoo.com	ΔΔ		\n" +
-    			"eβrebphotography@yahoo.com	rebphotography@yahoo.com\n" +			
-    			"mail.uahβββyahoo.cm\n" +
-    			"ββom\n" +
-    			"rebphotography	cricket01\n" +
-    			"mail.yahoo.com\n" +
-    			"rebphotography	cricket01\n";
-    	System.out.println("before");
-    	System.out.println(test);
-    	System.out.println();
-    	System.out.println("after");
-    	System.out.println(new String(new RemoveSpecialKeys().process(
-    			test.toCharArray())));
-	}
 }

@@ -45,29 +45,4 @@ public class BrownExtractPOSTags extends Canonicizer {
 		scan.close();
 		return resString.toCharArray();
 	}
-	
-	/*
-	public static void main(String[] args) throws Exception {
-		Canonicizer c = new BrownExtractPOSTags();
-		c = new BrownExtractText();
-		Scanner scan = new Scanner(new File("./ca09"));
-		Canonicizer punct = new StripPunctuation();
-		String text = "";
-		while (scan.hasNext())
-			text += scan.nextLine()+"\n";
-		
-		char[] raw = text.toCharArray();
-		char[] rawParsed = c.process(raw);
-		String parsed = String.valueOf(rawParsed);
-		//parsed = String.valueOf(punct.process(parsed.toCharArray()));
-		
-		System.out.println("text");
-		System.out.println("===========================");
-		System.out.println(text);
-		System.out.println();
-		System.out.println("parsed");
-		System.out.println("===========================");
-		System.out.println(parsed);
-	}
-	*/
 }

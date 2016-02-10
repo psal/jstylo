@@ -119,14 +119,4 @@ public class TreeTaggerEventDriver  extends EventDriver {
 				}
 				return tagger;
 	}
-	
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

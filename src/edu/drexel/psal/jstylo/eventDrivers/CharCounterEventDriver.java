@@ -4,28 +4,6 @@ import com.jgaap.generics.*;
 
 public class CharCounterEventDriver extends SingleNumericEventDriver {
 	private static final long serialVersionUID = 1L;
-	/* ======
-	 * fields
-	 * ======
-	 */
-	
-	/**
-	 * Event driver to be used for character count.
-	 */
-	//private CharacterEventDriver charDriver;
-	
-	
-	/* ============
-	 * constructors
-	 * ============
-	 */
-	
-	/**
-	 * Default sentence counter event driver constructor.
-	 */
-	public CharCounterEventDriver() {
-	//	charDriver = new CharacterEventDriver();
-	}
 	
 	/* ==================
 	 * overriding methods
