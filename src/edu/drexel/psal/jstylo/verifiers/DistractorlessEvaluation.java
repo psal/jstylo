@@ -1,5 +1,7 @@
 package edu.drexel.psal.jstylo.verifiers;
 
+import java.io.Serializable;
+
 import weka.classifiers.Evaluation;
 import weka.core.Instance;
 
@@ -11,9 +13,10 @@ import weka.core.Instance;
  * to aid in the evaluation of a verifier's effectiveness. 
  * @author Travis Dutko
  */
-public class DistractorlessEvaluation {
+public class DistractorlessEvaluation implements Serializable{
 
-	private Evaluation resultEval;
+    private static final long serialVersionUID = 1L;
+    private Evaluation resultEval;
 	private Instance testInstance;
 	private String trueAuthor;
 	private double distance;
@@ -62,8 +65,8 @@ public class DistractorlessEvaluation {
 	
 	public int getCorrectlyVerified(String author) { 
 		
-		System.out.println(resultEval.confusionMatrix()[1][0]);
-		System.out.println("ta: "+trueAuthor+" a: "+author);
+		//System.out.println(resultEval.confusionMatrix()[1][0]);
+		//System.out.println("ta: "+trueAuthor+" a: "+author);
 		//if this = 1, we verified it as the author
 		if (resultEval.confusionMatrix()[1][0] == 1){
 			//so check if the author is actually the true author

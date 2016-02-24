@@ -10,7 +10,6 @@ import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
 import edu.drexel.psal.jstylo.verifiers.ThresholdVerifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.functions.SMO;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -341,7 +340,7 @@ public class FullAPI {
 				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
 			}
 		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
-			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),arg,true);
+			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),true,arg);
 		}
 		verifier.verify();
 	}
@@ -561,11 +560,9 @@ public class FullAPI {
 	///////////////////////////////// Main method for testing purposes
 	
 	public static void main(String[] args){
-
 		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
 				.psPath("./jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
-
 		test.prepareInstances();
 		//test.calcInfoGain();
 		//test.applyInfoGain(1500);
@@ -573,5 +570,6 @@ public class FullAPI {
 		test.run();
 		System.out.println(test.getClassificationAccuracy());
 		System.out.println(test.getStatString());
+
 	}
 }

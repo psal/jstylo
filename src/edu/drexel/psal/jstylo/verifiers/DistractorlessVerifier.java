@@ -1,9 +1,11 @@
 package edu.drexel.psal.jstylo.verifiers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import weka.classifiers.Evaluation;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -21,11 +23,13 @@ import edu.drexel.psal.jstylo.generics.Verifier;
  */
 public class DistractorlessVerifier extends Verifier{
 
-	private String trainAuthor; //the author whose training data we are using to perform verification
+    private static final long serialVersionUID = 1L;
+    private String trainAuthor; //the author whose training data we are using to perform verification
 	private String analysisString; //string of data to be analyzed
 	private List<DistractorlessEvaluation> evaluations; //stores each experiment
 	private boolean metaVerification; //whether or not we actually know the authors of the documents.
 	private double[] centroid;
+	private double TPThresholdRate;
 	
 	private Instances trainingInstances; //known documents
 	private Instances testingInstances; //documents to be verified
@@ -39,18 +43,61 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param tei
 	 */
 	public DistractorlessVerifier(Instances tri, Instances tei, boolean meta){
-		this(tri,tei,0.0,meta);
+		//grab the instances
+		trainingInstances = tri;
+		testingInstances = tei;
+		//and set class indicies
+		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
+		if (testingInstances != null){
+			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
+		}
+		trainAuthor = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex()).value((int) trainingInstances.instance(0).classValue());
+		System.out.println("TrainAuthor: "+trainAuthor);
+		//initialize data structures
+		analysisString = "";
+		evaluations = new ArrayList<DistractorlessEvaluation>();
+		
+		metaVerification = meta;
 	}
 	
 	/**
+	 * Constructor for use with a desired true positive rate on known data. this will pick the narrowest threshold that meets this criteria for analysis.
+	 * @param tri
+	 * @param tei
+	 * @param meta
+	 * @param rate
+	 */
+	public DistractorlessVerifier(Instances tri, Instances tei, boolean meta, double rate){
+		//grab the instances
+		trainingInstances = tri;
+		testingInstances = tei;
+		//and set class indicies
+		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
+		if (testingInstances != null){
+			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
+		}
+		trainAuthor = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex()).value((int) trainingInstances.instance(0).classValue());
+		//initialize data structures
+		analysisString = "";
+		evaluations = new ArrayList<DistractorlessEvaluation>();
+		
+		metaVerification = meta;
+
+		//set rate
+		TPThresholdRate = rate;
+		thresholdModifier = Double.MIN_VALUE;
+	}
+	
+	/*
 	 * Constructor that also takes a threshold modifier.
+	 * NOT CURRENTLY USED AS IT IS TYPICALLY INEFFECTIVE.
 	 * Plans are in place for developing an automated way to determine the ideal threshold, but for now put the power in the user's hands.
 	 * To big of a positive modifier (ie 1.00) will likely result in a lot of false positives, whereas too low (-1.00) would have a lot of false negatives.
 	 * @param tri
 	 * @param tei
 	 * @param modifier
 	 */
-	public DistractorlessVerifier(Instances tri, Instances tei, double modifier, boolean meta) {
+/*	public DistractorlessVerifier(Instances tri, Instances tei, double modifier, boolean meta) {
 		
 		//grab the instances
 		trainingInstances = tri;
@@ -69,68 +116,38 @@ public class DistractorlessVerifier extends Verifier{
 		
 		//grab threshold modifier
 		thresholdModifier = modifier;
+		TPThresholdRate = Double.MIN_VALUE;
+	} */
+	
+	public void setTestInstances(Instances tei){
+		testingInstances = tei;
 	}
-
+	
 	/**
 	 * The actual verification method
 	 */
 	@Override
 	public void verify() {
 
-		//TODO new algorithm (I think the old way is wrong)
-		//1) calculate the "centroid" (average of all features in each slot)
-		//2) calculate the distance from each document TO THE CENTROID
-		//3) use those distances to calculate an average distance
-		//4) use that average distance as the threshold
-		//5) calculate the distance between each test document TO THE CENTROID
-		//6) if distance > threshold, reject, else accept
-		
 		calculateCentroid();
 		
 		analysisString+=String.format("problem,test_author,train_author,dist\n");
-		//TODO Perform this "leave one out" for a more sophisticated way of establishing the desired threshold?
-		//List<Document> documents, docs;
-		//Document doc;
-		
-		// =====================================================================
-		// author leave-one-out on own, known documents: This is used to establish the threshold
-		// =====================================================================
-		/*for (String author: ps.getAuthors())
-		{
-			docs = ps.getTrainDocs(author);
-			// iterate over author's docs and each time take one to be the
-			// test doc
-			for (int i = 0; i < docs.size(); i++)
-			{
-				// prepare documents
-				documents = new LinkedList<>();
-				for (int j = 0; j < docs.size(); j++)
-				{
-					doc = docs.get(j);
-					// test doc
-					if (i == j)
-						documents.add(new Document(
-								doc.getFilePath(),
-								null,
-								"Correct: " + doc.getAuthor()));
-					else
-						documents.add(new Document(
-								doc.getFilePath(),
-								doc.getAuthor(),
-								doc.getTitle()));
-				}
-				
-				//run the leave one out classification
-				
-			}
-		}*/
 		
 		// Calculates the average distance between all documents
 		analysisString = runAnalysis();
-
+		
+		Double thresh = 0.0;
 		// Create a list of evaluations--one for each testing instance
-		Double thresh = calculateDesiredThreshold(); // grab the threshold from the analysis string
-		thresh = thresh + thresh * thresholdModifier; // apply the modifier
+		if (TPThresholdRate == Double.MIN_VALUE){
+			//System.out.println("Generating threshold based on average times a multiplier");
+			thresh = calculateDesiredThreshold(0.0); // grab the threshold from the analysis string
+			thresh = thresh + thresh * thresholdModifier; // apply the modifier
+		} else {
+			//System.out.println("Generating threshold bassed on desired true positive rate on known data");
+			thresh = calculateDesiredThreshold(TPThresholdRate);
+		}
+		
+		//System.out.println("Thresh: "+thresh);
 		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
@@ -143,10 +160,11 @@ public class DistractorlessVerifier extends Verifier{
 			String docString = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex())
 					.value((int) trainingInstances.instance(0).classValue())
 					+ "," + inst.attribute(inst.classIndex()).value((int) inst.classValue()) + "," + (distance);
+			docString+=",testDoc";
 			//System.out.println("Distance for test doc "+i+" = "+total/count);
 			try {
 				// and create the evaluation with it via evalCSV
-				de.setResultEval(Distractorless.evalCSV(analysisString + docString, thresh));
+				de.setResultEval(Distractorless.evalCSV(analysisString + docString, thresh, metaVerification));
 				evaluations.add(de);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -168,34 +186,192 @@ public class DistractorlessVerifier extends Verifier{
 	@Override
 	public String getResultString() {
 		String s = "";
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
 		for (DistractorlessEvaluation de : evaluations){
 			s+=de.getResultString();
+			if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				s+="Result is a ";
+				if (result == 0){
+					s+="true positive\n\n";
+					tp++;
+				} else if (result == 1){
+					s+="false positive\n\n";
+					fp++;
+				} else if (result == 2){
+					s+="false negative\n\n";
+					fn++;
+				} else if (result == 3){
+					System.out.println();
+					s+="true negative\n\n";
+					tn++;
+				} else {
+					s+="undefined\n\n";
+				}
+			}
 		}
+		
+		
+		if (metaVerification){
+			s+=String.format("Overall Result Counts: \nTrue Positives: %d\nFalse Positives: %d\nFalse Negatives: %d\nTrue Negatives: %d\nTotal experiments: %d",
+					tp,fp,fn,tn,(tp+fp+fn+tn));
+		}
+		
 		return s;
+	}
+	
+	public String getCleanResultString(){
+		String s = "";
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
+		for (DistractorlessEvaluation de : evaluations){
+			if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				if (result == 0){
+					tp++;
+				} else if (result == 1){
+					fp++;
+				} else if (result == 2){
+					fn++;
+				} else if (result == 3){
+					tn++;
+				} else {
+					;
+				}
+			}
+		}
+		
+		if (metaVerification){
+			s+=String.format("Overall Result Counts: \nTrue Positives: %d\nFalse Positives: %d\nFalse Negatives: %d\nTrue Negatives: %d\nTotal experiments: %d",
+					tp,fp,fn,tn,(tp+fp+fn+tn));
+		}
+		
+		return s;
+	}
+	
+	public int[] getRates(){
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
+		for (DistractorlessEvaluation de : evaluations){
+			if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				if (result == 0){
+					tp++;
+				} else if (result == 1){
+					fp++;
+				} else if (result == 2){
+					fn++;
+				} else if (result == 3){
+					tn++;
+				}
+			}
+		}
+		int[] results = new int[4];
+		results[0]=tp;
+		results[1]=fp;
+		results[2]=fn;
+		results[3]=tn;
+		return results;
+	}
+	
+	/*
+	 * 
+	 */
+	@Override
+	public double getAccuracy(){
+		double acc = 0.0;
+		int tp = 0;
+		int fp = 0;
+		int fn = 0;
+		int tn = 0;
+		for (DistractorlessEvaluation de : evaluations){
+			if(metaVerification){
+				int result = de.getCorrectlyVerified(trainAuthor);
+				if (result == 0){
+					tp++;
+				} else if (result == 1){
+					fp++;
+				} else if (result == 2){
+					fn++;
+				} else if (result == 3){
+					tn++;
+				}
+			}
+		}
+		acc = (((double)(tp + tn)) / ((double)(tp+tn+fp+fn)));  
+		return acc;
 	}
 	
 	/**
 	 * Calculates the average distance between the author's documents and returns that as the threshold baseline
 	 * @return
 	 */
-	private double calculateDesiredThreshold(){
+	private double calculateDesiredThreshold(double rate){
+		
 		String aCopy = new String(analysisString);
 		double cumulative = 0.0;
+		double max = 0.0;
 		int count = 0;
 		String[] line;
 		Scanner s = new Scanner(aCopy);
 		s.nextLine(); //skip the header
+		List<Double> thresholds = new ArrayList<Double>();
 		//collect all of the numbers
 		while (s.hasNext()){
-			line = s.nextLine().split(",");
-			cumulative += Double.parseDouble(line[line.length-1]);
+			String string = s.nextLine();
+			line = string.split(",");
+			double value = Double.parseDouble(line[line.length-1]);
+			/*if (value == Double.NaN){
+				System.out.println("NaN from: "+line);
+			} else {
+				System.out.println("In-process assessment: " + value);
+				System.out.println("Line: "+string);
+			}*/
+			if (value > max){
+				max = value;
+			}
+			thresholds.add(value);
+			cumulative += value;
 			count++;
 		}
 		
 		s.close();
 		
-		//divide cumulative by the total number of docs
-		return (cumulative/count);
+		//if we're using the average * multiplier method, just return the average
+		if (rate == 0.0){
+			return (cumulative/count);
+		}else if (rate == 1.0){
+			Collections.sort(thresholds);
+			return thresholds.get(thresholds.size()-1);
+		//otherwise, it's time to do some extra math
+		} else {
+			int goal = -1;
+			for (int i = 0; i<count; i++){
+				if ((i * (1.0/count)) > rate){
+					goal = i;
+					break;
+				}
+			}
+			
+			//if we can't find something satisfactory for some reason, return the average
+			if (goal == -1){
+				return (cumulative/count);
+			} else {
+				Collections.sort(thresholds);
+				/*
+				System.out.println("To get at least a rate of: "+rate+" we need a threshold of: "+thresholds.get(goal));
+				System.out.println("For comparison, the average distance is: "+cumulative/count);
+				*/
+				return thresholds.get(goal);
+			}
+		}
 	}
 
 	private void calculateCentroid(){
@@ -253,12 +429,13 @@ public class DistractorlessVerifier extends Verifier{
 		String s = "";
 		for (int j = 0; j < trainingInstances.numInstances(); j++) {
 			Instance instJ = trainingInstances.instance(j);
+			Double dist = calculateDistanceFromCentroid(instJ.toDoubleArray());
 			// format is train author, test author, cosine distance
 			// DO NOT CHANGE
 			// unless you also change the Distractorless.java's evalCSV method to compensate
 			s += String.format(instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
 					+ instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
-					+ calculateDistanceFromCentroid(instJ.toDoubleArray()) + "\n");
+					+ dist + "\n");
 		}
 		return s;
 	}
@@ -278,14 +455,24 @@ public class DistractorlessVerifier extends Verifier{
 			if (trainingInstances.instance(0).attribute(i).type() == Attribute.NOMINAL){
 				continue;
 			} else {
-				//calculate the dot and norm values
-				dot += a[centroidIndex]*b[i];
-				normA += Math.pow(a[centroidIndex],2);
-				normB += Math.pow(b[i],2);
-				centroidIndex++;
+				//FIXME later figure out why these conditions sometimes prove true.
+				if (!(Double.isNaN(b[i]) || Double.isNaN(a[centroidIndex]))) {
+					// calculate the dot and norm values
+					dot += a[centroidIndex] * b[i];
+					normA += Math.pow(a[centroidIndex], 2);
+					normB += Math.pow(b[i], 2);
+					centroidIndex++;
+				} else {
+					/*if (Double.isNaN(b[i])){
+						System.out.println("b[i] is NaN at i: "+i);
+					}
+					if (Double.isNaN(a[centroidIndex])){
+						System.out.println("a[centroidIndex] is NaN at: "+centroidIndex);
+					}*/
+					centroidIndex++;
+				}
 			}
 		}
-		
 		//simple math to calculate the final value
 		double val = 1-(dot / (Math.sqrt(normA) * Math.sqrt(normB)));
 		return val;
@@ -331,4 +518,20 @@ public class DistractorlessVerifier extends Verifier{
 		return val;
 	}
 	
+	public List<DistractorlessEvaluation> getInternalEvaluations(){
+		
+		return evaluations;
+	}
+	
+	public List<Evaluation> getResultEvaluations(){
+		List<Evaluation> results = new ArrayList<Evaluation>();
+		for (DistractorlessEvaluation de : evaluations){
+			results.add(de.getResultEval());
+		}
+		return results;
+	}
+	
+	public Evaluation getResultsEval(){
+		return evaluations.get(0).getResultEval();
+	}
 }

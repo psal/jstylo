@@ -8,7 +8,8 @@ import edu.drexel.psal.jstylo.generics.Verifier;
 
 public class ThresholdVerifier extends Verifier{
 
-	private String result;
+    private static final long serialVersionUID = 1L;
+    private String result;
 	private List<String> authors;
 	private boolean verified;
 	private double threshold;
@@ -62,4 +63,11 @@ public class ThresholdVerifier extends Verifier{
 			return "The author could not be verified";
 	}
 
+	/*
+	 * This class does not yet support meta-verification and so only returns 0
+	 */
+	@Override
+	public double getAccuracy(){
+		return 0.0;
+	}
 }
