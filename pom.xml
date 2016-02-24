@@ -29,6 +29,10 @@
 		<artifactId>weka-stable</artifactId>
 		<version>3.6.6</version>
 	</dependency>
-	
+	<dependency>
+		<groupId>org.annolab.tt4j</groupId>
+		<artifactId>org.annolab.tt4j</artifactId>
+		<version>1.2.1</version>
+	</dependency>	
   </dependencies>
 </project>
