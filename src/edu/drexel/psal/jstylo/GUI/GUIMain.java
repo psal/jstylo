@@ -171,29 +171,26 @@ public class GUIMain extends javax.swing.JFrame {
 	protected JButton classRemoveJButton;
 	protected JButton classAboutJButton;
 	protected JTextPane classInstructionPane;
+	/////////
+	protected JTextField classAvVerifArgsTextField;
+	protected JTextField classSelVerifArgsTextField;
+	protected JButton classVerifAddButton;
+	protected JButton classVerifRemoveButton;
+	protected JScrollPane classAvVerifScrollPane;
+	protected JScrollPane classSelVerifScrollPane;
+	protected DefaultComboBoxModel classVerifListModel;
+	protected JTree verifJTree;
+	protected JList verifJList;
+	//TODO
 	
 	// Analysis tab
 	protected JLabel analysisTypeJLabel;
 	protected JButton analysisBackJButton;
-	protected JButton analysisExportTestToARFFJButton;
-	protected JButton analysisExportTestToCSVJButton;
-	protected JButton analysisExportTrainToARFFJButton;
-	protected JButton analysisExportTrainToCSVJButton;
-	protected JLabel analysisPostAnalysisJLabel;
 	protected JTabbedPane analysisResultsJTabbedPane;
 	protected JButton analysisRunJButton;
 	protected JButton analysisStopJButton;
 	protected JProgressBar analysisJProgressBar;
-	protected JButton analysisSaveResultsJButton;
-	protected JCheckBox analysisOutputAccByClassJCheckBox;
-	protected JCheckBox analysisOutputConfusionMatrixJCheckBox;
-	protected JCheckBox analysisSparseInstancesJCheckBox;
-	protected JCheckBox analysisOutputFeatureVectorJCheckBox;
-	protected JCheckBox analysisCalcInfoGainJCheckBox;
-	protected JTextField infoGainValueJTextField;
-	protected JCheckBox analysisApplyInfoGainJCheckBox;
-	protected ButtonGroup analysisTypeButtonGroup;
-	protected JLabel analysisConfigJLabel;
+	protected ButtonGroup analysisClassificationTypeGroup;
 	protected JRadioButton analysisTrainCVJRadioButton;
 	protected JRadioButton analysisClassTestUnknownJRadioButton;
 	protected JRadioButton analysisClassTestKnownJRadioButton;
@@ -212,6 +209,35 @@ public class GUIMain extends javax.swing.JFrame {
 	//protected JLabel analysisRelaxJLabel;
 	//protected JTextField analysisRelaxJTextField;
 	//protected JCheckBox analysisClassificationStatisticsJCheckBox;
+	protected JRadioButton analysisClassifyButton;
+	protected JRadioButton analysisVerifyButton;
+	protected JRadioButton analysisClassifyVerifyButton;
+	protected ButtonGroup analysisTypeGroup;
+	protected JRadioButton analysisVerifyUnknownButton;
+	protected JRadioButton analysisVerifyKnownButton;
+	protected ButtonGroup analysisVerificationTypeGroup;
+	protected JButton analysisNextButton;
+	
+	
+	//Preferences / Post-Analysis Tab
+	//Analysis Preferences
+	protected JPanel preferencesTab;
+	protected JButton analysisSaveResultsJButton;
+	protected JCheckBox analysisOutputAccByClassJCheckBox;
+	protected JCheckBox analysisOutputConfusionMatrixJCheckBox;
+	protected JCheckBox analysisSparseInstancesJCheckBox;
+	protected JCheckBox analysisOutputFeatureVectorJCheckBox;
+	protected JCheckBox analysisCalcInfoGainJCheckBox;
+	protected JTextField infoGainValueJTextField;
+	protected JCheckBox analysisApplyInfoGainJCheckBox;
+	protected JLabel analysisConfigJLabel;
+	
+	//Post-Analysis Actions
+	protected JButton analysisExportTestToARFFJButton;
+	protected JButton analysisExportTestToCSVJButton;
+	protected JButton analysisExportTrainToARFFJButton;
+	protected JButton analysisExportTrainToCSVJButton;
+	protected JLabel analysisPostAnalysisJLabel;
 	
 	/**
 	 * Auto-generated main method to display this JFrame
@@ -509,9 +535,11 @@ public class GUIMain extends javax.swing.JFrame {
 						featuresSetJComboBox = new JComboBox();
 						featuresSetJComboBox.setModel(featuresSetJComboBoxModel);
 						int selected = Integer.parseInt(getPreference("featureSet"));
-						featuresSetJComboBox.setSelectedIndex(selected);
-						if (selected != 0){
-							cfd = presetCFDs.get(selected-1);
+						if (featuresSetJComboBoxModel.getSize() > selected){
+							featuresSetJComboBox.setSelectedIndex(selected);
+							if (selected != 0){
+								cfd = presetCFDs.get(selected-1);
+							}
 						}
 						panel.add(featuresSetJComboBox);
 						
@@ -620,7 +648,8 @@ public class GUIMain extends javax.swing.JFrame {
 									featuresJList = new JList();
 									featuresListJScrollPane.setViewportView(featuresJList);
 									featuresJList.setModel(featuresJListModel);
-									featuresJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+									//featuresJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+									featuresJList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 								}
 							}
 							{
@@ -928,7 +957,7 @@ public class GUIMain extends javax.swing.JFrame {
 						// available and selected classifiers
 						// ==================================
 						
-						JPanel top = new JPanel(new GridLayout(1,2,cellPadding,cellPadding));
+						JPanel top = new JPanel(new GridLayout(2,2,cellPadding,cellPadding));
 						center.add(top,BorderLayout.CENTER);
 						
 						{
@@ -953,7 +982,7 @@ public class GUIMain extends javax.swing.JFrame {
 								}
 							}
 							{
-								JPanel config = new JPanel(new GridLayout(3,1,cellPadding,cellPadding));
+								JPanel config = new JPanel(new GridLayout(2,1,cellPadding,cellPadding));
 								av.add(config,BorderLayout.SOUTH);
 								{
 									classAvClassArgsJLabel = new JLabel();
@@ -962,16 +991,18 @@ public class GUIMain extends javax.swing.JFrame {
 											"<font size=2>(Click text field for details)</font></html>");
 									classAvClassArgsJLabel.setFont(defaultLabelFont);
 								}
+								JPanel panel = new JPanel(new GridLayout(1,2));
 								{
 									classAvClassArgsJTextField = new JTextField();
 									classAvClassArgsJTextField.setEditable(false);
-									config.add(classAvClassArgsJTextField);
+									panel.add(classAvClassArgsJTextField);
 								}
 								{
 									classAddJButton = new JButton();
-									config.add(classAddJButton);
+									panel.add(classAddJButton);
 									classAddJButton.setText("Add");
 								}
+								config.add(panel);
 							}
 						}
 						{
@@ -998,7 +1029,7 @@ public class GUIMain extends javax.swing.JFrame {
 								}
 							}
 							{
-								JPanel config = new JPanel(new GridLayout(3,1,cellPadding,cellPadding));
+								JPanel config = new JPanel(new GridLayout(2,1,cellPadding,cellPadding));
 								sel.add(config,BorderLayout.SOUTH);
 								{
 									classSelClassArgsJLabel = new JLabel();
@@ -1006,15 +1037,109 @@ public class GUIMain extends javax.swing.JFrame {
 									classSelClassArgsJLabel.setText("Classifier Arguments");
 									classSelClassArgsJLabel.setFont(defaultLabelFont);
 								}
+								JPanel panel = new JPanel(new GridLayout(1,2));
+								config.add(panel);
 								{
 									classSelClassArgsJTextField = new JTextField();
 									classSelClassArgsJTextField.setEditable(false);
-									config.add(classSelClassArgsJTextField);
+									panel.add(classSelClassArgsJTextField);
 								}
 								{
 									classRemoveJButton = new JButton();
-									config.add(classRemoveJButton);
+									panel.add(classRemoveJButton);
 									classRemoveJButton.setText("Remove");
+								}
+							}
+						}
+						//Verifiers
+						{
+							// available
+							// =========
+							JPanel av = new JPanel(new BorderLayout(cellPadding,cellPadding));
+							top.add(av);
+							{
+								JLabel label = new JLabel();
+								label.setFont(defaultLabelFont);
+								av.add(label,BorderLayout.NORTH);
+								label.setText("Available Verifiers");
+							}
+							{
+								classAvVerifScrollPane = new JScrollPane();
+								av.add(classAvVerifScrollPane,BorderLayout.CENTER);
+								{
+									verifJTree = new JTree();
+									verifJTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+									classAvVerifScrollPane.setViewportView(verifJTree);
+									//ClassTabDriver.initWekaClassifiersTree(this);
+								}
+							}
+							{
+								JPanel config = new JPanel(new GridLayout(2,1,cellPadding,cellPadding));
+								av.add(config,BorderLayout.SOUTH);
+								{
+									JLabel label = new JLabel();
+									config.add(label);
+									label.setText("<html>Verifier Arguments&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp" +
+											"<font size=2>(Click text field for details)</font></html>");
+									label.setFont(defaultLabelFont);
+								}
+								JPanel panel = new JPanel(new GridLayout(1,2));
+								config.add(panel);
+								{
+									classAvVerifArgsTextField = new JTextField();
+									classAvVerifArgsTextField.setEditable(false);
+									panel.add(classAvVerifArgsTextField);
+								}
+								{
+									classVerifAddButton = new JButton();
+									panel.add(classVerifAddButton);
+									classVerifAddButton.setText("Add");
+								}
+							}
+						}
+						{
+							// selected
+							// ========
+							JPanel sel = new JPanel(new BorderLayout(cellPadding,cellPadding));
+							top.add(sel);
+							{
+								JLabel label = new JLabel();
+								label.setFont(defaultLabelFont);
+								sel.add(label,BorderLayout.NORTH);
+								label.setText("Selected Verifiers");
+							}
+							{
+								classSelVerifScrollPane = new JScrollPane();
+								sel.add(classSelVerifScrollPane,BorderLayout.CENTER);
+								{
+									classVerifListModel = 
+											new DefaultComboBoxModel();
+									verifJList = new JList();
+									verifJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+									classSelVerifScrollPane.setViewportView(verifJList);
+									verifJList.setModel(classVerifListModel);
+								}
+							}
+							{
+								JPanel config = new JPanel(new GridLayout(2,1,cellPadding,cellPadding));
+								sel.add(config,BorderLayout.SOUTH);
+								{
+									JLabel label = new JLabel();
+									config.add(label);
+									label.setText("Verifier Arguments");
+									label.setFont(defaultLabelFont);
+								}
+								JPanel panel = new JPanel(new GridLayout(1,2));
+								config.add(panel);
+								{
+									classSelVerifArgsTextField = new JTextField();
+									classSelVerifArgsTextField.setEditable(false);
+									panel.add(classSelVerifArgsTextField);
+								}
+								{
+									classVerifRemoveButton = new JButton();
+									panel.add(classVerifRemoveButton);
+									classVerifRemoveButton.setText("Remove");
 								}
 							}
 						}
@@ -1077,18 +1202,193 @@ public class GUIMain extends javax.swing.JFrame {
 						analysisInstructionPane.setBorder(new EmptyBorder(cellPadding/2, cellPadding/2, cellPadding/2, cellPadding/2));
 						analysisInstructionPane.setBorder(BorderFactory.createLineBorder(Color.gray));
 						topPanel.add(analysisInstructionPane,BorderLayout.NORTH);
-					}
-					// configuration
-					JPanel analysisConfPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
-					header.add(analysisConfPanel);
+					}					
+					
+					// analysis type
+					JPanel classificationPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
+					header.add(classificationPanel);
 					{
-						analysisConfigJLabel = new JLabel();
-						analysisConfPanel.add(analysisConfigJLabel,BorderLayout.NORTH);
-						analysisConfigJLabel.setText("Configuration");
-						analysisConfigJLabel.setFont(defaultLabelFont);
+						analysisTypeJLabel = new JLabel();
+						analysisTypeJLabel.setFont(defaultLabelFont);
+						classificationPanel.add(analysisTypeJLabel,BorderLayout.NORTH);
+						analysisTypeJLabel.setText("Classification Type");
 						
 						// options
-						JPanel options = new JPanel(new GridLayout(4,1,cellPadding,cellPadding));
+						JPanel options = new JPanel(new GridLayout(3,1,cellPadding,cellPadding));
+						classificationPanel.add(options,BorderLayout.CENTER);
+						analysisClassificationTypeGroup = new ButtonGroup();
+						{																			
+							analysisTrainCVJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
+							options.add(analysisTrainCVJPanel,BorderLayout.CENTER);
+							{
+								analysisTrainCVJRadioButton = new JRadioButton();
+								analysisTrainCVJPanel.add(analysisTrainCVJRadioButton,BorderLayout.CENTER);
+								if (getPreference("analysisType").equals("0"))
+									analysisTrainCVJRadioButton.setSelected(true);
+								else
+									analysisTrainCVJRadioButton.setSelected(false);
+								analysisClassificationTypeGroup.add(analysisTrainCVJRadioButton);
+								analysisTrainCVJRadioButton.setText("Run K-fold cross validation on training corpus");
+							}
+							{
+								analysisTrainCVoptionsJPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+								analysisTrainCVJPanel.add(analysisTrainCVoptionsJPanel,BorderLayout.SOUTH);
+								{
+									analysisKFoldJTextField = new JTextField(getPreference("kFolds"));
+									analysisKFoldJTextField.setPreferredSize(new Dimension(25,20));
+									analysisKFoldJLabel = new JLabel("K Folds: ");
+									analysisKFoldJTextField.setToolTipText("The number of groups to split the documents into. Must be larger then one and can't be larger then the number of documents you have." );
+									
+									/*
+									analysisRelaxJLabel = new JLabel("     Relaxation Factor: ");
+									analysisRelaxJTextField=new JTextField("1");
+									analysisRelaxJTextField.setPreferredSize(new Dimension(25,20));
+									analysisRelaxJTextField.setToolTipText("Sets the relaxation factor. If an answer is in the top <relax factor> of predictions, it will be counted as correct.");
+									*/
+									
+									analysisRebuildInstancesJLabel = new JLabel("     Rebuild Instances: ");
+									analysisRebuildInstancesJCheckBox = new JCheckBox();
+									analysisRebuildInstancesJCheckBox.setSelected(getBoolPreference("rebuildInstances"));
+									analysisRebuildInstancesJCheckBox.setToolTipText("Rebuilds the Instances object for each fold of the cross validation");
+									
+									analysisTrainCVoptionsJPanel.add(analysisKFoldJLabel);
+									analysisTrainCVoptionsJPanel.add(analysisKFoldJTextField);
+		
+									/*
+									analysisTrainCVoptionsJPanel.add(analysisRelaxJLabel);
+									analysisTrainCVoptionsJPanel.add(analysisRelaxJTextField);			
+									*/						
+									analysisTrainCVoptionsJPanel.add(analysisRebuildInstancesJLabel);
+									analysisTrainCVoptionsJPanel.add(analysisRebuildInstancesJCheckBox);
+								}
+							}
+						}
+						{
+							JPanel analysisClassTestJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
+							analysisClassTestUnknownJRadioButton = new JRadioButton();
+							analysisClassTestJPanel.add(analysisClassTestUnknownJRadioButton,BorderLayout.CENTER);
+							if (getPreference("analysisType").equals("1"))
+								analysisClassTestUnknownJRadioButton.setSelected(true);
+							else
+								analysisClassTestUnknownJRadioButton.setSelected(false);
+							analysisClassificationTypeGroup.add(analysisClassTestUnknownJRadioButton);
+							analysisClassTestUnknownJRadioButton.setText("Train on training corpus and classify unknown test documents");
+							analysisClassTestUnknownJRadioButton.setToolTipText("<html>" +
+									"Use the provided training documents to classify all of the provided testing documents.<br>" +
+									"This will output a matrix of documents versus authors with the probability of each document being written by a particular author.<br>" +
+									"The most likely author will be marked with a \"+\" sign.<br>" +
+									"</html>");
+							options.add(analysisClassTestJPanel,BorderLayout.CENTER);
+						}
+						{
+							JPanel analysisClassTestKnownJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
+							analysisClassTestKnownJRadioButton = new JRadioButton();
+							if (getPreference("analysisType").equals("2"))
+								analysisClassTestKnownJRadioButton.setSelected(true);
+							else
+								analysisClassTestKnownJRadioButton.setSelected(false);
+							analysisClassTestKnownJPanel.add(analysisClassTestKnownJRadioButton,BorderLayout.CENTER);
+							analysisClassificationTypeGroup.add(analysisClassTestKnownJRadioButton);
+							analysisClassTestKnownJRadioButton.setText("Train and classify on documents with known authors.");
+							analysisClassTestKnownJRadioButton.setToolTipText("<html>" +
+									"Use the provided training documents to classify the test documents.<br>" +
+									"This will output a variety of statistics based on the accuracy of the classification as well as a confusion matrix.<br>" +
+									"WARNING: This will ignore all documents in the \"_Unknown_\" directory!" +
+									"</html>");
+							options.add(analysisClassTestKnownJPanel);
+						}
+					}
+
+					// configuration
+					JPanel analysisClassifyVerifyPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
+					header.add(analysisClassifyVerifyPanel);
+					{
+						analysisClassifyButton = new JRadioButton();
+						analysisClassifyButton.setText("Classify");
+						analysisVerifyButton = new JRadioButton();
+						analysisVerifyButton.setText("Verify");
+						analysisClassifyVerifyButton = new JRadioButton();
+						analysisClassifyVerifyButton.setText("Classify-Verify");
+						analysisTypeGroup = new ButtonGroup();
+						analysisTypeGroup.add(analysisClassifyButton);
+						analysisTypeGroup.add(analysisVerifyButton);
+						analysisTypeGroup.add(analysisClassifyVerifyButton);
+						
+						analysisClassifyButton.setToolTipText("Perform classification as outlined in the options to the left. For this, multiple training authors are required.");
+						analysisVerifyButton.setToolTipText("Perform verification as outlined in the options to the right. Only use a single training author for this experiment.");
+						analysisClassifyVerifyButton.setToolTipText("Perform classification and then verify the selected result of the classification process. NOT YET IMPLEMENTED.");
+						analysisClassifyVerifyButton.setEnabled(false);
+						//TODO enable this when functionality is complete
+						
+						JPanel panel = new JPanel(new GridLayout(3,1));
+						panel.add(analysisClassifyButton);
+						panel.add(analysisVerifyButton);
+						panel.add(analysisClassifyVerifyButton);
+						
+						JLabel label = new JLabel("Analysis Type");
+						label.setFont(defaultLabelFont);
+						analysisClassifyVerifyPanel.add(label,BorderLayout.NORTH);
+						analysisClassifyVerifyPanel.add(panel,BorderLayout.CENTER);
+						
+					}	
+					
+					// verification
+					JPanel verificationPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
+					header.add(verificationPanel);
+					{
+						JPanel panel = new JPanel(new GridLayout(2,1));
+						analysisVerifyUnknownButton = new JRadioButton();
+						analysisVerifyUnknownButton.setText("Verify unknown text documents");
+						analysisVerifyKnownButton = new JRadioButton();	
+						analysisVerifyKnownButton.setText("Verify documents with known authors");
+						analysisVerificationTypeGroup = new ButtonGroup();
+						analysisVerificationTypeGroup.add(analysisVerifyUnknownButton);
+						analysisVerificationTypeGroup.add(analysisVerifyKnownButton);
+					
+						analysisVerifyUnknownButton.setToolTipText("For verifying a (or multiple) document(s) of unknown authorship.");
+						analysisVerifyKnownButton.setToolTipText("For performing meta-analysis of a verification algorithm when the true author of documents is known. NOT YET IMPLEMENTED.");
+						
+						//TODO factor in preferences for which is selected
+						analysisVerifyUnknownButton.setSelected(true);
+						
+						//TODO enable this function when it is finished
+						analysisVerifyKnownButton.setEnabled(false);
+						
+						panel.add(analysisVerifyUnknownButton);
+						panel.add(analysisVerifyKnownButton);
+						JLabel label = new JLabel("Verification Type");
+						label.setFont(defaultLabelFont);
+						verificationPanel.add(label,BorderLayout.NORTH);
+						verificationPanel.add(panel,BorderLayout.CENTER);
+					}
+				}
+				
+				/* ============
+				 * Analysis tab
+				 * ============
+				 */
+				preferencesTab = new JPanel(new BorderLayout(cellPadding,cellPadding));
+				mainJTabbedPane.addTab("Preferences", preferencesTab);
+				preferencesTab.setLayout(new BorderLayout(cellPadding,cellPadding));
+				//TODO
+				{
+					
+					//Divide up into 2 sections
+					
+					JPanel mainPanel = new JPanel(new GridLayout(1,2));
+					preferencesTab.add(mainPanel,BorderLayout.CENTER);
+					//section 1 =  analysis options & other preferences
+					{
+						JPanel analysisConfPanel = new JPanel(new BorderLayout());
+						mainPanel.add(analysisConfPanel);
+						analysisConfigJLabel = new JLabel();
+						analysisConfigJLabel.setText("Configuration");
+						analysisConfigJLabel.setFont(defaultLabelFont);
+						analysisConfPanel.add(analysisConfigJLabel,BorderLayout.NORTH);
+						
+						// options
+						//TODO expand this for each option
+						JPanel options = new JPanel(new GridLayout(10,1,cellPadding,cellPadding));
 						analysisConfPanel.add(options,BorderLayout.CENTER);
 						{
 							
@@ -1146,112 +1446,54 @@ public class GUIMain extends javax.swing.JFrame {
 							analysisNPanel.add(analysisNThreadJTextField);
 							analysisConfPanel.add(analysisNPanel,BorderLayout.SOUTH);		
 						}
-					}					
-					
-					
-					// analysis type
-					JPanel analysisTypePanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
-					header.add(analysisTypePanel);
-					{
-						analysisTypeJLabel = new JLabel();
-						analysisTypeJLabel.setFont(defaultLabelFont);
-						analysisTypePanel.add(analysisTypeJLabel,BorderLayout.NORTH);
-						analysisTypeJLabel.setText("Analysis Type");
-						
-						// options
-						JPanel options = new JPanel(new GridLayout(3,1,cellPadding,cellPadding));
-						analysisTypePanel.add(options,BorderLayout.CENTER);
-						analysisTypeButtonGroup = new ButtonGroup();
-						{																			
-							analysisTrainCVJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
-							options.add(analysisTrainCVJPanel,BorderLayout.CENTER);
-							{
-								analysisTrainCVJRadioButton = new JRadioButton();
-								analysisTrainCVJPanel.add(analysisTrainCVJRadioButton,BorderLayout.CENTER);
-								if (getPreference("analysisType").equals("0"))
-									analysisTrainCVJRadioButton.setSelected(true);
-								else
-									analysisTrainCVJRadioButton.setSelected(false);
-								analysisTypeButtonGroup.add(analysisTrainCVJRadioButton);
-								analysisTrainCVJRadioButton.setText("Run K-fold cross validation on training corpus");
-							}
-							{
-								analysisTrainCVoptionsJPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-								analysisTrainCVJPanel.add(analysisTrainCVoptionsJPanel,BorderLayout.SOUTH);
-								{
-									analysisKFoldJTextField = new JTextField(getPreference("kFolds"));
-									analysisKFoldJTextField.setPreferredSize(new Dimension(25,20));
-									analysisKFoldJLabel = new JLabel("K Folds: ");
-									analysisKFoldJTextField.setToolTipText("The number of groups to split the documents into. Must be larger then one and can't be larger then the number of documents you have." );
-									
-									/*
-									analysisRelaxJLabel = new JLabel("     Relaxation Factor: ");
-									analysisRelaxJTextField=new JTextField("1");
-									analysisRelaxJTextField.setPreferredSize(new Dimension(25,20));
-									analysisRelaxJTextField.setToolTipText("Sets the relaxation factor. If an answer is in the top <relax factor> of predictions, it will be counted as correct.");
-									*/
-									
-									analysisRebuildInstancesJLabel = new JLabel("     Rebuild Instances: ");
-									analysisRebuildInstancesJCheckBox = new JCheckBox();
-									analysisRebuildInstancesJCheckBox.setSelected(getBoolPreference("rebuildInstances"));
-									analysisRebuildInstancesJCheckBox.setToolTipText("Rebuilds the Instances object for each fold of the cross validation");
-									
-									analysisTrainCVoptionsJPanel.add(analysisKFoldJLabel);
-									analysisTrainCVoptionsJPanel.add(analysisKFoldJTextField);
-		
-									/*
-									analysisTrainCVoptionsJPanel.add(analysisRelaxJLabel);
-									analysisTrainCVoptionsJPanel.add(analysisRelaxJTextField);			
-									*/						
-									analysisTrainCVoptionsJPanel.add(analysisRebuildInstancesJLabel);
-									analysisTrainCVoptionsJPanel.add(analysisRebuildInstancesJCheckBox);
-								}
-							}
+						//TODO replace with actual options
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
 						}
 						{
-							JPanel analysisClassTestJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
-							analysisClassTestUnknownJRadioButton = new JRadioButton();
-							analysisClassTestJPanel.add(analysisClassTestUnknownJRadioButton,BorderLayout.CENTER);
-							if (getPreference("analysisType").equals("1"))
-								analysisClassTestUnknownJRadioButton.setSelected(true);
-							else
-								analysisClassTestUnknownJRadioButton.setSelected(false);
-							analysisTypeButtonGroup.add(analysisClassTestUnknownJRadioButton);
-							analysisClassTestUnknownJRadioButton.setText("Train on training corpus and classify unknown test documents");
-							analysisClassTestUnknownJRadioButton.setToolTipText("<html>" +
-									"Use the provided training documents to classify all of the provided testing documents.<br>" +
-									"This will output a matrix of documents versus authors with the probability of each document being written by a particular author.<br>" +
-									"The most likely author will be marked with a \"+\" sign.<br>" +
-									"</html>");
-							options.add(analysisClassTestJPanel,BorderLayout.CENTER);
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
 						}
 						{
-							JPanel analysisClassTestKnownJPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
-							analysisClassTestKnownJRadioButton = new JRadioButton();
-							if (getPreference("analysisType").equals("2"))
-								analysisClassTestKnownJRadioButton.setSelected(true);
-							else
-								analysisClassTestKnownJRadioButton.setSelected(false);
-							analysisClassTestKnownJPanel.add(analysisClassTestKnownJRadioButton,BorderLayout.CENTER);
-							analysisTypeButtonGroup.add(analysisClassTestKnownJRadioButton);
-							analysisClassTestKnownJRadioButton.setText("Train and classify on documents with known authors.");
-							analysisClassTestKnownJRadioButton.setToolTipText("<html>" +
-									"Use the provided training documents to classify the test documents.<br>" +
-									"This will output a variety of statistics based on the accuracy of the classification as well as a confusion matrix.<br>" +
-									"WARNING: This will ignore all documents in the \"_Unknown_\" directory!" +
-									"</html>");
-							options.add(analysisClassTestKnownJPanel);
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
+						}
+						{
+							JTextField placeholderOptionField = new JTextField();
+							placeholderOptionField.setText("Placeholder for an additional option");
+							placeholderOptionField.setEnabled(false);
+							options.add(placeholderOptionField);
 						}
 					}
-
-					// post-analysis
-					JPanel postAnalysisPanel = new JPanel(new BorderLayout(cellPadding,cellPadding));
-					header.add(postAnalysisPanel);
+					//section 2 = post analysis options + credits
 					{
+						JPanel rightPanel = new JPanel(new GridLayout(2,1));
+						mainPanel.add(rightPanel);
+						JPanel postAnalysisPanel = new JPanel(new BorderLayout());
+						rightPanel.add(postAnalysisPanel);
 						analysisPostAnalysisJLabel = new JLabel();
-						postAnalysisPanel.add(analysisPostAnalysisJLabel,BorderLayout.NORTH);
 						analysisPostAnalysisJLabel.setText("Post Analysis");
 						analysisPostAnalysisJLabel.setFont(defaultLabelFont);
+						postAnalysisPanel.add(analysisPostAnalysisJLabel,BorderLayout.NORTH);
 						
 						// options
 						JPanel options = new JPanel(new GridLayout(2,1,cellPadding,cellPadding));
@@ -1374,6 +1616,10 @@ public class GUIMain extends javax.swing.JFrame {
 								analysisBackJButton = new JButton();
 								bottomRight.add(analysisBackJButton);
 								analysisBackJButton.setText("Back");
+							}
+							{
+								analysisNextButton = new JButton("Next");
+								bottomRight.add(analysisNextButton);
 							}
 						}
 					}

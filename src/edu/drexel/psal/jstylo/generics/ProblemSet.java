@@ -524,6 +524,7 @@ public class ProblemSet implements Serializable {
 		return trainDocsMap.keySet();
 	}
 	
+	
 	/**
 	 * Returns the name of the training corpus.
 	 * @return
@@ -662,8 +663,14 @@ public class ProblemSet implements Serializable {
 	 * @return
 	 * 		The list of test documents.
 	 */
-	public SortedMap<String,List<Document>> getTestDocs() {
-		return testDocsMap;
+	public List<Document> getTestDocs() {
+		List<Document> docs = new ArrayList<Document>();
+		for (String s : testDocsMap.keySet()){
+			for (Document d : testDocsMap.get(s)){
+				docs.add(d);
+			}
+		}
+		return docs;
 	}
 	
 	/**

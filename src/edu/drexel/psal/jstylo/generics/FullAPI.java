@@ -1,20 +1,26 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
+import edu.drexel.psal.jstylo.verifiers.ThresholdVerifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.functions.SMO;
+import weka.core.Instance;
 import weka.core.Instances;
 
 /**
  * 
- * JStylo SimpleAPI Version 1.0<br>
+ * JStylo fullAPI Version 1.0<br>
  * 
  * A simple API for the inner JStylo functionality.<br>
  * Provides four constructors at the moment (eventually more) <br>
- * After the SimpleAPI is constructed, users need only call prepareInstances(),
+ * After the fullAPI is constructed, users need only call prepareInstances(),
  * (sometimes, depending on constructor) prepareAnalyzer(), and run().<br>
  * After fetch the relevant information with the correct get method<br>
  * @author Travis Dutko
@@ -23,7 +29,7 @@ import weka.core.Instances;
 public class FullAPI {
 
 	/**
-	 * Builder for the SimpleAPI class. <br>
+	 * Builder for the fullAPI class. <br>
 	 *
 	 * You must specify at least one of each of the following pairs:<br>
 	 * psXMLPath and probSet<br>
@@ -41,6 +47,7 @@ public class FullAPI {
 		private String psXMLPath;
 		private ProblemSet probSet;
 		private String cfdXMLPath;
+		private String verifierName;
 		private CumulativeFeatureDriver cfd;
 		private String classifierPath;
 		private Classifier classifier;
@@ -129,13 +136,16 @@ public class FullAPI {
 			return this;
 		}
 		
+		public Builder verifierName(String v){
+			verifierName = v;
+			return this;
+		}
+		
 		public FullAPI build(){
 			return new FullAPI(this);
 		}
 		
 	}
-	
-	
 	
 	///////////////////////////////// Data
 	
@@ -148,6 +158,9 @@ public class FullAPI {
 	Analyzer analysisDriver; //does the train/test/crossVal
 	analysisType selected; //type of evaluation
 	int numFolds; //folds for cross val (defaults to 10)
+	String verifierName; //verifier to use (can't create it right away as most need parameters
+	Verifier verifier; //the verifier object
+	
 	
 	//Result Data
 	Map<String,Map<String, Double>> trainTestResults;
@@ -155,7 +168,7 @@ public class FullAPI {
 	
 	///////////////////////////////// Constructor
 	/**
-	 * Constructor; the SimpleAPI can be built solely via a Builder.
+	 * Constructor; the fullAPI can be built solely via a Builder.
 	 * @param b the builder
 	 */
 	private FullAPI(Builder b){
@@ -194,10 +207,10 @@ public class FullAPI {
 		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
 		ib.setUseSparse(b.isSparse);
+		verifierName = b.verifierName;
 		selected = b.type;
 		numFolds = b.numFolds;
 		classifierPath = b.classifierPath;
-		
 	}
 	
 	///////////////////////////////// Methods
@@ -312,7 +325,37 @@ public class FullAPI {
 		}
 	}
 	
+	/**
+	 * Runs verification with the extracted instances
+	 * right now both verifiers only need a single double arg, so this parameter works out.
+	 * Might need to adjust this to add more verifiers, however.
+	 */
+	public void verify(double arg){
+		if (verifierName.equalsIgnoreCase("ThresholdVerifier")){
+			List<String> authors = new ArrayList<String>();
+			for (String s : ib.getProblemSet().getAuthors()){
+				authors.add(s);
+			}
+			for (int i = 0; i < ib.getTestInstances().numInstances(); i++){
+				Instance inst = ib.getTestInstances().instance(i);
+				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
+			}
+		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
+			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),arg,true);
+		}
+		verifier.verify();
+	}
+	
 	///////////////////////////////// Setters/Getters
+	
+	/**
+	 * Spits back the verification result string
+	 * @return
+	 */
+	public String getVerificationResultString(){
+		return verifier.getResultString();
+	}
+	
 	
 	/**
 	 * @param useCache boolean value. Whether or not to use the cache for feature extraction.
@@ -493,6 +536,10 @@ public class FullAPI {
 		results+= String.format("%.4f",eval.weightedTruePositiveRate()*100);
 		
 		return results;
+	}
+	
+	public CumulativeFeatureDriver getCFD(){
+		return ib.getCFD();
 	}
 	
 	/**
