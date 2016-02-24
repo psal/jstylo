@@ -1,5 +1,10 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +27,7 @@ import com.jgaap.generics.Event;
 import com.jgaap.generics.EventHistogram;
 import com.jgaap.generics.EventSet;
 
+import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.eventDrivers.CharCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
@@ -45,12 +51,35 @@ public class FeatureExtractionAPI {
 	 * @return the List of EventSets for the document
 	 */ 
 	public List<EventSet> extractEventSets(Document document,
-			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents) throws Exception {
+			CumulativeFeatureDriver cumulativeFeatureDriver, boolean loadDocContents, boolean isUsingCache) throws Exception {
 
-		List<EventSet> generatedEvents = new ArrayList<EventSet>();
+	    List<EventSet> generatedEvents = new ArrayList<EventSet>();
+	    
+        if (isUsingCache) {
+            File cacheDir = new File(JSANConstants.JSAN_CACHE + "_" + cumulativeFeatureDriver.getName() + "/");
+
+            File authorDir = null;
+            if (document.getAuthor().equals(JSANConstants.DUMMY_NAME)) {
+                authorDir = new File(cacheDir, "you");
+            } else {
+                authorDir = new File(cacheDir, "_" + document.getAuthor());
+            }
+
+            File documentFile = new File(authorDir, document.getTitle() + ".cache");
+            generatedEvents = getCachedFeatures(document, documentFile);
+            if (generatedEvents == null) {
+                // delete the cache for this document! It is invalid
+                documentFile.delete();
+                // program will continue as normal, extracting events
+            } else {
+                // return the cached features
+                return generatedEvents;
+            }
+        }
+		
 		// Extract the Events from the documents
 		try {
-			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents);
+			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents,isUsingCache);
 		} catch (Exception e) {
 			Logger.logln("Failed to extract events from documents!");
 			throw new Exception();
@@ -433,7 +462,7 @@ public class FeatureExtractionAPI {
 						index = tempIndex;
 						break;
 					}
-					for (Event e : es) {
+					for (@SuppressWarnings("unused") Event e : es) {
 						hasInner = true;
 						tempIndex++;
 					}
@@ -659,7 +688,7 @@ public class FeatureExtractionAPI {
 					
 					//count to find the index
 					boolean hasInner = false;
-					for (Event re : res) {
+					for (@SuppressWarnings("unused") Event re : res) {
 						hasInner = true;
 						nonHistIndex++;
 					}
@@ -1029,4 +1058,113 @@ public class FeatureExtractionAPI {
 		
 		return culledUnknownEventSets;
 	}
+	   /**
+     * Loads the cached features for a given document
+     * @param document
+     * @param documentFile  The cache file for the document.
+     * @return the cached features if possible. Null if a cache doesn't exist or it fails to get them.
+     * @throws Exception 
+     */
+    private List<EventSet> getCachedFeatures(Document document, File documentFile) {
+        List<EventSet> generatedEvents = null;
+        BufferedReader reader = null;
+        
+        if (documentFile.exists() && !documentFile.isDirectory() && documentFile.canRead()) {
+            try {
+                reader = new BufferedReader(new FileReader(documentFile));
+            } catch (FileNotFoundException e) {
+                // shouldn't ever get here.. just put this here so I can keep track
+                // of exceptions below.
+                e.printStackTrace();
+            }
+        } else {
+            return null;
+        }
+        
+        try {
+            // cachedPath is the path to the document that was used when the cache for that
+            // document was created. cachedLastModified is the last modified time stamp on the
+            // document that was cached.
+            String cachedPath = reader.readLine();
+            long cachedLastModified = Long.parseLong(reader.readLine());
+
+            String path = document.getFilePath();
+            File currDoc = new File(path);
+            long lastModified = currDoc.lastModified();
+
+            if (!(currDoc.getCanonicalPath().equals(cachedPath) && lastModified == cachedLastModified)) {
+                // cache is invalid
+                reader.close();
+                return null;
+            }
+            String line = null;
+            generatedEvents = new ArrayList<EventSet>();
+            while ((line = reader.readLine()) != null) {
+                if (line.isEmpty())
+                    continue;
+                EventSet es = new EventSet();
+                es.setAuthor(document.getAuthor());
+                es.setDocumentName(document.getTitle());
+                es.setEventSetID(line);
+                
+                String event = null;
+                while ((event = reader.readLine()) != null) {
+                    if (line.isEmpty())
+                        continue;
+                    if (event.equals(",")) //delimiter for event sets
+                        break;
+                    es.addEvent(new Event(event));
+                }
+                
+                generatedEvents.add(es);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        
+        return generatedEvents;
+    }
+    
+    /**
+     * Recursively delete contents of a directory (if f is a directory),
+     * then delete f.
+     * @param dir   the file/directory to delete
+     * @return true if f was successfully deleted, false otherwise
+     */
+    public static boolean deleteRecursive(File f) {
+        File cacheDir = new File(JSANConstants.JSAN_CACHE);
+        try {
+            if (f.getCanonicalPath().startsWith(cacheDir.getCanonicalPath())) {
+                return deleteRecursiveUnsafe(f);
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+
+    /**
+     * Recursively delete contents of a directory (if f is a directory),
+     * then delete f.
+     * @param dir   the file/directory to delete
+     * @return true if f was successfully deleted, false otherwise
+     */
+    private static boolean deleteRecursiveUnsafe(File f) {
+        if (f.exists()) {
+            File[] files = f.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    deleteRecursiveUnsafe(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+        }
+        return f.delete();
+    }
+    
 }

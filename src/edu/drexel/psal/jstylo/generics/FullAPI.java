@@ -1,11 +1,7 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.util.List;
 import java.util.Map;
 
-import com.jgaap.generics.Document;
-
-import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.classifiers.Classifier;

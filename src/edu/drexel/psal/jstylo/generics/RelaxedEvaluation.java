@@ -7,8 +7,6 @@ import java.util.Comparator;
 
 public class RelaxedEvaluation extends Evaluation {
 
-	private static final long serialVersionUID = 1L;
-
 	protected int relaxParam;
 
 	/**

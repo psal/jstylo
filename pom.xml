@@ -33,6 +33,11 @@
 		<groupId>org.annolab.tt4j</groupId>
 		<artifactId>org.annolab.tt4j</artifactId>
 		<version>1.2.1</version>
-	</dependency>	
+	</dependency>
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+	</dependency>
   </dependencies>
 </project>

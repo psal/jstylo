@@ -1,17 +1,24 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
 import com.jgaap.generics.EventSet;
 
+import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 
-import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -33,6 +40,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	//private boolean useDocTitles;	//use doc titles as a feature?
 	//private boolean loadDocContents; 
 	private Preferences preferences;
+	private boolean isCacheValid = false;
 	
 	// persistant data stored as we create it
 	private ProblemSet ps;	//the documents
@@ -71,6 +79,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		private boolean isSparse = false;
 		private boolean useDocTitles = false;
 		private boolean loadDocContents = false;
+		private boolean useCache = false;
 		private Preferences p = null;
 		
 		public Builder psPath(String psp){
@@ -101,6 +110,11 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		public Builder useDocTitles(boolean udt){
 			useDocTitles = udt;
 			return this;
+		}
+		
+		public Builder useCache(boolean uc){
+		    useCache=uc;
+		    return this;
 		}
 		
 		public Builder loadDocContents(boolean ldc){
@@ -184,6 +198,11 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			preferences.setPreference("loadDocContents", "1");
 		else
 			preferences.setPreference("loadDocContents","0");
+		
+        if (b.useCache)
+            preferences.setPreference("useCache", "1");
+        else
+            preferences.setPreference("useCache", "0");
 	}
 	
 	/**
@@ -262,7 +281,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		featThreads = new FeatureExtractionThread[threadsToUse];
 		for (int thread = 0; thread < threadsToUse; thread++) //create the threads
 			featThreads[thread] = new FeatureExtractionThread(div, thread,
-					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd));
+					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd),isCacheValid);
 		for (int thread = 0; thread < threadsToUse; thread++) //start them
 			featThreads[thread].start();
 		for (int thread = 0; thread < threadsToUse; thread++) //join them
@@ -378,7 +397,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			//Perform some parallelization magic
 			testThreads = new CreateTestInstancesThread[threadsToUse];
 			for (int thread = 0; thread < threadsToUse; thread++)
-				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances, new CumulativeFeatureDriver(cfd));
+				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances, new CumulativeFeatureDriver(cfd),isCacheValid);
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread].start();
 			for (int thread = 0; thread < threadsToUse; thread++)
@@ -712,15 +731,16 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		int threadId; //the div this thread is dealing with
 		int numInstances; //the total number of instances to be created
 		CumulativeFeatureDriver cfd; //the cfd used to assess features
-		
+		boolean isCacheValid;
 		//Constructor
-		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd){
+		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd,boolean validCache){
 			cfd=cd;
 			dataset = data;
 			list = new ArrayList<Instance>();
 			div = d;
 			threadId = t;
 			numInstances = n;
+			isCacheValid=validCache;
 		}
 		
 		//returns the list of instances created by this thread
@@ -738,7 +758,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					//grab the document
 					Document doc = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents());
+					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(),isUsingCache()&&isCacheValid);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance
@@ -833,7 +853,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		int knownDocsSize; //the number of docs total
 		List<Document> knownDocs; //the docs to be extracted
 		CumulativeFeatureDriver cfd; //the cfd to do the extracting with
-
+		boolean isCacheValid;
+		
+		
 		/**
 		 * @return The list of extracted event sets for this division of documents
 		 */
@@ -844,7 +866,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		//Constructor
 		public FeatureExtractionThread(int div, int threadId,
 				int knownDocsSize, List<Document> knownDocs,
-				CumulativeFeatureDriver cfd) {
+				CumulativeFeatureDriver cfd, boolean cacheValid) {
 			
 			this.div = div;
 			this.threadId = threadId;
@@ -855,7 +877,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
+			isCacheValid = cacheValid;
 		}
 
 		//Runnable Method
@@ -867,7 +889,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 				try {
 					//try to extract the events
 				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
-					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents());
+					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(),isUsingCache()&&isCacheValid);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!", LogOut.STDERR);
@@ -877,4 +899,83 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			}
 		}
 	}
+
+    public boolean isUsingCache() {
+        return preferences.getBoolPreference("useCache");
+    }
+
+    public void setUseCache(boolean useCache) {
+        if (useCache)
+            preferences.setPreference("useCache", "1");
+        else
+            preferences.setPreference("useCache", "0");
+    }
+    
+    /**
+     * Determines if we can load cached features. Cullers are not taken into account, since the
+     * features are cached and cached features are loaded before cullers are applied.
+     * 
+     * If the cache is not valid, it will clear it and make a new cfdHash file for the CFD, so
+     * any future cached features will be associated with the updated CFD.
+     * @return False if the CFD has been modified (besides cullers) since the cache was made.
+     *      True otherwise.
+     */
+    public boolean validateCFDCache() {
+        long currentHash = cfd.longHash(EnumSet.of(FeatureSetElement.CANONICIZERS, FeatureSetElement.EVENT_DRIVERS, FeatureSetElement.NORMALIZATION));
+        File cacheDir = new File(JSANConstants.JSAN_CACHE + "_" + cfd.getName());
+        File cacheFile = new File(cacheDir, "cfdHash.txt");
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(cacheFile));
+        } catch (FileNotFoundException e) {
+            cacheDir.mkdirs();
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(cacheFile));
+                writer.write(currentHash + "\n");
+                writer.close();
+            } catch (IOException e2) {
+                e2.printStackTrace();
+            }
+            setCacheValid(false);
+            return false;
+        }
+        long cachedHash = 0;
+        try {
+            cachedHash = Long.parseLong(reader.readLine());
+            reader.close();
+        } catch (NumberFormatException | IOException e) {
+            e.printStackTrace();
+            setCacheValid(false);
+            return false;
+        }
+        if (cachedHash == currentHash) {
+            setCacheValid(true);
+            return true;
+        } else {
+            // Delete the cache and create a new one.
+            // It is necessary to delete the entire cache (instead of just letting the cache
+            // files be overwritten), because there may be some cache files not being used in this
+            // case, and if some are not overwritten, but the CFD hash is updated, an invalid
+            // cache could be used at some point thereafter.
+            
+            deleteRecursive(cacheDir);
+            cacheDir.mkdirs();
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(cacheFile));
+                writer.write(currentHash + "\n");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            setCacheValid(false);
+            return false;
+        }
+    }
+    
+    // Set whether or not the CFD cache is valid
+    private void setCacheValid(boolean isValid) {
+        isCacheValid = isValid;
+    }
 }

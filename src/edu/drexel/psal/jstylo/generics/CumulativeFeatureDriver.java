@@ -11,8 +11,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.helpers.DefaultHandler;
 
-import weka.classifiers.lazy.IBk;
-
 import com.jgaap.generics.*;
 
 import edu.drexel.psal.JSANConstants;

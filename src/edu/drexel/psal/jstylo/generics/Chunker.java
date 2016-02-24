@@ -209,7 +209,7 @@ public final class Chunker {
 			} else {
 				// previously chunked documents are not valid anymore. Need to
 				// re-chunk.
-				Engine.deleteRecursive(chunkDir);
+				FeatureExtractionAPI.deleteRecursive(chunkDir);
 				makeChunkHash(chunkDir, entry.getValue(), chunkSize);
 
 				// minChunkSize is different than this.chunkMinSize. The
