@@ -12,7 +12,6 @@ import java.util.Set;
 
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.core.Attribute;
-import weka.core.DenseInstance;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -306,7 +305,7 @@ public class FeatureExtractionAPI {
 	 * @return A List of Attribute which will be used to create the Instances object 
 	 * @throws Exception
 	 */
-	public ArrayList<Attribute> getAttributeList(
+	public FastVector getAttributeList(
 			List<List<EventSet>> culledEventSets,
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,
@@ -335,7 +334,7 @@ public class FeatureExtractionAPI {
 		// initialize Weka attributes vector (but authors attribute will be
 		// added last)
 		FastVector attributeList = new FastVector(relevantEvents.size() + 1);
-		FastVector<String> authorNames = new FastVector();
+		FastVector authorNames = new FastVector();
 		authorNames.addElement("_Unknown_");
 		for (String name : authors)
 			authorNames.addElement(name);
@@ -399,12 +398,12 @@ public class FeatureExtractionAPI {
 		}
 		
 		// The actual list of attributes to return
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		FastVector attributes = new FastVector();
 		
 		// Add the attribute for document title if enabled
 		if (hasDocTitles) {
 			Attribute docTitle = new Attribute("Document Title", (FastVector) null);
-			attributes.add(docTitle);
+			attributes.addElement(docTitle);
 		}
 			
 		// here's where we create the new Attribute object and add it to the
@@ -446,7 +445,7 @@ public class FeatureExtractionAPI {
 				//if it is relevant, add to attributes
 				if (found) {
 					attributes
-							.add(new Attribute(nonHist.getEventSetID(), index));
+							.addElement(new Attribute(nonHist.getEventSetID(), index));
 				}
 
 			} else {
@@ -492,7 +491,7 @@ public class FeatureExtractionAPI {
 				// if the feature is a relevant event, add it to the attribute
 				// list
 				if (index != -1) {
-					attributes.add(new Attribute(eventString, index));
+					attributes.addElement(new Attribute(eventString, index));
 				}
 
 			}
@@ -506,7 +505,7 @@ public class FeatureExtractionAPI {
 		}
 		
 		// add authors attribute as last attribute
-		attributes.add(authorNameAttribute);
+		attributes.addElement(authorNameAttribute);
 		return attributes;
 	}
 	
@@ -519,7 +518,7 @@ public class FeatureExtractionAPI {
 	 * @return The instance object representing this document
 	 * @throws Exception
 	 */
-	public Instance createInstance(List<Attribute> attributes,
+	public Instance createInstance(FastVector attributes,
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,
 			List<EventSet> documentData, boolean isSparse,
@@ -534,19 +533,19 @@ public class FeatureExtractionAPI {
 		if (isSparse)
 			inst = new SparseInstance(vectorSize);
 		else
-			inst = new DenseInstance(vectorSize);
+			inst = new Instance(vectorSize);
 		
 		int start = 0;
 		
 		//add the document title if need be
 		if (hasDocTitles){
 			start = 1;
-			inst.setValue(attributes.get(0),(documentData.get(documentData.size()-1).eventAt(1).getEvent().replaceAll("\\\\","/")));
+			inst.setValue((Attribute)attributes.elementAt(0),(documentData.get(documentData.size()-1).eventAt(1).getEvent().replaceAll("\\\\","/")));
 		}
 		
 		// add the document author
 		if (!(documentData.get(documentData.size()-1).eventAt(0).getEvent() == null)) {
-			inst.setValue((Attribute) attributes.get(attributes.size() - 1),
+			inst.setValue((Attribute) attributes.elementAt(attributes.size() - 1),
 					documentData.get(documentData.size()-1).eventAt(0).getEvent());
 		}
 		
@@ -555,7 +554,7 @@ public class FeatureExtractionAPI {
 		
 		//-1 for indexing
 		for (int i=start; i<attributes.size()-1;i++){
-			inst.setValue((attributes.get(i)), 0);
+			inst.setValue((Attribute)(attributes.elementAt(i)), 0);
 		}
 		
 		//go through all eventSets in the document
@@ -637,7 +636,7 @@ public class FeatureExtractionAPI {
 					//calculate/add the histograms
 					int index = 0;
 					for (Integer i: indices){
-						inst.setValue((Attribute)attributes.get(i),currHistogram.getAbsoluteFrequency(events.get(index)));
+						inst.setValue((Attribute)attributes.elementAt(i),currHistogram.getAbsoluteFrequency(events.get(index)));
 						index++;
 					}
 					
@@ -677,7 +676,7 @@ public class FeatureExtractionAPI {
 				eventString = eventString.substring(startIndex+1,endIndex);
 
 				double value = Double.parseDouble(eventString);
-				inst.setValue((Attribute) attributes.get(nonHistIndex), value);
+				inst.setValue((Attribute) attributes.elementAt(nonHistIndex), value);
 			}
 		}
 		//add metadata back. Not sure if necessary
@@ -694,7 +693,7 @@ public class FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public void normInstance(CumulativeFeatureDriver cfd, Instance instance,
-			List<EventSet> documentData, boolean hasDocTitles, List<Attribute> attributes) throws Exception {
+			List<EventSet> documentData, boolean hasDocTitles, FastVector attributes) throws Exception {
 
 		int i;
 		int numOfFeatureClasses = cfd.numOfFeatureDrivers();
@@ -715,13 +714,13 @@ public class FeatureExtractionAPI {
 			String featureDriverName = cfd.featureDriverAt(i).displayName()
 					.replace(" ", "-");
 			
-			String nextFeature = attributes.get(vectorSize).name().replace(" ", "-");;
+			String nextFeature = ((Attribute)attributes.elementAt(vectorSize)).name().replace(" ", "-");;
 			
 			featureClassAttrsFirstIndex[i] = vectorSize;
 			while (nextFeature.contains(featureDriverName)) {
 				vectorSize++;
 			//	nextFeature = instance.attribute(vectorSize).name();
-				nextFeature = attributes.get(vectorSize).name();
+				nextFeature = ((Attribute)attributes.elementAt(vectorSize)).name();
 			}
 		}
 		

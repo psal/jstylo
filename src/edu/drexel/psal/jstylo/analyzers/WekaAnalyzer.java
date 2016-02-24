@@ -184,7 +184,7 @@ public class WekaAnalyzer extends Analyzer {
 							
 				Instances test = randData.testCV(folds, n);
 				// build and evaluate classifier
-				Classifier clsCopy = AbstractClassifier.makeCopy(classifier);
+				Classifier clsCopy = Classifier.makeCopy(classifier);
 				clsCopy.buildClassifier(train);
 				eval.evaluateModel(clsCopy, test);
 			}
@@ -211,7 +211,7 @@ public class WekaAnalyzer extends Analyzer {
 	
 	@Override
 	public Evaluation getTrainTestEval(Instances train, Instances test) throws Exception{
-		Classifier cls = AbstractClassifier.makeCopy(classifier);
+		Classifier cls = Classifier.makeCopy(classifier);
 		cls.buildClassifier(train);
 		Evaluation eval = new Evaluation(train);
 		test.setClassIndex(test.numAttributes()-1);
@@ -241,7 +241,7 @@ public class WekaAnalyzer extends Analyzer {
 				Instances train = randData.trainCV(folds, n);
 				Instances test = randData.testCV(folds, n);
 				// build and evaluate classifier
-				Classifier clsCopy =  AbstractClassifier.makeCopy(classifier);
+				Classifier clsCopy =  Classifier.makeCopy(classifier);
 				clsCopy.buildClassifier(train);
 				eval.evaluateModel(clsCopy, test);
 			}

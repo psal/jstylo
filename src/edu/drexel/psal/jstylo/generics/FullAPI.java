@@ -300,7 +300,6 @@ public class FullAPI {
 			System.out.println("Unreachable. Something went wrong somewhere.");
 			break;
 		}
-		ib.cleanAttributes();
 	}
 	
 	///////////////////////////////// Setters/Getters
@@ -496,7 +495,7 @@ public class FullAPI {
 	public static void main(String[] args){
 
 		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("C:/Users/Mordio/Documents/GitHub/jstylo/jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
+				.psPath("./jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 
 		test.prepareInstances();
@@ -505,6 +504,6 @@ public class FullAPI {
 		test.prepareAnalyzer();
 		test.run();
 		System.out.println(test.getClassificationAccuracy());
-		//System.out.println(test.getStatString());
+		System.out.println(test.getStatString());
 	}
 }

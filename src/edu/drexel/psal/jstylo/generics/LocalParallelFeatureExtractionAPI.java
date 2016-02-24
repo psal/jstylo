@@ -12,6 +12,7 @@ import com.jgaap.generics.EventSet;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 
 import weka.core.Attribute;
+import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
@@ -38,7 +39,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	private CumulativeFeatureDriver cfd;	//the driver used to extract features
 	private List<List<EventSet>> eventList;	//the events/sets created from the extracted features
 	private List<EventSet> relevantEvents;	//the events/sets to pay attention to
-	private ArrayList<Attribute> attributes;	//the relevant events converted into attributes
+	private FastVector attributes;	//the relevant events converted into attributes
 
 	//ThreadArrays so that we can stop them if the user cancels something mid process
 	FeatureExtractionThread[] featThreads;
@@ -196,16 +197,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	}
 
 	//////////////////////////////////////////// Methods
-	
-	@SuppressWarnings("unused")
-	public void cleanAttributes(){
-		for (Attribute a :  attributes){
-			a = null;
-		}
-		attributes.clear();
-		attributes = null;
-		System.gc();
-	}
 	
 	@SuppressWarnings("unused")
 	public void clean(){

@@ -19,5 +19,16 @@
   </build>
 
   <dependencies>
+  	<dependency>
+		<groupId>edu.stanford.nlp</groupId>
+		<artifactId>stanford-parser</artifactId>
+		<version>2.0.2</version>
+	</dependency>
+	<dependency>
+		<groupId>nz.ac.waikato.cms.weka</groupId>
+		<artifactId>weka-stable</artifactId>
+		<version>3.6.6</version>
+	</dependency>
+	
   </dependencies>
 </project>
