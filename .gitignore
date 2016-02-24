@@ -1,5 +1,8 @@
 bin/*
 .DS_Store
+.gitignore
+.project
+.settings
 /.edited_documents
 /_active-auth.lnk
 
@@ -8,3 +11,4 @@ bin/*
 
 /anonymouth_prop.prop
 /JStylo_prop.prop
+/target/
