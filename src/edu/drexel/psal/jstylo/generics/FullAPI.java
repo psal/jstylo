@@ -1,7 +1,11 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.util.List;
 import java.util.Map;
 
+import com.jgaap.generics.Document;
+
+import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import weka.classifiers.Classifier;
@@ -50,6 +54,7 @@ public class FullAPI {
 		private boolean isSparse = true;
 		private boolean loadDocContents = false;
 		private Preferences p = null;
+		private boolean useCache = true;
 		
 		public Builder(){
 			
@@ -110,6 +115,11 @@ public class FullAPI {
 		
 		public Builder useDocTitles(boolean udt){
 			useDocTitles = udt;
+			return this;
+		}
+		
+		public Builder useCache(boolean uc) {
+			useCache = uc;
 			return this;
 		}
 		
@@ -185,6 +195,7 @@ public class FullAPI {
 		}
 		
 		ib.setUseDocTitles(b.useDocTitles);
+		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
 		ib.setUseSparse(b.isSparse);
 		selected = b.type;
@@ -201,6 +212,9 @@ public class FullAPI {
 	public void prepareInstances() {
 
 		try {
+			if (ib.isUsingCache())
+				ib.validateCFDCache();
+			Chunker.chunkAllTrainDocs(ib.getProblemSet());
 			ib.extractEventsThreaded(); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on
@@ -305,6 +319,13 @@ public class FullAPI {
 	///////////////////////////////// Setters/Getters
 	
 	/**
+	 * @param useCache boolean value. Whether or not to use the cache for feature extraction.
+	 */
+	public void setUseCache(boolean useCache) {
+		ib.setUseCache(useCache);
+	}
+	
+	/**
 	 * @param useDocTitles boolean value. Whether or not to set 1st attribute to the document title
 	 */
 	public void setUseDocTitles(boolean useDocTitles){
@@ -364,6 +385,10 @@ public class FullAPI {
 	
 	public void setClassifier(Classifier c){
 		analysisDriver = new WekaAnalyzer(c);
+	}
+	
+	public boolean isUsingCache() {
+		return ib.isUsingCache();
 	}
 	
 	public Analyzer getUnderlyingAnalyzer(){

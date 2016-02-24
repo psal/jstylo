@@ -1,8 +1,10 @@
 package edu.drexel.psal.jstylo.GUI;
 
+import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
+import edu.drexel.psal.jstylo.generics.Chunker;
 import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.generics.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.generics.Logger;
@@ -797,6 +799,7 @@ public class AnalysisTabDriver {
 				main.ib = tempBuilder;
 				main.ib.setProblemSet(main.ps);
 				main.ib.setLoadDocContents(false);
+
 				try {
 					main.ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(main.cfd));
 				} catch (Exception e2) {
@@ -808,6 +811,11 @@ public class AnalysisTabDriver {
 				content += getTimestamp() + " Extracting features from training corpus ("
 						+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
 				updateResultsView();
+				
+				if (main.ib.isUsingCache())
+					main.ib.validateCFDCache();
+				Chunker.chunkAllTrainDocs(main.ib.getProblemSet());
+				
 				try {
 					main.ib.extractEventsThreaded();
 				} catch (Exception e) {
