@@ -229,7 +229,8 @@ public class FullAPI {
 		try {
 			if (ib.isUsingCache())
 				ib.validateCFDCache();
-			//Chunker.chunkAllTrainDocs(ib.getProblemSet());
+			if (ib.isChunkingDocs())
+			    Chunker.chunkAllTrainDocs(ib.getProblemSet());
 			ib.extractEventsThreaded(); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on

@@ -984,4 +984,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
         else 
             preferences.setPreference("chunkDocs", "0");
     }
+
+    public boolean isChunkingDocs() {
+        return preferences.getBoolPreference("chunkDocs");
+    }
 }
