@@ -60,7 +60,8 @@ public class Preferences{
 		"analysisType",
 		"featureSet",
 		"classifiers",
-		"verifiers"};
+		"verifiers",
+		"chunkDocs"};
 	
 	//Used for default values in the event of a missing/outdated file
 	//or when building a Preferences object without a file for internal use
