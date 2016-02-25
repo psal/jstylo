@@ -562,7 +562,7 @@ public class FullAPI {
 	public static void main(String[] args){
 		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
 				.psPath("./jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
+				.numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 		test.prepareInstances();
 		//test.calcInfoGain();
 		//test.applyInfoGain(1500);
