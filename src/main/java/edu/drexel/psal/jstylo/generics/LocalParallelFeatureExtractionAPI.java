@@ -40,7 +40,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	//private boolean useDocTitles;	//use doc titles as a feature?
 	//private boolean loadDocContents; 
 	private Preferences preferences;
-	private boolean isCacheValid = false;
+	private boolean isCacheValid;
 	
 	// persistant data stored as we create it
 	private ProblemSet ps;	//the documents
@@ -199,10 +199,13 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		else
 			preferences.setPreference("loadDocContents","0");
 		
-        if (b.useCache)
+        if (b.useCache) {
             preferences.setPreference("useCache", "1");
-        else
+            isCacheValid = validateCFDCache();
+        } else {
             preferences.setPreference("useCache", "0");
+            isCacheValid = false;
+        }
 	}
 	
 	/**
@@ -281,7 +284,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		featThreads = new FeatureExtractionThread[threadsToUse];
 		for (int thread = 0; thread < threadsToUse; thread++) //create the threads
 			featThreads[thread] = new FeatureExtractionThread(div, thread,
-					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd),isCacheValid);
+					knownDocsSize, knownDocs, new CumulativeFeatureDriver(cfd));
 		for (int thread = 0; thread < threadsToUse; thread++) //start them
 			featThreads[thread].start();
 		for (int thread = 0; thread < threadsToUse; thread++) //join them
@@ -397,7 +400,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			//Perform some parallelization magic
 			testThreads = new CreateTestInstancesThread[threadsToUse];
 			for (int thread = 0; thread < threadsToUse; thread++)
-				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances, new CumulativeFeatureDriver(cfd),isCacheValid);
+				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances, new CumulativeFeatureDriver(cfd));
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread].start();
 			for (int thread = 0; thread < threadsToUse; thread++)
@@ -731,16 +734,15 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		int threadId; //the div this thread is dealing with
 		int numInstances; //the total number of instances to be created
 		CumulativeFeatureDriver cfd; //the cfd used to assess features
-		boolean isCacheValid;
+		
 		//Constructor
-		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd,boolean validCache){
+		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd){
 			cfd=cd;
 			dataset = data;
 			list = new ArrayList<Instance>();
 			div = d;
 			threadId = t;
 			numInstances = n;
-			isCacheValid=validCache;
 		}
 		
 		//returns the list of instances created by this thread
@@ -758,7 +760,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					//grab the document
 					Document doc = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(),isUsingCache()&&isCacheValid);
+					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(),isCacheValid);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					//build the instance
@@ -853,8 +855,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		int knownDocsSize; //the number of docs total
 		List<Document> knownDocs; //the docs to be extracted
 		CumulativeFeatureDriver cfd; //the cfd to do the extracting with
-		boolean isCacheValid;
-		
 		
 		/**
 		 * @return The list of extracted event sets for this division of documents
@@ -866,7 +866,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		//Constructor
 		public FeatureExtractionThread(int div, int threadId,
 				int knownDocsSize, List<Document> knownDocs,
-				CumulativeFeatureDriver cfd, boolean cacheValid) {
+				CumulativeFeatureDriver cfd) {
 			
 			this.div = div;
 			this.threadId = threadId;
@@ -877,7 +877,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			isCacheValid = cacheValid;
 		}
 
 		//Runnable Method
@@ -889,7 +888,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 				try {
 					//try to extract the events
 				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
-					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(),isUsingCache()&&isCacheValid);
+					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(),isCacheValid);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
 					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!", LogOut.STDERR);
@@ -977,5 +976,12 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
     // Set whether or not the CFD cache is valid
     private void setCacheValid(boolean isValid) {
         isCacheValid = isValid;
+    }
+    
+    public void setChunkDocs(boolean chunkDocs){
+        if (chunkDocs)
+            preferences.setPreference("chunkDocs", "1");
+        else 
+            preferences.setPreference("chunkDocs", "0");
     }
 }

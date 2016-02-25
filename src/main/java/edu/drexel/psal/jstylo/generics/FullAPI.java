@@ -56,7 +56,8 @@ public class FullAPI {
 		private boolean isSparse = true;
 		private boolean loadDocContents = false;
 		private Preferences p = null;
-		private boolean useCache = true;
+		private boolean useCache = false;
+		private boolean chunkDocs = false;
 		
 		public Builder(){
 			
@@ -123,6 +124,11 @@ public class FullAPI {
 		public Builder useCache(boolean uc) {
 			useCache = uc;
 			return this;
+		}
+		
+		public Builder chunkDocs(boolean ch){
+		    chunkDocs = ch;
+		    return this;
 		}
 		
 		public Builder isSparse(boolean is){
@@ -206,6 +212,7 @@ public class FullAPI {
 		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
 		ib.setUseSparse(b.isSparse);
+		ib.setChunkDocs(b.chunkDocs);
 		verifierName = b.verifierName;
 		selected = b.type;
 		numFolds = b.numFolds;
@@ -222,7 +229,7 @@ public class FullAPI {
 		try {
 			if (ib.isUsingCache())
 				ib.validateCFDCache();
-			Chunker.chunkAllTrainDocs(ib.getProblemSet());
+			//Chunker.chunkAllTrainDocs(ib.getProblemSet());
 			ib.extractEventsThreaded(); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
 			ib.initializeAttributes(); //creates the attribute list to base the Instances on
