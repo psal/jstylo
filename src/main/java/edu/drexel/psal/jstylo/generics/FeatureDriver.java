@@ -374,7 +374,7 @@ public class FeatureDriver implements Serializable{
 	 * 		The normalization factor.
 	 */
 	public Double getNormFactor() {
-		return norm.getSecond() == null ? 1 : norm.getSecond();
+		return norm.getSecond() == null ? 1.0 : norm.getSecond();
 	}
 	
 	/**
