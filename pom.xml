@@ -1,10 +1,55 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>JStylo</groupId>
-  <artifactId>JStylo</artifactId>
-  <version>2.3.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
-  <build>
+    <modelVersion>4.0.0</modelVersion>
+  
+    <groupId>psal</groupId>
+    <artifactId>JStylo</artifactId>
+    <name>${artifactId}</name>
+    <version>2.3.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <description>A feature-extraction and authorship-attribution tool.</description>
+    <url>https://psal.cs.drexel.edu/</url>
+    
+    <developers>
+      <developer>
+        <name>Travis Dutko</name>
+        <email>tad.drexel@gmail.com</email>
+        <organization>Drexel PSAL</organization>
+        <organizationUrl>https://psal.cs.drexel.edu/</organizationUrl>
+      </developer>
+    </developers>
+    
+    <scm>
+      <connection>scm:git:http://github.com/psal/jstylo.git</connection>
+      <developerConnection>scm:git:https://github.com/psal/jstylo.git</developerConnection>
+      <url>http://github.com/psal/jstylo.git</url>
+    </scm>
+
+    <dependencies>
+	  <dependency>
+		<groupId>nz.ac.waikato.cms.weka</groupId>
+		<artifactId>weka-stable</artifactId>
+		<version>3.6.6</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.annolab.tt4j</groupId>
+		<artifactId>org.annolab.tt4j</artifactId>
+		<version>1.2.1</version>
+	  </dependency>
+	  <dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+	  </dependency>
+	  <dependency>
+         <groupId>jgaap-5.2.0-lite</groupId>
+         <artifactId>jgaap-5.2.0-lite</artifactId>
+         <scope>system</scope>
+         <version>5.2.0-lite</version>
+         <systemPath>${basedir}/lib/jgaap-5.2.0-lite.jar</systemPath>
+      </dependency>
+    </dependencies>
+  
+    <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
       <plugin>
@@ -12,32 +57,38 @@
         <version>3.3</version>
         <configuration>
           <source>1.8</source>
-          <target>1.8</target>
+		  <target>1.8</target>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>create-executable-jar</id>
+              <phase>package</phase>
+              <goals>
+                <goal>single</goal>
+              </goals>
+              <configuration>
+              <archive>
+          		<manifest>
+       		 	  <mainClass>edu.drexel.psal.jstylo.GUI.GUIMain</mainClass>
+          		</manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-<!--   	<dependency>
-		<groupId>edu.stanford.nlp</groupId>
-		<artifactId>stanford-parser</artifactId>
-		<version>2.0.2</version>
-	</dependency> -->
-	<dependency>
-		<groupId>nz.ac.waikato.cms.weka</groupId>
-		<artifactId>weka-stable</artifactId>
-		<version>3.6.6</version>
-	</dependency>
-	<dependency>
-		<groupId>org.annolab.tt4j</groupId>
-		<artifactId>org.annolab.tt4j</artifactId>
-		<version>1.2.1</version>
-	</dependency>
-	<dependency>
-		<groupId>junit</groupId>
-		<artifactId>junit</artifactId>
-		<version>4.12</version>
-	</dependency>
-  </dependencies>
+  
+  <licenses>
+    <license>
+      <name>3-Clause BSD License</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
+    </license>
+  </licenses>
 </project>

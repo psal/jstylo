@@ -20,19 +20,12 @@ A copy of the current license is included with the repository/program. If for so
 
 Dependencies:
 
-JStylo is built upon the following libraries:
-
-weka 	3.7.9
-Jama 	1.0.3
-Stanford postagger 	2012-01-06
-jgaap	 5.2
-jaws 	1.3
-fasttag v2
-tt4j    1.0.15
+JStylo now utilizes a maven POM file for managing dependencies. Note that there is one additional dependency (JGAAP) which is non-mavenized. 
+This dependency jar is included with each release of JStylo. Include it in your project's lib folder to allow JStylo to access its resources.
 
 Usage:
 
-Jstylo requires Java 7 to run properly
+Jstylo requires Java 7 or later to run properly
 
 In windows: double-click jstylo.jar
 In other platforms / to view on-the-fly log:
