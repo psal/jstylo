@@ -1,7 +1,7 @@
 package edu.drexel.psal.jstylo.test;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.generics.Chunker;
+import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 

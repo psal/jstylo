@@ -1,4 +1,4 @@
-package edu.drexel.psal.jstylo.generics;
+package edu.drexel.psal.jstylo.featureProcessing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,6 +22,8 @@ import java.util.Map;
 import com.jgaap.generics.Document;
 
 import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.generics.Logger;
+import edu.drexel.psal.jstylo.generics.ProblemSet;
 
 /**
  * Chunks the training documents into chunks (close to) the size of the (first) test document

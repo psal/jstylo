@@ -18,8 +18,8 @@ import javax.swing.event.ListSelectionListener;
 
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
-import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
-import edu.drexel.psal.jstylo.generics.FeatureDriver;
+import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
+import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 

@@ -10,8 +10,8 @@ import java.util.*;
 
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.generics.Analyzer;
-import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
-import edu.drexel.psal.jstylo.generics.LocalParallelFeatureExtractionAPI;
+import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
+import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;

@@ -1,9 +1,9 @@
 package edu.drexel.psal.jstylo.GUI;
 
-import edu.drexel.psal.jstylo.generics.CumulativeFeatureDriver;
-import edu.drexel.psal.jstylo.generics.FeatureDriver;
+import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
+import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver;
 import edu.drexel.psal.jstylo.generics.Logger;
-import edu.drexel.psal.jstylo.generics.NormBaselineEnum;
+import edu.drexel.psal.jstylo.featureProcessing.NormBaselineEnum;
 import edu.drexel.psal.jstylo.generics.Logger.*;
 
 import java.awt.Component;

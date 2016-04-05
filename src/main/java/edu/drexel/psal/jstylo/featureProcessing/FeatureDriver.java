@@ -1,4 +1,4 @@
-package edu.drexel.psal.jstylo.generics;
+package edu.drexel.psal.jstylo.featureProcessing;
 
 import com.jgaap.generics.*;
 

@@ -8,6 +8,9 @@ import java.util.Map;
 import com.jgaap.generics.Document;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
+import edu.drexel.psal.jstylo.featureProcessing.Chunker;
+import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
+import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
 import edu.drexel.psal.jstylo.verifiers.ThresholdVerifier;

@@ -17,6 +17,7 @@ import java.util.Collections;
 
 import com.jgaap.generics.*;
 
+import edu.drexel.psal.jstylo.featureProcessing.StringDocument;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 
 public class ProblemSet implements Serializable {

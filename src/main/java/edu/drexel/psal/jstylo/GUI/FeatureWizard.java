@@ -1,8 +1,8 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.generics.FeatureDriver;
-import edu.drexel.psal.jstylo.generics.NormBaselineEnum;
+import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver;
+import edu.drexel.psal.jstylo.featureProcessing.NormBaselineEnum;
 
 import java.awt.*;
 import java.util.*;

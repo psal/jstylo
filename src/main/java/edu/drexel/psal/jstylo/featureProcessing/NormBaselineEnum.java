@@ -1,4 +1,4 @@
-package edu.drexel.psal.jstylo.generics;
+package edu.drexel.psal.jstylo.featureProcessing;
 
 /**
  * Enumeration of all types of baselines for normalization for any feature. A feature is a specific entry in the

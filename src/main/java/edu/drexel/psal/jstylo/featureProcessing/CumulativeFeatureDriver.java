@@ -1,4 +1,4 @@
-package edu.drexel.psal.jstylo.generics;
+package edu.drexel.psal.jstylo.featureProcessing;
 
 import java.io.*;
 import java.util.*;
@@ -15,6 +15,7 @@ import com.jgaap.generics.*;
 
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
+import edu.drexel.psal.jstylo.generics.Logger;
 
 /**
  * The cumulative feature driver class is designed to create a concatenated result of several feature drivers.
