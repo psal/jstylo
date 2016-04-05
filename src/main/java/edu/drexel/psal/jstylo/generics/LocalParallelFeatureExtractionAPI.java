@@ -891,9 +891,10 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(),isCacheValid);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
-					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!", LogOut.STDERR);
+					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!\n", LogOut.STDERR);
 					Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
 					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+					e.printStackTrace();
 				} 
 			}
 		}

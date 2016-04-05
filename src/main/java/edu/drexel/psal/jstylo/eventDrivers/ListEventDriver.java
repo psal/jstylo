@@ -146,7 +146,6 @@ public class ListEventDriver extends EventDriver {
 						br = new BufferedReader(new FileReader(filename));
 					} catch (IOException e) {
 						// look in resources
-						
 						InputStream in = getClass().getClassLoader().getResourceAsStream(filename);
 						br = new BufferedReader(new InputStreamReader(in));
 					}

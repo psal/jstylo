@@ -82,7 +82,7 @@ public class FeatureExtractionAPI {
 			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents,isUsingCache);
 		} catch (Exception e) {
 			Logger.logln("Failed to extract events from documents!");
-			throw new Exception();
+			throw e;
 		}
 		// create metadata event to store document information
 		EventSet documentInfo = new EventSet();

@@ -1,8 +1,11 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.jgaap.generics.Document;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
@@ -568,16 +571,38 @@ public class FullAPI {
 	///////////////////////////////// Main method for testing purposes
 	
 	public static void main(String[] args){
-		FullAPI test = new FullAPI.Builder().cfdPath("./jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("./jsan_resources/problem_sets/enron_demo.xml").classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useDocTitles(false).build();
+	    
+	    
+	    ProblemSet ps = new ProblemSet();
+	    File sourceDir = new File("jsan_resources/corpora/drexel_1");
+	    System.out.println(sourceDir.getAbsolutePath());
+	    for (File author : sourceDir.listFiles()){
+	        for (File doc : author.listFiles()){
+	            ps.addTrainDoc(author.getName(), new Document(doc.getAbsolutePath(),author.getName(),doc.getName()));
+	        }
+	    }
+	    
+		FullAPI test = new FullAPI.Builder()
+		        .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
+				//.psPath("./jsan_resources/problem_sets/enron_demo.xml")
+				.ps(ps)
+		        .classifierPath("weka.classifiers.functions.SMO")
+				.numThreads(1)
+				.analysisType(analysisType.CROSS_VALIDATION)
+				.useCache(false)
+				.chunkDocs(false)
+				.build();
+		
 		test.prepareInstances();
-		//test.calcInfoGain();
+		test.calcInfoGain();
 		//test.applyInfoGain(1500);
 		test.prepareAnalyzer();
 		test.run();
-		System.out.println(test.getClassificationAccuracy());
 		System.out.println(test.getStatString());
+		System.out.println(test.getReadableInfoGain(false));
+		//System.out.println(test.getClassificationAccuracy());
+		//System.out.println(test.getStatString());
+		
 
 	}
 }

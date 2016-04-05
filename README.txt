@@ -20,12 +20,12 @@ A copy of the current license is included with the repository/program. If for so
 
 Dependencies:
 
-JStylo now utilizes a maven POM file for managing dependencies. Note that there is one additional dependency (JGAAP) which is non-mavenized. 
+JStylo now utilizes a Maven POM file for managing dependencies. Note that there is one additional dependency (JGAAP) which is non-mavenized. 
 This dependency jar is included with each release of JStylo. Include it in your project's lib folder to allow JStylo to access its resources.
 
 Usage:
 
-Jstylo requires Java 7 or later to run properly
+JStylo requires Java 8 or later to run properly
 
 In windows: double-click jstylo.jar
 In other platforms / to view on-the-fly log:
