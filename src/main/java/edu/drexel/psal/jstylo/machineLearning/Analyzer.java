@@ -4,13 +4,14 @@ import java.util.*;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.core.Instances;
 
 import com.jgaap.generics.*;
 
+import edu.drexel.psal.jstylo.generics.DataMap;
+
 /**
  * Abstract class for analyzers - classification routines to be applied on test sets, given a training set.
- * The data representation is based on Weka's Instances object.
+ * The data representation is based on Weka's DataMap object.
  * 
  * @author Ariel Stolerman
  */
@@ -20,21 +21,18 @@ public abstract class Analyzer{
 	 * fields
 	 * ======
 	 */
+    //TODO update documentation
 	
 	/**
 	 * The type enumeration to allow us to avoid instanceofs
 	 */
 	protected AnalyzerTypeEnum type;
 	
-	/**
-	 * The Weka Instances dataset to hold the extracted training data.
-	 */
-	protected Instances trainingSet;
+
+	protected DataMap trainingSet;
 	
-	/**
-	 * The Weka Instances dataset to hold the extracted test data.
-	 */
-	protected Instances testSet;
+
+	protected DataMap testSet;
 	
 	/**
 	 * Mapping of test documents to distribution classification results for each unknown document.
@@ -77,9 +75,9 @@ public abstract class Analyzer{
 	 * trainingSet, testSet, results and authors.
 	 * Returns list of distributions of classification probabilities per instance.
 	 * @param trainingSet
-	 * 		The Weka Instances dataset of the training instances.
+	 * 		The Weka DataMap dataset of the training DataMap.
 	 * @param testSet
-	 * 		The Weka Instances dataset of the test instances.
+	 * 		The Weka DataMap dataset of the test DataMap.
 	 * @param unknownDocs
 	 * 		The list of test documents to deanonymize.
 	 * @return
@@ -89,10 +87,10 @@ public abstract class Analyzer{
 	 * 		classification probability.
 	 */
 	public abstract Map<String,Map<String, Double>> classify(
-			Instances trainingSet, Instances testSet, List<Document> unknownDocs);
+			DataMap trainingSet, DataMap testSet, List<Document> unknownDocs);
 	
 	/**
-	 * Runs cross validation with given number of folds on the given Instances object.
+	 * Runs cross validation with given number of folds on the given DataMap object.
 	 * @param data
 	 * 		The data to run CV over.
 	 * @param folds
@@ -103,11 +101,11 @@ public abstract class Analyzer{
 	 * 		Some object containing the cross validation results (e.g. Evaluation for Weka
 	 * 		classifiers CV results), or null if failed running.		
 	 */
-	public abstract Evaluation runCrossValidation(Instances data, int folds, long randSeed);
+	public abstract Evaluation runCrossValidation(DataMap data, int folds, long randSeed);
 	
 	
 	/**
-	 * Runs a relaxed cross validation with given number of folds on the given Instances object.
+	 * Runs a relaxed cross validation with given number of folds on the given DataMap object.
 	 * A classification result will be considered correct if the true class is
 	 * one of the top <code>relaxFactor</code> results (where classes are ranked
 	 * by the classifier probability they are the class).
@@ -123,7 +121,7 @@ public abstract class Analyzer{
 	 * 		Some object containing the cross validation results (e.g. Evaluation for Weka
 	 * 		classifiers CV results), or null if failed running.		
 	 */
-	public abstract Evaluation runCrossValidation(Instances data, int folds, long randSeed, int relaxFactor);
+	public abstract Evaluation runCrossValidation(DataMap data, int folds, long randSeed, int relaxFactor);
 	
 	/* =======
 	 * getters
@@ -196,37 +194,24 @@ public abstract class Analyzer{
 	 * @return
 	 * @throws Exception
 	 */
-	public abstract Evaluation getTrainTestEval(Instances train, Instances test) throws Exception ;
+	public abstract Evaluation getTrainTestEval(DataMap train, DataMap test) throws Exception ;
 	
 	/**
-	 * Returns the last training Weka Instances set that was used for classification.
+	 * Returns the last training Weka DataMap set that was used for classification.
 	 * @return
-	 * 		The last training Weka Instances set that was used for classification.
+	 * 		The last training Weka DataMap set that was used for classification.
 	 */
-	public Instances getLastTrainingSet() {
+	public DataMap getLastTrainingSet() {
 		return trainingSet;
 	}
 	
 	/**
-	 * Returns the last test Weka Instances set that was used for classification.
+	 * Returns the last test Weka DataMap set that was used for classification.
 	 * @return
-	 * 		The last test Weka Instances set that was used for classification.
+	 * 		The last test Weka DataMap set that was used for classification.
 	 */
-	public Instances getLastTestSet() {
+	public DataMap getLastTestSet() {
 		return testSet;
-	}
-	
-	/**
-	 * Returns the entire data in one Weka Instances set.
-	 * @return
-	 * 		The entire data in one Weka Instances set.
-	 */
-	public Instances getAllInstances() {
-		Instances all = new Instances(trainingSet);
-		for (int i=0; i<testSet.numInstances(); i++) {
-			all.add(testSet.instance(i));
-		}
-		return all;
 	}
 	
 	/**

@@ -7,6 +7,7 @@ import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAP
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
+import edu.drexel.psal.jstylo.generics.Temp;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.AnalyzerTypeEnum;
@@ -1007,8 +1008,8 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						//perform the actual analysis
-						main.analysisDriver.classify(main.ib.getTrainingInstances(),
-								main.ib.getTestInstances(), main.ps.getAllTestDocs());
+						main.analysisDriver.classify(Temp.datamapFromInstances(main.ib.getTrainingInstances(),true),
+						        Temp.datamapFromInstances(main.ib.getTestInstances(),true), main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";
 						Logger.logln("Done!");
@@ -1046,7 +1047,7 @@ public class AnalysisTabDriver {
 						Logger.log("Starting cross validation...");
 						updateResultsView();
 						// run the experiment
-						Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingInstances(),
+						Object results = main.analysisDriver.runCrossValidation(Temp.datamapFromInstances(main.ib.getTrainingInstances(),true),
 								Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
 						main.setPreference("kFolds", main.analysisKFoldJTextField.getText());
 
@@ -1091,7 +1092,7 @@ public class AnalysisTabDriver {
 						main.analysisDriver = a;
 
 						if (a.isType(AnalyzerTypeEnum.WRITEPRINTS_ANALYZER)) {
-							a.classify(main.ib.getTrainingInstances(), main.ib.getTestInstances(),
+							a.classify(Temp.datamapFromInstances(main.ib.getTrainingInstances(),true), Temp.datamapFromInstances(main.ib.getTestInstances(),true),
 									main.ps.getAllTestDocs());
 						}
 
@@ -1107,7 +1108,7 @@ public class AnalysisTabDriver {
 						//create the evaluation
 						Evaluation results = null;
 						try {
-							results = main.analysisDriver.getTrainTestEval(train, test);
+							results = main.analysisDriver.getTrainTestEval(Temp.datamapFromInstances(train,true), Temp.datamapFromInstances(test,true));
 						} catch (Exception e) {
 							Logger.logln("Failed to build train test eval with known authors!", LogOut.STDERR);
 							content += "Failed to build train test eval with known authors!";

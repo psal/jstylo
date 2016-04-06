@@ -310,12 +310,12 @@ public class FullAPI {
 	
 		//do a cross val
 		case CROSS_VALIDATION:
-			resultsEvaluation = analysisDriver.runCrossValidation(ib.getTrainingInstances(), numFolds, 0);
+			resultsEvaluation = analysisDriver.runCrossValidation(Temp.datamapFromInstances(ib.getTrainingInstances(),true), numFolds, 0);
 			break;
 
 		// do a train/test
 		case TRAIN_TEST_UNKNOWN:
-			trainTestResults = analysisDriver.classify(ib.getTrainingInstances(), ib.getTestInstances(), ib.getProblemSet().getAllTestDocs());
+			trainTestResults = analysisDriver.classify(Temp.datamapFromInstances(ib.getTrainingInstances(),true), Temp.datamapFromInstances(ib.getTestInstances(),true), ib.getProblemSet().getAllTestDocs());
 			break;
 
 		//do a train/test where we know the answer and just want statistics
@@ -326,7 +326,7 @@ public class FullAPI {
 				Instances test = ib.getTestInstances();
 				test.setClassIndex(test.numAttributes()-1);
 				train.setClassIndex(train.numAttributes()-1);
-				resultsEvaluation = analysisDriver.getTrainTestEval(train,test);
+				resultsEvaluation = analysisDriver.getTrainTestEval(Temp.datamapFromInstances(train,true),Temp.datamapFromInstances(test,true));
 			} catch (Exception e) {
 				Logger.logln("Failed to build trainTest Evaluation");
 				e.printStackTrace();
@@ -577,29 +577,19 @@ public class FullAPI {
 	
 	public static void main(String[] args){
 	    
-	    
-	    ProblemSet ps = new ProblemSet();
-	    File sourceDir = new File("jsan_resources/corpora/drexel_1");
-	    System.out.println(sourceDir.getAbsolutePath());
-	    for (File author : sourceDir.listFiles()){
-	        for (File doc : author.listFiles()){
-	            ps.addTrainDoc(author.getName(), new Document(doc.getAbsolutePath(),author.getName(),doc.getName()));
-	        }
-	    }
-	    
 		FullAPI test = new FullAPI.Builder()
 		        .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				//.psPath("./jsan_resources/problem_sets/enron_demo.xml")
-				.ps(ps)
+				.psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
 		        .classifierPath("weka.classifiers.functions.SMO")
 				.numThreads(1)
 				.analysisType(analysisType.CROSS_VALIDATION)
 				.useCache(false)
 				.chunkDocs(false)
+				.useDocTitles(true)
 				.build();
 		
 		test.prepareInstances();
-		test.calcInfoGain();
+		//test.calcInfoGain();
 		//test.applyInfoGain(1500);
 		test.prepareAnalyzer();
 		test.run();

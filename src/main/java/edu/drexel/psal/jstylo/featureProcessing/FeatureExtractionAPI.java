@@ -548,6 +548,7 @@ public class FeatureExtractionAPI {
 	 * @return The instance object representing this document
 	 * @throws Exception
 	 */
+	//TODO replace this with a createDataMap 
 	public Instance createInstance(FastVector attributes,
 			List<EventSet> relevantEvents,
 			CumulativeFeatureDriver cumulativeFeatureDriver,

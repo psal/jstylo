@@ -1,17 +1,17 @@
 package edu.drexel.psal.jstylo.analyzers;
 
+import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.AnalyzerTypeEnum;
 import edu.drexel.psal.jstylo.machineLearning.RelaxedEvaluation;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.jgaap.generics.Document;
 
 import weka.classifiers.*;
 import weka.core.*;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.Remove;
 
 /**
  * Designed as Weka-classifier-based analyzer. 
@@ -29,6 +29,60 @@ public class WekaAnalyzer extends Analyzer {
 	 * The underlying Weka classifier to be used.
 	 */
 	private Classifier classifier;
+	private Instances trainingInstances;
+	private Instances testingInstances;
+	
+	//TODO - Important
+	private Instances instancesFromDataMap(DataMap datamap){
+	    Instances instances = null;
+	    FastVector attributes = createFastVector(datamap.getFeatures(),datamap.getDataMap().keySet());
+	    int numfeatures = attributes.size();
+	    instances = new Instances("Instances",attributes,datamap.numDocuments());
+	    
+	    //for each author...
+	    for (String author : datamap.getDataMap().keySet()){
+	        ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>> authormap 
+	            = datamap.getDataMap().get(author);
+	        
+	        //for each document...
+	        for (String doctitle : authormap.keySet()){
+	            
+	            Instance instance = new SparseInstance(numfeatures);
+	            ConcurrentHashMap<Integer,Double> documentData = authormap.get(doctitle);
+	            
+	            //for each index we have a value for 
+	            for (Integer index : documentData.keySet()){
+	                instance.setValue((Attribute)attributes.elementAt(index), documentData.get(index));
+	            }
+	            instance.setValue((Attribute)attributes.elementAt(attributes.size()-1), author);
+	        }
+	    }
+	    
+	    return instances;
+	}
+	
+	private FastVector createFastVector(List<String> features, Set<String> authors){
+	    FastVector fv = new FastVector(features.size()+1);
+	    
+	    for (int i=0; i<features.size(); i++){
+	        fv.addElement(new Attribute(features.get(i),i));
+	    }
+	    
+	    //author names
+	    FastVector authorNames = new FastVector();
+	    List<String> authorsSorted = new ArrayList<String>(authors.size());
+	    authorsSorted.addAll(authors);
+	    
+	    for (String author : authorsSorted){
+	        System.out.println("Name: "+author);
+	        authorNames.addElement(author);
+	    }
+	    Attribute authorNameAttribute = new Attribute("authorName", authorNames);
+	    
+	    fv.addElement(authorNameAttribute);
+	    
+	    return fv;
+	}
 	
 	/* ============
 	 * constructors
@@ -61,9 +115,9 @@ public class WekaAnalyzer extends Analyzer {
 	/**
 	 * Trains the Weka classifier using the given training set, and then classifies all instances in the given test set.
 	 * Returns list of distributions of classification probabilities per instance.
-	 * @param trainingSet
+	 * @param trainingInstances
 	 * 		The Weka Instances dataset of the training instances.
-	 * @param testSet
+	 * @param testingInstances
 	 * 		The Weka Instances dataset of the test instances.
 	 * @param unknownDocs
 	 * 		The test documents to be deanonymized.
@@ -73,18 +127,18 @@ public class WekaAnalyzer extends Analyzer {
 	 * 		classification probability.
 	 */
 	@Override
-	public Map<String, Map<String, Double>> classify(Instances trainingSet,	
-			Instances testSet, List<Document> unknownDocs) {
-		this.trainingSet = trainingSet;					
-		this.testSet = testSet;
+	public Map<String, Map<String, Double>> classify(DataMap trainMap,	
+			DataMap testMap, List<Document> unknownDocs) {
+		trainingInstances = instancesFromDataMap(trainMap);					
+		testingInstances = instancesFromDataMap(testMap);
 		// initialize authors (extract from training set)
 		List<String> authors = new ArrayList<String>();
-		Attribute authorsAttr = trainingSet.attribute("authorName");
+		Attribute authorsAttr = trainingInstances.attribute("authorName");
 		for (int i=0; i< authorsAttr.numValues(); i++)
 			authors.add(i,authorsAttr.value(i));
 		this.authors = authors;
 		
-		int numOfInstances = testSet.numInstances();
+		int numOfInstances = testingInstances.numInstances();
 		int numOfAuthors = authors.size();
 		
 		Map<String,Map<String, Double>> res = new HashMap<String,Map<String,Double>>(numOfInstances);
@@ -92,9 +146,9 @@ public class WekaAnalyzer extends Analyzer {
 			res.put(unknownDocs.get(i).getTitle(), new HashMap<String,Double>(numOfAuthors));
 		
 		// train classifier
-		trainingSet.setClass(authorsAttr);
+		trainingInstances.setClass(authorsAttr);
 		try {
-			classifier.buildClassifier(trainingSet);
+			classifier.buildClassifier(trainingInstances);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -102,10 +156,10 @@ public class WekaAnalyzer extends Analyzer {
 		// classify test cases
 		Map<String,Double> map;
 		double[] currRes;
-		for (int i=0; i<testSet.numInstances(); i++) {
-			Instance test = testSet.instance(i);
+		for (int i=0; i<testingInstances.numInstances(); i++) {
+			Instance test = testingInstances.instance(i);
 
-			test.setDataset(trainingSet);
+			test.setDataset(trainingInstances);
 
 			map = res.get(unknownDocs.get(i).getTitle());
 			try {
@@ -127,9 +181,9 @@ public class WekaAnalyzer extends Analyzer {
 	 * Before classifying, it removes the second attribute in both sets, that is the document title. This should be used when
 	 * the WekaInstancesBuilder object used to create the sets has hasDocNames set to true.
 	 * Returns list of distributions of classification probabilities per instance.
-	 * @param trainingSet
+	 * @param trainingInstances
 	 * 		The Weka Instances dataset of the training instances.
-	 * @param testSet
+	 * @param testingInstances
 	 * 		The Weka Instances dataset of the test instances.
 	 * @param unknownDocs
 	 * 		The test documents to be deanonymized.
@@ -138,21 +192,27 @@ public class WekaAnalyzer extends Analyzer {
 	 * 		not previously called. Each result in the list is a mapping from the author to its corresponding
 	 * 		classification probability.
 	 */
-	public Map<String, Map<String, Double>> classifyRemoveTitle(Instances trainingSet,
-			Instances testSet, List<Document> unknownDocs) {
+	public Map<String, Map<String, Double>> classifyRemoveTitle(DataMap trainingMap,
+			DataMap testingMap, List<Document> unknownDocs) {
+	    //FIXME this should not be needed, verify that.
+	    
+	    /*
+	    Instances trainingInstances = instancesFromDataMap(trainingMap);
+	    Instances testingInstances = instancesFromDataMap(testingMap);
 		// remove titles
 		Remove remove = new Remove();
 		remove.setAttributeIndicesArray(new int[]{1});
 		try {
-			remove.setInputFormat(trainingSet);
-			this.trainingSet = Filter.useFilter(trainingSet, remove);
-			this.testSet = Filter.useFilter(testSet, remove);
+			remove.setInputFormat(trainingInstances);
+			this.trainingInstances = Filter.useFilter(trainingInstances, remove);
+			this.testingInstances = Filter.useFilter(testingInstances, remove);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(0);
-		}
+		}*/
 		
-		return classify(this.trainingSet,this.testSet,unknownDocs);
+		return null;
+		//return classify(this.trainingInstances,this.testingInstances,unknownDocs);
 	}
 	
 	/**
@@ -167,7 +227,8 @@ public class WekaAnalyzer extends Analyzer {
 	 * 		The evaluation object with cross-validation results, or null if failed running.
 	 */
 	@Override
-	public Evaluation runCrossValidation(Instances data, int folds, long randSeed) {
+	public Evaluation runCrossValidation(DataMap datamap, int folds, long randSeed) {
+	    Instances data = instancesFromDataMap(datamap);
 		// setup
 		data.setClass(data.attribute("authorName"));
 		Instances randData = new Instances(data);
@@ -210,7 +271,9 @@ public class WekaAnalyzer extends Analyzer {
 	}
 	
 	@Override
-	public Evaluation getTrainTestEval(Instances train, Instances test) throws Exception{
+	public Evaluation getTrainTestEval(DataMap trainMap, DataMap testMap) throws Exception{
+	    Instances train = instancesFromDataMap(trainMap);
+	    Instances test = instancesFromDataMap(testMap);
 		Classifier cls = Classifier.makeCopy(classifier);
 		cls.buildClassifier(train);
 		Evaluation eval = new Evaluation(train);
@@ -220,11 +283,13 @@ public class WekaAnalyzer extends Analyzer {
 	}
 	
 	@Override
-	public Evaluation runCrossValidation(Instances data, int folds, long randSeed,
+	public Evaluation runCrossValidation(DataMap datamap, int folds, long randSeed,
 			int relaxFactor) {
-		
+	    
 		if (relaxFactor==1)
-			return runCrossValidation(data,folds,randSeed);
+			return runCrossValidation(datamap,folds,randSeed);
+		
+		Instances data = instancesFromDataMap(datamap);
 		
 		// setup
 		data.setClass(data.attribute("authorName"));
@@ -262,9 +327,9 @@ public class WekaAnalyzer extends Analyzer {
 	 * @return
 	 * 		The evaluation object with cross-validation results, or null if did not succeed running.
 	 */
-	public Evaluation runCrossValidation(Instances data, int folds) {
+	public Evaluation runCrossValidation(DataMap datamap, int folds) {
 		long randSeed = 0;
-		return runCrossValidation(data, folds, randSeed);
+		return runCrossValidation(datamap, folds, randSeed);
 	}
 	
 	
