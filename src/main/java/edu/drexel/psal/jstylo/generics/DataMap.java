@@ -1,5 +1,12 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,6 +121,79 @@ public class DataMap {
             count+=datamap.get(author).size();
         }
         return count;
+    }
+    
+    public void saveDataMapToCSV(String path){
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path)));
+            
+            bw.write(datasetName+"\n");
+            
+            //first line is all of the feature labels
+            String nextline = "authorName, document, ";
+            for (Integer index : features.keySet()){
+                nextline += features.get(index)+",";
+            }
+            bw.write(nextline+"\n");
+            
+            //each row is a document, organized by author
+            for (String author: datamap.keySet()){
+                for (String document : datamap.get(author).keySet()){
+                    nextline =author+","+document+",";
+                    ConcurrentHashMap<Integer,Double> docdata = datamap.get(author).get(document);
+                    for (int i = 0; i <features.size(); i++){
+                        if (docdata.containsKey(i))
+                            nextline+=docdata.get(i)+",";
+                        else
+                            nextline+="0,";
+                    }
+                    nextline+="\n";
+                    bw.write(nextline);
+                }
+            }
+            
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to write out to CSV file.");
+        }
+    }
+    
+    public DataMap loadDataMapFromCSV(String path){
+        DataMap map = null;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(new File(path)));
+            String name = br.readLine();
+            
+            String featureline = br.readLine();
+            
+            String[] loadedFeatures = featureline.split(",");
+            //skip i=0=authorName and i=1=document
+            List<String> features = new ArrayList<String>(loadedFeatures.length-2);
+            for (int i = 2; i<loadedFeatures.length; i++){
+                if (!loadedFeatures[i].equalsIgnoreCase(""))
+                    features.add(loadedFeatures[i]);
+            }
+            
+            map = new DataMap(name,features);
+            
+            while (br.ready()){
+                String line = br.readLine();
+                String[] parts = line.split(",");
+                ConcurrentHashMap<Integer,Double> docfeatures = new ConcurrentHashMap<Integer,Double>();
+                for (int i = 2; i<parts.length; i++){
+                    if (!parts[i].equalsIgnoreCase(""))
+                        docfeatures.put(i-2, Double.parseDouble(parts[i]));
+                }
+                map.addDocumentData(parts[0], parts[1], docfeatures);
+            }
+            
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to read in CSV file");
+        }
+        return map;
     }
     
 }

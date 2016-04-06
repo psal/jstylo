@@ -510,15 +510,6 @@ public class FullAPI {
 		return ib.getCFD();
 	}
 	
-	/**
-	 * Write an Instances object to a particular file as an arff
-	 * @param path where to save the file
-	 * @param insts the instances object to be saved
-	 */
-	public static void writeArff(String path, DataMap map){
-		LocalParallelFeatureExtractionAPI.writeToARFF(path,map);
-	}
-	
 	///////////////////////////////// Main method for testing purposes
 	
 	public static void main(String[] args){
