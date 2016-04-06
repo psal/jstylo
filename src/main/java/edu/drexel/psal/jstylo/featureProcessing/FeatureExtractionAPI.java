@@ -896,7 +896,7 @@ public class FeatureExtractionAPI {
 		
 		Integer[] toRemoveIndices = new Integer[removeArray.length];
 		for (int i = 0; i<removeArray.length; i++){
-		    toRemoveIndices[i] = (Integer.parseInt(""+removeArray[1])); //FIXME needs to be a better way than string convert. Not hardcasting as that'll error out.
+		    toRemoveIndices[i] = (int) Math.round(removeArray[i][1]); //FIXME needs to be a better way than string convert. Not hardcasting as that'll error out.
 		}
 		
 		data.removeFeatures(toRemoveIndices);

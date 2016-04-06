@@ -37,10 +37,6 @@ public class DataMap {
         }
     }
     
-    //remove things
-    //TODO
-    
-    
     //returns things
     public ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>> getDataMap(){
         return datamap;
@@ -63,7 +59,7 @@ public class DataMap {
         }
     }
     
-    //TODO replace this var with Integer[] array. might make it easier to do.
+    //TODO think it's safe to say that this is causing the issue.
     public void removeFeatures(Integer[] indicesToRemove){
         //empty feature list
         List<String> newFeatures = new ArrayList<String>();
@@ -71,8 +67,9 @@ public class DataMap {
         for (Integer inte : indicesToRemove)
             match.add(inte);
         for (Integer i = 0; i < features.size(); i++){
-            if (!match.contains(i))
-                newFeatures.add(features.get(0));
+            if (!match.contains(i)) {
+                newFeatures.add(features.get(i));
+            } 
         }
         setFeatures(newFeatures);
 

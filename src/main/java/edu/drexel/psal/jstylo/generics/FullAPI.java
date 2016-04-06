@@ -540,7 +540,7 @@ public class FullAPI {
 
 		test.prepareInstances();
 		test.calcInfoGain(); //Low priority
-		//test.applyInfoGain(1500);
+		//test.applyInfoGain(5);
 		test.run();
 		System.out.println(test.getStatString());
 		System.out.println(test.getReadableInfoGain(false));
