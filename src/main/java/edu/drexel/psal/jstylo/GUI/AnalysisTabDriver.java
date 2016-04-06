@@ -710,7 +710,8 @@ public class AnalysisTabDriver {
 					FullAPI jstylo;
 					try {
 						jstylo = new FullAPI.Builder().cfd(new CumulativeFeatureDriver(main.cfd))
-								.classifier(main.analyzers.get(0).getClassifier()).useDocTitles(false).ps(probSet)
+								.setAnalyzer(new WekaAnalyzer(main.analyzers.get(0).getClassifier()))
+								.useDocTitles(false).ps(probSet)
 								.analysisType(analysisType.TRAIN_TEST_KNOWN)
 								.numThreads(Integer.parseInt(main.analysisNThreadJTextField.getText())).build();
 						jstylo.prepareInstances();

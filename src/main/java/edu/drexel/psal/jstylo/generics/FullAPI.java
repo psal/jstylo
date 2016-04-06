@@ -9,7 +9,7 @@ import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAP
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
-import weka.classifiers.Classifier;
+//import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 
 /**
@@ -47,8 +47,7 @@ public class FullAPI {
 		private String cfdXMLPath;
 		private String verifierName;
 		private CumulativeFeatureDriver cfd;
-		private String classifierPath;
-		private Classifier classifier;
+		private Analyzer analyzer;
 		private int numFolds = 10;
 		private analysisType type = analysisType.CROSS_VALIDATION;
 		private boolean useDocTitles = false;
@@ -77,9 +76,9 @@ public class FullAPI {
 			return this;
 		}
 		
-		public Builder classifierPath(String cPath){
-			classifierPath = cPath;
-			return this;
+		public Builder setAnalyzer(Analyzer analyzer){
+		    this.analyzer = analyzer;
+		    return this;
 		}
 		
 		public Builder ps(ProblemSet ps){
@@ -91,12 +90,7 @@ public class FullAPI {
 			cfd = cFeatDriver;
 			return this;
 		}
-		
-		public Builder classifier(Classifier classi){
-			classifier = classi;
-			return this;
-		}
-		
+
 		public Builder numThreads(int nt){
 			if (p == null){
 				p = Preferences.buildDefaultPreferences();
@@ -201,12 +195,6 @@ public class FullAPI {
 			}
 		}
 		
-		if (b.classifier!=null){
-			analysisDriver = new WekaAnalyzer(b.classifier);
-		} else if (b.classifierPath==null){
-			classifierPath = b.classifierPath;
-		}
-		
 		ib.setUseDocTitles(b.useDocTitles);
 		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
@@ -215,7 +203,7 @@ public class FullAPI {
 		verifierName = b.verifierName;
 		selected = b.type;
 		numFolds = b.numFolds;
-		classifierPath = b.classifierPath;
+		analysisDriver = b.analyzer;
 	}
 	
 	///////////////////////////////// Methods
@@ -241,29 +229,6 @@ public class FullAPI {
 			e.printStackTrace();
 		}
 
-	}
-
-	/**
-	 * Prepares the analyzer for classification.<br>
-	 * Only use this if you are not passing in a pre-built classifier!
-	 */
-	public void prepareAnalyzer() {
-		try {
-			Object tmpObject = null;
-			tmpObject = Class.forName(classifierPath).newInstance(); //creates the object from the string
-
-			if (tmpObject instanceof Classifier) { //if it's a weka classifier
-				analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
-						.newInstance());
-			} else  { //otherwise it is unsupported
-				System.err.println("tried to add Analyzer we do not support");
-				throw new Exception();
-			}
-		} catch (Exception e) {
-			System.out.println("Failed to prepare Analyzer");
-			e.printStackTrace();
-		}
-		ib.clean();
 	}
 	
 	/**
@@ -334,6 +299,7 @@ public class FullAPI {
 	 * right now both verifiers only need a single double arg, so this parameter works out.
 	 * Might need to adjust this to add more verifiers, however.
 	 */
+	//TODO this'll need to be redone to not use Weka classes
 	/*
 	public void verify(double arg){
 		if (verifierName.equalsIgnoreCase("ThresholdVerifier")){
@@ -427,10 +393,6 @@ public class FullAPI {
 	 */
 	public void setNumThreads(int nt){
 		ib.setNumThreads(nt);
-	}
-	
-	public void setClassifier(Classifier c){
-		analysisDriver = new WekaAnalyzer(c);
 	}
 	
 	public boolean isUsingCache() {
@@ -550,13 +512,6 @@ public class FullAPI {
 	}
 	
 	/**
-	 * @return the weka classifier being used by the analyzer. Will break something if you try to call it on a non-weka analyzer
-	 */
-	public Classifier getUnderlyingClassifier(){
-		return analysisDriver.getClassifier();
-	}
-	
-	/**
 	 * Write an Instances object to a particular file as an arff
 	 * @param path where to save the file
 	 * @param insts the instances object to be saved
@@ -569,26 +524,32 @@ public class FullAPI {
 	
 	public static void main(String[] args){
 	    
-		FullAPI test = new FullAPI.Builder()
-		        .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-				.psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
-		        .classifierPath("weka.classifiers.functions.SMO")
-				.numThreads(1)
-				.analysisType(analysisType.CROSS_VALIDATION)
-				.useCache(false)
-				.chunkDocs(false)
-				.useDocTitles(true)
-				.build();
-		
+	    FullAPI test = null;
+	    
+        try {
+            test = new FullAPI.Builder()
+                    .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
+                    .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
+                    .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
+                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
+                    .useDocTitles(true).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed to intialize API, exiting...");
+            System.exit(1);
+        }
+
 		test.prepareInstances();
 		test.calcInfoGain(); //Low priority
 		//test.applyInfoGain(1500);
-		test.prepareAnalyzer();
 		test.run();
 		System.out.println(test.getStatString());
 		System.out.println(test.getReadableInfoGain(false));
 		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
-
+ /*
+  *                 analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
+                        .newInstance());
+  */
 	}
 }

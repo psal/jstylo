@@ -1,6 +1,7 @@
 package edu.drexel.psal.jstylo.test;
 
 import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
@@ -63,9 +64,12 @@ public class CacheTests
 	
 	/**
 	 * Test to make sure that chunking does not change the results.
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
 	@Test
-	public void testNoCache() {
+	public void testNoCache() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		ProblemSet ps = new ProblemSet(Paths.get(JSANConstants.JSAN_PROBLEMSETS_PREFIX, "drexel_1_small.xml").toString());
 		Document d = ps.trainDocAt("a", "a_01.txt");
 		Assert.assertNotNull("No document a_01.txt found.", d);
@@ -73,24 +77,22 @@ public class CacheTests
 		ps.addTestDoc("a", d);
         Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false)
                 .useCache(false).build();
 		long bef1 = System.currentTimeMillis();
 		test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         long aft1 = System.currentTimeMillis();
         String results1 = test.getStatString();
         System.out.println(results1);
         
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false)
                 .useCache(false).build();
 		long bef2 = System.currentTimeMillis();
 		test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         long aft2 = System.currentTimeMillis();
         String results2 = test.getStatString();
@@ -121,9 +123,12 @@ public class CacheTests
 	
 	/**
 	 * Test to make sure that chunking does not change the results.
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
 	@Test
-	public void testWithoutChunking() {
+	public void testWithoutChunking() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		// TODO: this test is basically encapsulated in testWithChunking... so maybe get rid of this?
 		Chunker.shouldChunkTrainDocs(false);
 		ProblemSet ps = new ProblemSet(Paths.get(JSANConstants.JSAN_PROBLEMSETS_PREFIX, "drexel_1_small.xml").toString());
@@ -133,19 +138,17 @@ public class CacheTests
 		ps.addTestDoc("a", d);
         Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results1 = test.getStatString();
         System.out.println(results1);
         
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results2 = test.getStatString();
         System.out.println(results2);
@@ -156,9 +159,12 @@ public class CacheTests
 	/**
 	 * Test to make sure that chunking does not change the results of the cache.
 	 * It's a long test, but it's very important.
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
 	@Test
-	public void testWithChunking() {
+	public void testWithChunking() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		// the max difference allowed between chunked / non-chunked.
 		double maxDifferential = 0.05;
 		
@@ -169,19 +175,17 @@ public class CacheTests
 		ps.addTestDoc("a", d);
         Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results1 = test.getStatString();
         System.out.println(results1);
         
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results2 = test.getStatString();
         System.out.println(results2);
@@ -191,10 +195,9 @@ public class CacheTests
         // make it rechunk, then test to make sure the results are the same.
         deleteRecursive(Paths.get(JSANConstants.JSAN_CHUNK_DIR).toFile(), true);
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results3 = test.getStatString();
         System.out.println(results3);
@@ -208,10 +211,9 @@ public class CacheTests
         	}
         }
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results4 = test.getStatString();
         System.out.println(results4);
@@ -232,10 +234,9 @@ public class CacheTests
 		ps.addTestDoc("a", d);
         path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         
         results4 = results4.trim();
@@ -258,10 +259,9 @@ public class CacheTests
         
         // now do it again with the cache
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results6 = test.getStatString();
         System.out.println(results6);
@@ -271,10 +271,9 @@ public class CacheTests
         // make it rechunk, then test to make sure the results are the same.
         deleteRecursive(Paths.get(JSANConstants.JSAN_CHUNK_DIR).toFile(), true);
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results7 = test.getStatString();
         System.out.println(results7);
@@ -287,10 +286,9 @@ public class CacheTests
         	}
         }
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
-                .classifierPath("edu.drexel.psal.jstylo.analyzers.WriteprintsAnalyzer")
+                .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                 .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
         test.prepareInstances();
-        test.prepareAnalyzer();
         test.run();
         String results8 = test.getStatString();
         System.out.println(results8);
@@ -343,12 +341,12 @@ public class CacheTests
             System.out.println("");
             Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
             FullAPI test = new FullAPI.Builder().cfdPath(path.toString())
-                    .psPath(problem_set.getAbsolutePath()).classifierPath("weka.classifiers.functions.SMO")
+                    .psPath(problem_set.getAbsolutePath())
+                    .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                     .numThreads(4).analysisType(FullAPI.analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 
             long bef1 = System.currentTimeMillis();
             test.prepareInstances();
-            test.prepareAnalyzer();
             test.run();
             long aft1 = System.currentTimeMillis();
             
@@ -356,12 +354,12 @@ public class CacheTests
             System.out.println(result1);
             
             FullAPI test2 = new FullAPI.Builder().cfdPath(path.toString())
-                    .psPath(problem_set.getAbsolutePath()).classifierPath("weka.classifiers.functions.SMO")
+                    .psPath(problem_set.getAbsolutePath())
+                    .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                     .numThreads(4).analysisType(FullAPI.analysisType.CROSS_VALIDATION).useDocTitles(false).build();
 
             long bef2 = System.currentTimeMillis();
             test2.prepareInstances();
-            test2.prepareAnalyzer();
             test2.run();
             long aft2 = System.currentTimeMillis();
             String result2 = test2.getEvaluation().toSummaryString();

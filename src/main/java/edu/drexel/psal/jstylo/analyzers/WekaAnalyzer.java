@@ -178,45 +178,6 @@ public class WekaAnalyzer extends Analyzer {
 	}
 	
 	/**
-	 * Trains the Weka classifier using the given training set, and then classifies all instances in the given test set.
-	 * Before classifying, it removes the second attribute in both sets, that is the document title. This should be used when
-	 * the WekaInstancesBuilder object used to create the sets has hasDocNames set to true.
-	 * Returns list of distributions of classification probabilities per instance.
-	 * @param trainingInstances
-	 * 		The Weka Instances dataset of the training instances.
-	 * @param testingInstances
-	 * 		The Weka Instances dataset of the test instances.
-	 * @param unknownDocs
-	 * 		The test documents to be deanonymized.
-	 * @return
-	 * 		The list of distributions of classification probabilities per instance, or null if prepare was
-	 * 		not previously called. Each result in the list is a mapping from the author to its corresponding
-	 * 		classification probability.
-	 */
-	public Map<String, Map<String, Double>> classifyRemoveTitle(DataMap trainingMap,
-			DataMap testingMap, List<Document> unknownDocs) {
-	    //FIXME this should not be needed, verify that.
-	    
-	    /*
-	    Instances trainingInstances = instancesFromDataMap(trainingMap);
-	    Instances testingInstances = instancesFromDataMap(testingMap);
-		// remove titles
-		Remove remove = new Remove();
-		remove.setAttributeIndicesArray(new int[]{1});
-		try {
-			remove.setInputFormat(trainingInstances);
-			this.trainingInstances = Filter.useFilter(trainingInstances, remove);
-			this.testingInstances = Filter.useFilter(testingInstances, remove);
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}*/
-		
-		return null;
-		//return classify(this.trainingInstances,this.testingInstances,unknownDocs);
-	}
-	
-	/**
 	 * Runs cross validation with given number of folds on the given Instances object.
 	 * @param data
 	 * 		The data to run CV over.
