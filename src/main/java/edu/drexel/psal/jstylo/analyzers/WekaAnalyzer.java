@@ -32,10 +32,11 @@ public class WekaAnalyzer extends Analyzer {
 	private Instances trainingInstances;
 	private Instances testingInstances;
 	
-	//TODO - Important
-	private Instances instancesFromDataMap(DataMap datamap){
+	//FIXME make private after all else is done
+	public static Instances instancesFromDataMap(DataMap datamap){
 	    Instances instances = null;
 	    FastVector attributes = createFastVector(datamap.getFeatures(),datamap.getDataMap().keySet());
+	    
 	    int numfeatures = attributes.size();
 	    instances = new Instances("Instances",attributes,datamap.numDocuments());
 	    
@@ -55,16 +56,17 @@ public class WekaAnalyzer extends Analyzer {
 	                instance.setValue((Attribute)attributes.elementAt(index), documentData.get(index));
 	            }
 	            instance.setValue((Attribute)attributes.elementAt(attributes.size()-1), author);
+	            instances.add(instance);
 	        }
 	    }
 	    
 	    return instances;
 	}
 	
-	private FastVector createFastVector(List<String> features, Set<String> authors){
+	private static FastVector createFastVector(List<String> features, Set<String> authors){
 	    FastVector fv = new FastVector(features.size()+1);
 	    
-	    for (int i=0; i<features.size(); i++){
+	    for (int i=0; i<features.size()-1; i++){
 	        fv.addElement(new Attribute(features.get(i),i));
 	    }
 	    
@@ -74,7 +76,6 @@ public class WekaAnalyzer extends Analyzer {
 	    authorsSorted.addAll(authors);
 	    
 	    for (String author : authorsSorted){
-	        System.out.println("Name: "+author);
 	        authorNames.addElement(author);
 	    }
 	    Attribute authorNameAttribute = new Attribute("authorName", authorNames);

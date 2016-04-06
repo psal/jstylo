@@ -589,7 +589,7 @@ public class FullAPI {
 				.build();
 		
 		test.prepareInstances();
-		//test.calcInfoGain();
+		test.calcInfoGain(); //Low priority
 		//test.applyInfoGain(1500);
 		test.prepareAnalyzer();
 		test.run();

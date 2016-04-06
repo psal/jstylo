@@ -16,11 +16,13 @@ import com.jgaap.generics.Event;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
+import edu.drexel.psal.jstylo.generics.Temp;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -441,7 +443,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public double[][] calculateInfoGain() throws Exception{
-		setInfoGain(calcInfoGain(trainingInstances));
+		setInfoGain(calcInfoGain(WekaAnalyzer.instancesFromDataMap(Temp.datamapFromInstances(trainingInstances,true)))); //FIXME
 		return getInfoGain();
 	}
 	
