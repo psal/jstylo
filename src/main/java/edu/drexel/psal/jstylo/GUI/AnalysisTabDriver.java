@@ -168,7 +168,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, WekaAnalyzer.instancesFromDataMap(main.ib.getTrainingDataMap()));
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTrainingDataMap());
 					if (succeeded) {
 						Logger.log("Saved training features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -250,7 +250,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, WekaAnalyzer.instancesFromDataMap(main.ib.getTestDataMap()));
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTestDataMap());
 					if (succeeded) {
 						Logger.log("Saved test features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();

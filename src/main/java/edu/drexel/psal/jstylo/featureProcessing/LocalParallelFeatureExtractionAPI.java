@@ -636,11 +636,11 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @return
 	 * 		True iff the write succeeded.
 	 */
-	public static boolean writeToARFF(String filename, Instances set) {
+	public static boolean writeToARFF(String filename, DataMap set) {
 		try {
 			ArffSaver saver = new ArffSaver();
 			
-			saver.setInstances(set);
+			saver.setInstances(WekaAnalyzer.instancesFromDataMap(set));
 			saver.setFile(new File(filename));
 			saver.writeBatch();
 			return true;

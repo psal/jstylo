@@ -275,6 +275,8 @@ public class WekaAnalyzer extends Analyzer {
 	public Evaluation getTrainTestEval(DataMap trainMap, DataMap testMap) throws Exception{
 	    Instances train = instancesFromDataMap(trainMap);
 	    Instances test = instancesFromDataMap(testMap);
+        test.setClassIndex(test.numAttributes()-1);
+        train.setClassIndex(train.numAttributes()-1);
 		Classifier cls = Classifier.makeCopy(classifier);
 		cls.buildClassifier(train);
 		Evaluation eval = new Evaluation(train);

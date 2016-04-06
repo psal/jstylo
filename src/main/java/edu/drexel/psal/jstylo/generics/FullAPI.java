@@ -1,11 +1,6 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import com.jgaap.generics.Document;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
@@ -14,12 +9,8 @@ import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAP
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
-import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
-import edu.drexel.psal.jstylo.verifiers.ThresholdVerifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.core.Instance;
-import weka.core.Instances;
 
 /**
  * 
@@ -322,11 +313,9 @@ public class FullAPI {
 		case TRAIN_TEST_KNOWN:
 			ib.getProblemSet().removeAuthor("_Unknown_");
 			try {
-				Instances train = WekaAnalyzer.instancesFromDataMap(ib.getTrainingDataMap());
-				Instances test = WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap());
-				test.setClassIndex(test.numAttributes()-1);
-				train.setClassIndex(train.numAttributes()-1);
-				resultsEvaluation = analysisDriver.getTrainTestEval(Temp.datamapFromInstances(train,true),Temp.datamapFromInstances(test,true));
+				DataMap train = ib.getTrainingDataMap();
+				DataMap test = ib.getTestDataMap();
+				resultsEvaluation = analysisDriver.getTrainTestEval(train,test);
 			} catch (Exception e) {
 				Logger.logln("Failed to build trainTest Evaluation");
 				e.printStackTrace();
@@ -345,6 +334,7 @@ public class FullAPI {
 	 * right now both verifiers only need a single double arg, so this parameter works out.
 	 * Might need to adjust this to add more verifiers, however.
 	 */
+	/*
 	public void verify(double arg){
 		if (verifierName.equalsIgnoreCase("ThresholdVerifier")){
 			List<String> authors = new ArrayList<String>();
@@ -361,6 +351,7 @@ public class FullAPI {
 		}
 		verifier.verify();
 	}
+	*/
 	
 	///////////////////////////////// Setters/Getters
 	
@@ -494,7 +485,7 @@ public class FullAPI {
 		
 		//initialize the string and infoGain
 		String infoString = ">-----InfoGain information: \n\n";
-		Instances trainingInstances = WekaAnalyzer.instancesFromDataMap(ib.getTrainingDataMap());
+		DataMap trainingDataMap = ib.getTrainingDataMap();
 		double[][] infoGain = ib.getInfoGain();
 		
 		for (int i = 0; i<infoGain.length; i++){
@@ -503,7 +494,7 @@ public class FullAPI {
 			
 			//match the index to the name and add it to the string
 			infoString+=String.format("> %-50s   %f\n",
-					trainingInstances.attribute((int)infoGain[i][1]).name(),
+					trainingDataMap.getFeatures().get((int)infoGain[i][1]),
 					infoGain[i][0]);
 		}
 		
@@ -570,8 +561,8 @@ public class FullAPI {
 	 * @param path where to save the file
 	 * @param insts the instances object to be saved
 	 */
-	public static void writeArff(String path, Instances insts){
-		LocalParallelFeatureExtractionAPI.writeToARFF(path,insts);
+	public static void writeArff(String path, DataMap map){
+		LocalParallelFeatureExtractionAPI.writeToARFF(path,map);
 	}
 	
 	///////////////////////////////// Main method for testing purposes
