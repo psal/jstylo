@@ -63,10 +63,10 @@ public class WekaAnalyzer extends Analyzer {
 	    return instances;
 	}
 	
-	private static FastVector createFastVector(List<String> features, Set<String> authors){
+	private static FastVector createFastVector(Map<Integer,String> features, Set<String> authors){
 	    FastVector fv = new FastVector(features.size()+1);
 	    
-	    for (int i=0; i<features.size()-1; i++){
+	    for (Integer i : features.keySet()){
 	        fv.addElement(new Attribute(features.get(i),i));
 	    }
 	    

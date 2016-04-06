@@ -369,6 +369,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		for (Instance inst: generatedInstances){
 			trainingInstances.add(inst);
 		}
+		
 		trainingDataMap = Temp.datamapFromInstances(trainingInstances, true); 
 	}
 
@@ -436,9 +437,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public void applyInfoGain(int n) throws Exception {
 		//setInfoGain(applyInfoGain(getInfoGain(), trainingInstances, n));
-		applyInfoGain(getInfoGain(), WekaAnalyzer.instancesFromDataMap(trainingDataMap), n);
+		applyInfoGain(getInfoGain(), trainingDataMap, n);
 		if (testingDataMap != null){ // Apply infoGain to test set if we have one
-			applyInfoGain(getInfoGain(), WekaAnalyzer.instancesFromDataMap(testingDataMap), n);
+			applyInfoGain(getInfoGain(), testingDataMap, n);
 		}
 	}
 
@@ -448,7 +449,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public double[][] calculateInfoGain() throws Exception{
-		setInfoGain(calcInfoGain(WekaAnalyzer.instancesFromDataMap(trainingDataMap)));
+		setInfoGain(calcInfoGain(trainingDataMap));
 		return getInfoGain();
 	}
 	

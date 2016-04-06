@@ -28,11 +28,13 @@ import com.jgaap.generics.EventHistogram;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
+import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.eventDrivers.CharCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SingleNumericEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
+import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.Logger;
 
 /**
@@ -817,8 +819,9 @@ public class FeatureExtractionAPI {
 	 * @return a two-dimensional sorted array with one element per feature. It is sorted via how useful each feature was and stores the index.
 	 * @throws Exception
 	 */
-	public double[][] calcInfoGain(Instances insts) throws Exception {
+	public double[][] calcInfoGain(DataMap data) throws Exception {
 
+	    Instances insts = WekaAnalyzer.instancesFromDataMap(data);
 		//initialize values
 		int len = 0;
 		int n = insts.numAttributes();
@@ -859,7 +862,7 @@ public class FeatureExtractionAPI {
 	 * @param n the number of features to keep
 	 * @throws Exception
 	 */
-	public double[][] applyInfoGain(double[][] sortedFeatures, Instances insts, int n)
+	public double[][] applyInfoGain(double[][] sortedFeatures, DataMap data, int n)
 			throws Exception {
 		
 		//find out how many values to remove
@@ -891,25 +894,12 @@ public class FeatureExtractionAPI {
 			}
 		});
 		
-		//for all of the values to remove
-		for (int i=0; i<removeArray.length;i++){
-			
-			//get the index to remove
-			int indexToRemove = (int) Math.round(removeArray[i][1]);
-
-			if (!(insts.classIndex() == indexToRemove)) {
-
-				// remove from the Instances object
-				insts.deleteAttributeAt(indexToRemove);
-
-				// adjust all of the indices in the keepArray to compensate for the removal
-				for (int j = 0; j < keepArray.length; j++) {
-					if (indexToRemove <= (int) Math.round(keepArray[j][1])) {
-						keepArray[j][1] = keepArray[j][1] - 1;
-					}
-				}
-			}
+		Integer[] toRemoveIndices = new Integer[removeArray.length];
+		for (int i = 0; i<removeArray.length; i++){
+		    toRemoveIndices[i] = (Integer.parseInt(""+removeArray[1])); //FIXME needs to be a better way than string convert. Not hardcasting as that'll error out.
 		}
+		
+		data.removeFeatures(toRemoveIndices);
 		
 		//return the array consisting only of the top n values
 		return keepArray;
