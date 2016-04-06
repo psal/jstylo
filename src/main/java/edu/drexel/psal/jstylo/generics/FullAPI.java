@@ -310,20 +310,20 @@ public class FullAPI {
 	
 		//do a cross val
 		case CROSS_VALIDATION:
-			resultsEvaluation = analysisDriver.runCrossValidation(Temp.datamapFromInstances(ib.getTrainingInstances(),true), numFolds, 0);
+			resultsEvaluation = analysisDriver.runCrossValidation(ib.getTrainingDataMap(), numFolds, 0);
 			break;
 
 		// do a train/test
 		case TRAIN_TEST_UNKNOWN:
-			trainTestResults = analysisDriver.classify(Temp.datamapFromInstances(ib.getTrainingInstances(),true), Temp.datamapFromInstances(ib.getTestInstances(),true), ib.getProblemSet().getAllTestDocs());
+			trainTestResults = analysisDriver.classify(ib.getTrainingDataMap(), ib.getTestDataMap(), ib.getProblemSet().getAllTestDocs());
 			break;
 
 		//do a train/test where we know the answer and just want statistics
 		case TRAIN_TEST_KNOWN:
 			ib.getProblemSet().removeAuthor("_Unknown_");
 			try {
-				Instances train = ib.getTrainingInstances();
-				Instances test = ib.getTestInstances();
+				Instances train = WekaAnalyzer.instancesFromDataMap(ib.getTrainingDataMap());
+				Instances test = WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap());
 				test.setClassIndex(test.numAttributes()-1);
 				train.setClassIndex(train.numAttributes()-1);
 				resultsEvaluation = analysisDriver.getTrainTestEval(Temp.datamapFromInstances(train,true),Temp.datamapFromInstances(test,true));
@@ -351,12 +351,13 @@ public class FullAPI {
 			for (String s : ib.getProblemSet().getAuthors()){
 				authors.add(s);
 			}
-			for (int i = 0; i < ib.getTestInstances().numInstances(); i++){
-				Instance inst = ib.getTestInstances().instance(i);
+			Instances tests = WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap());
+			for (int i = 0; i < tests.numInstances(); i++){
+				Instance inst = tests.instance(i);
 				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
 			}
 		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
-			verifier = new DistractorlessVerifier(ib.getTrainingInstances(),ib.getTestInstances(),true,arg);
+			verifier = new DistractorlessVerifier(WekaAnalyzer.instancesFromDataMap(ib.getTrainingDataMap()),WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap()),true,arg);
 		}
 		verifier.verify();
 	}
@@ -401,16 +402,16 @@ public class FullAPI {
 	 * Sets the training Instances object
 	 * @param insts the Instances object to use as training data
 	 */
-	public void setTrainingInstances(Instances insts){
-		ib.setTrainingInstances(insts);
+	public void setTrainingDataMap(DataMap train){
+		ib.setTrainingDataMap(train);
 	}
 	
 	/**
 	 * Sets the testing Instances object
 	 * @param insts the Instances object to use as testing data
 	 */
-	public void setTestingInstances(Instances insts){
-		ib.setTestingInstances(insts);
+	public void setTestingDataMap(DataMap test){
+		ib.setTestingDataMap(test);
 	}
 	
 	/**
@@ -452,15 +453,15 @@ public class FullAPI {
 	/**
 	 * @return the Instances object describing the training documents
 	 */
-	public Instances getTrainingInstances(){
-		return ib.getTrainingInstances();
+	public DataMap getTrainingDataMap(){
+		return ib.getTrainingDataMap();
 	}
 	
 	/**
 	 * @return the Instances object describing the test documents
 	 */
-	public Instances getTestInstances(){
-		return ib.getTestInstances();
+	public DataMap getTestingDataMap(){
+		return ib.getTestDataMap();
 	}
 	
 	/**
@@ -493,7 +494,7 @@ public class FullAPI {
 		
 		//initialize the string and infoGain
 		String infoString = ">-----InfoGain information: \n\n";
-		Instances trainingInstances = ib.getTrainingInstances();
+		Instances trainingInstances = WekaAnalyzer.instancesFromDataMap(ib.getTrainingDataMap());
 		double[][] infoGain = ib.getInfoGain();
 		
 		for (int i = 0; i<infoGain.length; i++){
@@ -597,7 +598,6 @@ public class FullAPI {
 		System.out.println(test.getReadableInfoGain(false));
 		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
-		
 
 	}
 }

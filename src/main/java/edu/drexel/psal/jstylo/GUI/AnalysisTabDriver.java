@@ -1,6 +1,7 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
+import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
@@ -151,7 +152,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Training to ARFF...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTrainingInstances() == null) {
+				if (main.ib.getTrainingDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis completed yet.", "Export Training Features Error",
 							JOptionPane.ERROR_MESSAGE);
 					return;
@@ -167,7 +168,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTrainingInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, WekaAnalyzer.instancesFromDataMap(main.ib.getTrainingDataMap()));
 					if (succeeded) {
 						Logger.log("Saved training features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -192,7 +193,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Training to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTrainingInstances() == null) {
+				if (main.ib.getTrainingDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis completed yet.", "Export Training Features Error",
 							JOptionPane.ERROR_MESSAGE);
 					return;
@@ -208,7 +209,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".csv"))
 						path += ".csv";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTrainingInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTrainingDataMap());
 					if (succeeded) {
 						Logger.log("Saved training features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -233,7 +234,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Test to ARFF...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTestInstances() == null) {
+				if (main.ib.getTestDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis with test documents completed yet.",
 							"Export Test Features Error", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -249,7 +250,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTestInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, WekaAnalyzer.instancesFromDataMap(main.ib.getTestDataMap()));
 					if (succeeded) {
 						Logger.log("Saved test features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -274,7 +275,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Test to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTestInstances() == null) {
+				if (main.ib.getTestDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis with test documents completed yet.",
 							"Export Test Features Error", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -290,7 +291,7 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".csv"))
 						path += ".csv";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTestInstances());
+					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTestDataMap());
 					if (succeeded) {
 						Logger.log("Saved test features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -888,7 +889,7 @@ public class AnalysisTabDriver {
 				// if we're to print out the feature vectors, do so
 				if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
 					content += "Training corpus features (ARFF):\n" + "================================\n"
-							+ main.ib.getTrainingInstances().toString() + "\n\n";
+							+ main.ib.getTrainingDataMap().toString() + "\n\n";
 					updateResultsView();
 				}
 
@@ -924,7 +925,7 @@ public class AnalysisTabDriver {
 					updateResultsView();
 					if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
 						content += "Test documents features (ARFF):\n" + "===============================\n"
-								+ main.ib.getTestInstances().toString() + "\n\n";
+								+ main.ib.getTestDataMap().toString() + "\n\n";
 						updateResultsView();
 					}
 				}
@@ -957,7 +958,7 @@ public class AnalysisTabDriver {
 						}
 						
 						//print out the remaining features and their infoGain values.
-						Instances trainingInstances = new Instances(main.ib.getTrainingInstances());
+						Instances trainingInstances = new Instances(WekaAnalyzer.instancesFromDataMap(main.ib.getTrainingDataMap()));
 						for (int i = 0; i < infoGain.length; i++) {
 							
 							//once we hit a "0" infogain value, stop printing the data.
@@ -1008,8 +1009,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						//perform the actual analysis
-						main.analysisDriver.classify(Temp.datamapFromInstances(main.ib.getTrainingInstances(),true),
-						        Temp.datamapFromInstances(main.ib.getTestInstances(),true), main.ps.getAllTestDocs());
+						main.analysisDriver.classify(main.ib.getTrainingDataMap(), main.ib.getTestDataMap(), main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";
 						Logger.logln("Done!");
@@ -1047,7 +1047,7 @@ public class AnalysisTabDriver {
 						Logger.log("Starting cross validation...");
 						updateResultsView();
 						// run the experiment
-						Object results = main.analysisDriver.runCrossValidation(Temp.datamapFromInstances(main.ib.getTrainingInstances(),true),
+						Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingDataMap(),
 								Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
 						main.setPreference("kFolds", main.analysisKFoldJTextField.getText());
 
@@ -1092,7 +1092,7 @@ public class AnalysisTabDriver {
 						main.analysisDriver = a;
 
 						if (a.isType(AnalyzerTypeEnum.WRITEPRINTS_ANALYZER)) {
-							a.classify(Temp.datamapFromInstances(main.ib.getTrainingInstances(),true), Temp.datamapFromInstances(main.ib.getTestInstances(),true),
+							a.classify(main.ib.getTrainingDataMap(), main.ib.getTestDataMap(),
 									main.ps.getAllTestDocs());
 						}
 
@@ -1101,8 +1101,8 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						//get the instances
-						Instances train = main.ib.getTrainingInstances();
-						Instances test = main.ib.getTestInstances();
+						Instances train = WekaAnalyzer.instancesFromDataMap(main.ib.getTrainingDataMap());
+						Instances test = WekaAnalyzer.instancesFromDataMap(main.ib.getTestDataMap());
 						test.setClassIndex(test.numAttributes() - 1);
 
 						//create the evaluation

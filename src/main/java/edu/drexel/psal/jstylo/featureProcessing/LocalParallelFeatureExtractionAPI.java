@@ -18,6 +18,7 @@ import com.jgaap.generics.EventSet;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver.FeatureSetElement;
+import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.generics.Preferences;
@@ -59,8 +60,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	CreateTestInstancesThread[] testThreads;
 	
 	// Relevant data to spit out at the end
-	private Instances trainingInstances;	//training doc Instances
-	private Instances testInstances;	//testDoc Instances
+	private DataMap trainingDataMap;	//training doc Instances
+	private DataMap testingDataMap;	//testDoc Instances
 	private double[][] infoGain;	//infoGain scores for all features
 
 	/**
@@ -331,7 +332,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	public void createTrainingInstancesThreaded() throws Exception {
 
 		//create dataset from attributes and numDocs
-		trainingInstances = new Instances("Instances", attributes,
+		Instances trainingInstances = new Instances("Instances", attributes,
 				eventList.size());
 		
 		//initialize/fetch data
@@ -368,7 +369,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		for (Instance inst: generatedInstances){
 			trainingInstances.add(inst);
 		}
-		
+		trainingDataMap = Temp.datamapFromInstances(trainingInstances, true); 
 	}
 
 	/**
@@ -377,7 +378,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public void createTestInstancesThreaded() throws Exception {
 		// create the empty Test instances object
-		testInstances = new Instances("TestInstances", attributes, ps
+		Instances testInstances = new Instances("TestInstances", attributes, ps
 				.getAllTestDocs().size());
 		
 		//if there are no test instances, set the instance object to null and move on with our lives
@@ -420,6 +421,10 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 				testInstances.add(inst);
 			}		
 		}
+		if (testInstances != null)
+		    testingDataMap = Temp.datamapFromInstances(testInstances, true);
+		else 
+		    testingDataMap = null;
 	}
 
 	//////////////////////////////////////////// InfoGain related things
@@ -431,9 +436,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public void applyInfoGain(int n) throws Exception {
 		//setInfoGain(applyInfoGain(getInfoGain(), trainingInstances, n));
-		applyInfoGain(getInfoGain(), trainingInstances, n);
-		if (testInstances != null){ // Apply infoGain to test set if we have one
-			applyInfoGain(getInfoGain(), testInstances, n);
+		applyInfoGain(getInfoGain(), WekaAnalyzer.instancesFromDataMap(trainingDataMap), n);
+		if (testingDataMap != null){ // Apply infoGain to test set if we have one
+			applyInfoGain(getInfoGain(), WekaAnalyzer.instancesFromDataMap(testingDataMap), n);
 		}
 	}
 
@@ -443,7 +448,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public double[][] calculateInfoGain() throws Exception{
-		setInfoGain(calcInfoGain(WekaAnalyzer.instancesFromDataMap(Temp.datamapFromInstances(trainingInstances,true)))); //FIXME
+		setInfoGain(calcInfoGain(WekaAnalyzer.instancesFromDataMap(trainingDataMap)));
 		return getInfoGain();
 	}
 	
@@ -527,8 +532,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * A niche method for when you already have a training Instances object
 	 * @param ti training Instances object
 	 */
-	public void setTrainingInstances(Instances ti) {
-		trainingInstances = ti;
+	public void setTrainingDataMap(DataMap tdm) {
+		trainingDataMap = tdm;
 	}
 	
 	/**
@@ -543,22 +548,22 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * A niche method for when you already have a testing Instances object
 	 * @param ti testing Instances object
 	 */
-	public void setTestingInstances(Instances ti){
-		testInstances = ti;
+	public void setTestingDataMap(DataMap tdm){
+		testingDataMap = tdm;
 	}
 	
 	/**
 	 * @return The Instances object representing the training documents
 	 */
-	public Instances getTrainingInstances() {
-		return trainingInstances;
+	public DataMap getTrainingDataMap() {
+		return trainingDataMap;
 	}
 
 	/**
 	 * @return The Instances object representing the test document(s)
 	 */
-	public Instances getTestInstances() {
-		return testInstances;
+	public DataMap getTestDataMap() {
+		return testingDataMap;
 	}
 
 	/**
@@ -654,10 +659,10 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @return
 	 * 		True iff the write succeeded.
 	 */
-	public static boolean writeToCSV(String filename, Instances set) {
+	public static boolean writeToCSV(String filename, DataMap set) {
 		try {
 			CSVSaver saver = new CSVSaver();
-			saver.setInstances(set);
+			saver.setInstances(WekaAnalyzer.instancesFromDataMap(set));
 			saver.setFile(new File(filename));
 			saver.writeBatch();
 			return true;
@@ -674,8 +679,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		ps = null;
 		cfd = null;
 		infoGain = null;
-		trainingInstances = null;
-		testInstances = null;
+		testingDataMap = null;
+		trainingDataMap = null;
 		killThreads();
 	}
 
