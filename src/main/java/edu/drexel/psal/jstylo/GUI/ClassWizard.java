@@ -18,7 +18,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
-import edu.drexel.psal.jstylo.generics.Analyzer;
+import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 /**
  * 
  * Created in ClassTabDriver, this popup will allow for the editing of a classifier's arguments, and will

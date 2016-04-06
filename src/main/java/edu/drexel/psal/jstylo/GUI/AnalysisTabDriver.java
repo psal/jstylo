@@ -1,8 +1,6 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
-import edu.drexel.psal.jstylo.generics.Analyzer;
-import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
@@ -10,6 +8,8 @@ import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+import edu.drexel.psal.jstylo.machineLearning.Analyzer;
+import edu.drexel.psal.jstylo.machineLearning.AnalyzerTypeEnum;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.FullAPI.analysisType;
 

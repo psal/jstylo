@@ -2,9 +2,9 @@ package edu.drexel.psal.jstylo.verifiers;
 
 import java.util.List;
 
+import edu.drexel.psal.jstylo.machineLearning.Verifier;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
-import edu.drexel.psal.jstylo.generics.Verifier;
 
 public class ThresholdVerifier extends Verifier{
 

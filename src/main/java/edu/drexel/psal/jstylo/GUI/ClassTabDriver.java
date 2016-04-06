@@ -1,9 +1,10 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
-import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+import edu.drexel.psal.jstylo.machineLearning.Analyzer;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;

@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import edu.drexel.psal.jstylo.machineLearning.Verifier;
 import weka.classifiers.Evaluation;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
-import edu.drexel.psal.jstylo.generics.Verifier;
 
 /**
  * Heavily modified version of Ariel Stolerman's original DistractorlessCV class produced for Classify-Verify.

@@ -5,10 +5,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.generics.Analyzer;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver;
 import edu.drexel.psal.jstylo.generics.Logger;
+import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver.ParamTag;
 
 import com.jgaap.generics.*;

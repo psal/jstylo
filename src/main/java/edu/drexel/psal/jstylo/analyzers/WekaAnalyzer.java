@@ -1,8 +1,8 @@
 package edu.drexel.psal.jstylo.analyzers;
 
-import edu.drexel.psal.jstylo.generics.Analyzer;
-import edu.drexel.psal.jstylo.generics.AnalyzerTypeEnum;
-import edu.drexel.psal.jstylo.generics.RelaxedEvaluation;
+import edu.drexel.psal.jstylo.machineLearning.Analyzer;
+import edu.drexel.psal.jstylo.machineLearning.AnalyzerTypeEnum;
+import edu.drexel.psal.jstylo.machineLearning.RelaxedEvaluation;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package edu.drexel.psal.jstylo.generics;
+package edu.drexel.psal.jstylo.machineLearning;
 
 import java.util.*;
 
