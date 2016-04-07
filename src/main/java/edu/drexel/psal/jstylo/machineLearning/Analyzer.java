@@ -2,7 +2,6 @@ package edu.drexel.psal.jstylo.machineLearning;
 
 import java.util.*;
 
-import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 
 import com.jgaap.generics.*;
@@ -28,10 +27,7 @@ public abstract class Analyzer{
 	 */
 	protected AnalyzerTypeEnum type;
 	
-
 	protected DataMap trainingSet;
-	
-
 	protected DataMap testSet;
 	
 	/**
@@ -264,14 +260,6 @@ public abstract class Analyzer{
 	 * @return the string describing how the analyzer/classifier functions and its benefits/drawbacks
 	 */
 	public abstract String analyzerDescription();
-	
-	/**
-	 * Describes the underlying classifier (if there is one)
-	 * @return returns the analyzer's driving classifier if it has one, otherwise returns null.
-	 */
-	public Classifier getClassifier() {
-		return null;
-	}
 	
 	/**
 	 * Returns the name of whatever is doing the "heavy lifting" in terms of classification

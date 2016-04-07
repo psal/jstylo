@@ -339,7 +339,6 @@ public class WekaAnalyzer extends Analyzer {
 	 * @return
 	 * 		The underlying Weka classifier.
 	 */
-	@Override
 	public Classifier getClassifier() {
 		return classifier;
 	}
