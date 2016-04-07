@@ -13,6 +13,13 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
 
+/**
+ * Provides a couple of static compatability methods between JStylo and Weka. 
+ * These methods can only be accessed within this package.
+ * There should not be any reason to use them external to this package.
+ * 
+ * @author Travis Dutko
+ */
 public class WekaUtils {
     protected static Instances instancesFromDataMap(DataMap datamap){
         Instances instances = null;

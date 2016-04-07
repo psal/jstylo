@@ -31,11 +31,17 @@ public class WekaAnalyzer extends Analyzer {
 	 * The underlying Weka classifier to be used.
 	 */
 	private Classifier classifier;
+	
+	/**
+	 * Data to train on
+	 */
 	private Instances trainingInstances;
+	
+	/**
+	 * Data to test on
+	 */
 	private Instances testingInstances;
 	
-	//FIXME make private after all else is done
-
 	
 	/* ============
 	 * constructors
@@ -65,10 +71,10 @@ public class WekaAnalyzer extends Analyzer {
 	/**
 	 * Trains the Weka classifier using the given training set, and then classifies all instances in the given test set.
 	 * Returns list of distributions of classification probabilities per instance.
-	 * @param trainingInstances
-	 * 		The Weka Instances dataset of the training instances.
-	 * @param testingInstances
-	 * 		The Weka Instances dataset of the test instances.
+	 * @param trainMap
+	 * 		The datamap to convert into Instances to train on
+	 * @param testMap
+	 * 		The datamap to convert into Instances to test on
 	 * @param unknownDocs
 	 * 		The test documents to be deanonymized.
 	 * @return
@@ -273,7 +279,7 @@ public class WekaAnalyzer extends Analyzer {
 	 */
 	@Override
 	public String getName(){
-		return classifier.getClass().getName();
+		return "WekaAnalyzer with "+classifier.getClass().getName()+" classifier";
 	}
 	
 	/**

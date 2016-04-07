@@ -8,11 +8,20 @@ import weka.attributeSelection.InfoGainAttributeEval;
 import weka.core.Attribute;
 import weka.core.Instances;
 
+/**
+ * A class with static methods to compute and apply infogain statistics to a DataMap. Located in this project as InfoGain is a Weka measurement of usefulness.
+ * Note that due to it using DataMaps, this class can be used with any machine learning / feature processing set. 
+ * 
+ * Note that if we want to apply infogain on an instances object we can still do so
+ *      by applying InfoGain before converting to an Instances object to begin with or translating back and forth.
+ * 
+ * @author Travis Dutko
+ */
 public class InfoGain {
 
     /**
      * Calculates InfoGain on the instances to provide information on how useful each feature was to identifying the documents.<br>
-     * @param insts the instances to calculate over
+     * @param data the datamap to analyze
      * @return a two-dimensional sorted array with one element per feature. It is sorted via how useful each feature was and stores the index.
      * @throws Exception
      */
@@ -53,9 +62,9 @@ public class InfoGain {
     }
 
     /**
-     * Removes all but the top N features (as returned by calcInfoGain) from the Instances object.<br>
+     * Removes all but the top N features (as returned by calcInfoGain) from the datamap object.<br>
      * @param the indices and infoGain values of all attributes
-     * @param insts the instances to remove infoGain from
+     * @param data the datamap to remove infoGain from
      * @param n the number of features to keep
      * @throws Exception
      */

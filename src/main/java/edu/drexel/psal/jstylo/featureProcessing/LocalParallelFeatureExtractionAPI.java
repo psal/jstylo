@@ -26,17 +26,13 @@ import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
 
 /**
- * An API for the feature extraction process. Designed for running on a single machine
+ * An API for the feature extraction process. Designed for running on a single machine while utilizing multi-threading.
  * @author Travis Dutko
  */
 public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 
-	//////////////////////////////////////////// Data
-	public static final int DEFAULT_THREADS = 4;
-	
 	// These vars should be initialized in the constructor and stay the same
 	// throughout the entire process
-	//private boolean loadDocContents; 
 	private Preferences preferences;
 	private boolean isCacheValid;
 	
@@ -45,7 +41,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	private CumulativeFeatureDriver cfd;	//the driver used to extract features
 	private List<List<EventSet>> eventList;	//the events/sets created from the extracted features
 	private List<EventSet> relevantEvents;	//the events/sets to pay attention to
-	//private FastVector attributes;	//the relevant events converted into attributes
 	private List<String> features;
 	
 	//ThreadArrays so that we can stop them if the user cancels something mid process
@@ -61,20 +56,23 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	/**
 	 * Builder for the InstancesBuilder class.<br>
 	 * 
-	 * You must specifify at least one of the following parameter pairs:<br>
-	 * psPath and ps<br>
-	 * cfdPath and cfd<br>
+	 * You must specifify at least one value from each of the following parameter pairs:<br>
+	 * psPath or ps<br>
+	 * cfdPath or cfd<br>
 	 * 
 	 * All other parameters have the following default values:<br>
 	 * numThreads: 4<br>
+	 * useCache = false<br>
+	 * loadDocContents = false<br>
 	 */
 	public static class Builder{
 		private String psPath;
 		private String cfdPath;
 		private ProblemSet ps;
 		private CumulativeFeatureDriver cfd;
-		private boolean loadDocContents = false;
 		private boolean useCache = false;
+		private boolean loadDocContents = false;
+		private int numThreads = 4;
 		private Preferences p = null;
 		
 		public Builder psPath(String psp){
@@ -102,16 +100,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		    return this;
 		}
 		
-		public Builder loadDocContents(boolean ldc){
-			loadDocContents = ldc;
-			return this;
-		}
-		
 		public Builder numThreads(int nt){
-			if (p == null){
-				p = Preferences.buildDefaultPreferences();
-			}
-			p.setPreference("numCalcThreads", ""+nt);
+		    numThreads = nt;
 			return this;
 		}
 		
@@ -135,13 +125,16 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public LocalParallelFeatureExtractionAPI() {}
 
+	/**
+	 * Build straight from a preferences file. Not recommended, but possible if you know what you're doing.
+	 * @param p
+	 */
 	public LocalParallelFeatureExtractionAPI(Preferences p){
 		preferences = p;
 	}
 	
 	/**
-	 * Builder constructor. Not currently used in house anywhere but someone who just wants to extract features
-	 * may appreciate this.<br>
+	 * Builder constructor. Preferred method of constructing the object.
 	 * 
 	 * @param b the builder to use
 	 */
@@ -149,7 +142,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		if (b.psPath==null)
 			ps = b.ps;
 		else
-			ps = new ProblemSet(b.psPath,b.loadDocContents);
+			ps = new ProblemSet(b.psPath,false);
 		
 		if (b.cfdPath==null)
 			cfd = b.cfd;
@@ -168,10 +161,13 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			preferences = b.p;
 		}
 		
-		if (b.loadDocContents)
-			preferences.setPreference("loadDocContents", "1");
-		else
-			preferences.setPreference("loadDocContents","0");
+		if (b.loadDocContents){
+		    preferences.setPreference("loadDocContents", "1");
+		} else {
+		    preferences.setPreference("loadDocContents", "0");
+		}
+		
+        preferences.setPreference("numCalcThreads", ""+b.numThreads);
 		
         if (b.useCache) {
             preferences.setPreference("useCache", "1");
@@ -184,45 +180,15 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	
 	/**
 	 * Copy constructor
-	 * @param oib original instances builder
+	 * @param original the original API object to copy over
 	 */
-	public LocalParallelFeatureExtractionAPI(LocalParallelFeatureExtractionAPI oib){
-		ps = oib.getProblemSet();
-		cfd = oib.getCFD();
-		preferences = oib.getPreferences();
+	public LocalParallelFeatureExtractionAPI(LocalParallelFeatureExtractionAPI original){
+		ps = original.getProblemSet();
+		cfd = original.getCFD();
+		preferences = original.getPreferences();
 	}
 
 	//////////////////////////////////////////// Methods
-	
-	@SuppressWarnings("unused")
-	public void clean(){
-		
-		for (EventSet es : relevantEvents){
-			for (Event ev : es){
-				ev = null;
-			}
-			es = null;
-		}
-		relevantEvents.clear();
-		relevantEvents = null;
-		
-		for (List<EventSet> les : eventList){
-			for (EventSet es : les){
-				for (Event e : es){
-					e = null;
-				}
-				es = null;
-			}
-			les = null;
-		}
-		eventList.clear();
-		eventList = null;
-		
-		cfd.clean();
-		cfd = null;
-		
-		System.gc();
-	}
 	
 	/**
 	 * Extracts the List\<EventSet\> from each document using a user-defined number of threads.
@@ -285,16 +251,19 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		relevantEvents = getRelevantEvents(eventList, cfd);
 	}
 
-	
+	/**
+	 * Extracts the feature labels being used for the processing
+	 * @throws Exception
+	 */
 	public void initializeFeatureSet() throws Exception {
 	    features = getFeatureList(eventList,relevantEvents,cfd);
 	}
 
 	/**
-	 * Threaded creation of training instances from gathered data
+	 * Threaded creation of training datamap from gathered data
 	 * @throws Exception
 	 */
-	public void createTrainingInstancesThreaded() throws Exception {
+	public void createTrainingDataMapThreaded() throws Exception {
 
 	    trainingDataMap = new DataMap("Training",features);
 	    
@@ -335,10 +304,10 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	}
 
 	/**
-	 * Creates Test instances from all of the information gathered (if there are any)
+	 * Creates Test datamap from all of the information gathered (if there are any)
 	 * @throws Exception
 	 */
-	public void createTestInstancesThreaded() throws Exception {
+	public void createTestingDataMapThreaded() throws Exception {
 		
 		//if there are no test instances, set the instance object to null and move on with our lives
 		if (ps.getAllTestDocs().size()==0){
@@ -463,15 +432,15 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	}
 	
 	/**
-	 * A niche method for when you already have a training Instances object
-	 * @param ti training Instances object
+	 * A niche method for when you already have a training DataMap object
+	 * @param ti training DataMap object
 	 */
 	public void setTrainingDataMap(DataMap tdm) {
 		trainingDataMap = tdm;
 	}
 	
 	/**
-	 * Updates the InstancesBuilder's preferences
+	 * Updates the API's preferences
 	 * @param pref
 	 */
 	public void setPreferences(Preferences pref){
@@ -479,22 +448,22 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	}
 	
 	/**
-	 * A niche method for when you already have a testing Instances object
-	 * @param ti testing Instances object
+	 * A niche method for when you already have a testing DataMap object
+	 * @param ti testing DataMap object
 	 */
 	public void setTestingDataMap(DataMap tdm){
 		testingDataMap = tdm;
 	}
 	
 	/**
-	 * @return The Instances object representing the training documents
+	 * @return The DataMap object representing the training documents
 	 */
 	public DataMap getTrainingDataMap() {
 		return trainingDataMap;
 	}
 
 	/**
-	 * @return The Instances object representing the test document(s)
+	 * @return The DataMap object representing the test document(s)
 	 */
 	public DataMap getTestDataMap() {
 		return testingDataMap;
@@ -559,6 +528,36 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		killThreads();
 	}
 
+	@SuppressWarnings("unused")
+    public void clean() {
+
+        for (EventSet es : relevantEvents) {
+            for (Event ev : es) {
+                ev = null;
+            }
+            es = null;
+        }
+        relevantEvents.clear();
+        relevantEvents = null;
+
+        for (List<EventSet> les : eventList) {
+            for (EventSet es : les) {
+                for (Event e : es) {
+                    e = null;
+                }
+                es = null;
+            }
+            les = null;
+        }
+        eventList.clear();
+        eventList = null;
+
+        cfd.clean();
+        cfd = null;
+
+        System.gc();
+    }
+	
 	/**
 	 * For use when stopping analysis mid-way through it. Kills any processing threads
 	 */
@@ -602,8 +601,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	//////////////////////////////////////////// Thread Definitions
 	
 	/**
-	 * A thread used to parallelize the creation of Test instances from a set of documents
-	 * @param data the dataset (Instances object) that the test instance belongs to
+	 * A thread used to parallelize the population of the TestingDataMap from a set of documents
 	 * @param d The "div" or divide--how many documents each thread processes at most
 	 * @param t The threadId. Keeps track of which thread is doing which div of documents
 	 * @param n the total number of instances (used to put a cap on the last div so it doesn't try to process docs which don't exist
@@ -660,8 +658,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	}
 	
 	/**
-	 * A thread used to parallelize the creation of Training instances from a set of documents
-	 * @param data the dataset (Instances object) that the training instance belongs to
+	 * A thread used to parallelize the population of TrainingDataMap from a set of documents
 	 * @param d The "div" or divide--how many documents each thread processes at most
 	 * @param t The threadId. Keeps track of which thread is doing which div of documents
 	 * @param n the total number of instances (used to put a cap on the last div so it doesn't try to process docs which don't exist
@@ -770,6 +767,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		}
 	}
 
+
+//////////////////////////////////////////// Caching methods
+    
     public boolean isUsingCache() {
         return preferences.getBoolPreference("useCache");
     }

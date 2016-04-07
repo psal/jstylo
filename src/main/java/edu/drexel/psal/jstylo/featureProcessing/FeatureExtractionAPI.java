@@ -28,9 +28,8 @@ import edu.drexel.psal.jstylo.generics.Logger;
 
 /**
  * 
- * Low-level methods that are used to extract and process features.<br>
- * MEthods are written to process a single document at a time so as to allow for various types of parallelization further up the pipeline.<br>
- * Methods are also provided to convert the extracted features for particular documents into weka Attributes and unite them under an Instances object.<br>
+ * This API provides methods for extracting document data from a single document at a time, and then processing that single document's data.
+ * 
  * @author Travis Dutko
  */
 public class FeatureExtractionAPI {
@@ -320,6 +319,14 @@ public class FeatureExtractionAPI {
 		return relevantEvents;
 	}
 
+	/**
+	 * Extracts a list of all features to be used for analysis.
+	 * @param culledEventSets
+	 * @param relevantEvents
+	 * @param cumulativeFeatureDriver
+	 * @return
+	 * @throws Exception
+	 */
 	public List<String> getFeatureList(List<List<EventSet>> culledEventSets,List<EventSet> relevantEvents,CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception{
 	    
         //remove the metdata prior to generating attribute list
@@ -402,6 +409,14 @@ public class FeatureExtractionAPI {
         return features;
 	}
 
+	/**
+	 * Converts the extracted document information into a JStylo DataMap
+	 * @param features
+	 * @param relevantEvents
+	 * @param cumulativeFeatureDriver
+	 * @param documentData
+	 * @return
+	 */
 	public ConcurrentHashMap<Integer,Double> createDocMap(List<String> features,
 	        List<EventSet> relevantEvents,
             CumulativeFeatureDriver cumulativeFeatureDriver,
@@ -534,6 +549,13 @@ public class FeatureExtractionAPI {
 	    return documentMap;
 	}
 
+	/**
+	 * Normalizes all of the extracted feature data for a specific document.
+	 * @param cfd
+	 * @param docmap
+	 * @param documentData
+	 * @param features
+	 */
 	public void normDocData(CumulativeFeatureDriver cfd, ConcurrentHashMap<Integer,Double> docmap, List<EventSet> documentData, List<String> features){
 
         int i;
@@ -706,7 +728,8 @@ public class FeatureExtractionAPI {
 		
 		return culledUnknownEventSets;
 	}
-	   /**
+
+	/**
      * Loads the cached features for a given document
      * @param document
      * @param documentFile  The cache file for the document.
@@ -791,8 +814,7 @@ public class FeatureExtractionAPI {
             e.printStackTrace();
         }
         return false;
-    }
-    
+    }    
 
     /**
      * Recursively delete contents of a directory (if f is a directory),

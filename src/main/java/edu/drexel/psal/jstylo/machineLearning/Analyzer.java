@@ -11,10 +11,10 @@ import weka.classifiers.Evaluation;
 import edu.drexel.psal.jstylo.generics.DataMap;
 
 /**
- * Abstract class for analyzers - classification routines to be applied on test sets, given a training set.
- * The data representation is based on Weka's DataMap object.
+ * Abstract class for analyzers - an interface to various Machine Learning libraries/algorithms.
+ * Backed by a DataMap -- a JStylo specific, but fairly generic (ie only uses inbuilt java classes), data structure.
  * 
- * @author Ariel Stolerman
+ * @author Travis Dutko
  */
 public abstract class Analyzer{
 	
@@ -22,12 +22,15 @@ public abstract class Analyzer{
 	 * fields
 	 * ======
 	 */
-    //TODO update documentation
+    
+    /**
+     * The training and data
+     */
+	protected DataMap trainingSet;
 	
 	/**
-	 * The type enumeration to allow us to avoid instanceofs
+	 * The testing data
 	 */
-	protected DataMap trainingSet;
 	protected DataMap testSet;
 	
 	/**
@@ -62,13 +65,13 @@ public abstract class Analyzer{
 	 * trainingSet, testSet, results and authors.
 	 * Returns list of distributions of classification probabilities per instance.
 	 * @param trainingSet
-	 * 		The Weka DataMap dataset of the training DataMap.
+	 * 		The training DataMap
 	 * @param testSet
-	 * 		The Weka DataMap dataset of the test DataMap.
+	 * 		The testing DataMap
 	 * @param unknownDocs
 	 * 		The list of test documents to deanonymize.
 	 * @return
-	 * 		The mapping from test documents to distributions of classification probabilities per instance, or
+	 * 		The mapping from test documents to distributions of classification probabilities per document, or
 	 * 		null if prepare was not previously called.
 	 * 		Each result in the list is a mapping from the author to its corresponding
 	 * 		classification probability.
@@ -184,18 +187,18 @@ public abstract class Analyzer{
 	public abstract Evaluation getTrainTestEval(DataMap train, DataMap test) throws Exception ;
 	
 	/**
-	 * Returns the last training Weka DataMap set that was used for classification.
+	 * Returns the last training DataMap that was used for classification.
 	 * @return
-	 * 		The last training Weka DataMap set that was used for classification.
+	 * 		The last training DataMap that was used for classification.
 	 */
 	public DataMap getLastTrainingSet() {
 		return trainingSet;
 	}
 	
 	/**
-	 * Returns the last test Weka DataMap set that was used for classification.
+	 * Returns the last test DataMap that was used for classification.
 	 * @return
-	 * 		The last test Weka DataMap set that was used for classification.
+	 * 		The last test DataMap that was used for classification.
 	 */
 	public DataMap getLastTestSet() {
 		return testSet;
@@ -247,13 +250,13 @@ public abstract class Analyzer{
 	public abstract String[] optionsDescription();
 	
 	/**
-	 * A string describing the analyzer. Should be formatted and ready for display.
+	 * A string describing the analyzer. Should be formatted and ready for display as well as be somewhat detailed.
 	 * @return the string describing how the analyzer/classifier functions and its benefits/drawbacks
 	 */
 	public abstract String analyzerDescription();
 	
 	/**
-	 * Returns the name of whatever is doing the "heavy lifting" in terms of classification
+	 * Returns a short identifier for the Analyzer
 	 * @return the name of the analyzer/classifier being used
 	 */
 	public abstract String getName();

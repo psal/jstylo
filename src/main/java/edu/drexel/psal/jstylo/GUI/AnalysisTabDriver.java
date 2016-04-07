@@ -878,7 +878,7 @@ public class AnalysisTabDriver {
 
 				// build the instances from the attributes
 				try {
-					main.lpfeAPI.createTrainingInstancesThreaded();
+					main.lpfeAPI.createTrainingDataMapThreaded();
 				} catch (Exception e) {
 					Logger.logln("Could not create instances from training corpus!", LogOut.STDERR);
 					e.printStackTrace();
@@ -913,7 +913,7 @@ public class AnalysisTabDriver {
 					
 					//create the instances
 					try {
-						main.lpfeAPI.createTestInstancesThreaded();
+						main.lpfeAPI.createTestingDataMapThreaded();
 					} catch (Exception e) {
 						Logger.logln("Could not create instances from test documents!", LogOut.STDERR);
 						e.printStackTrace();

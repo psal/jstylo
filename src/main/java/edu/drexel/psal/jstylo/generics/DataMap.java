@@ -28,15 +28,27 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DataMap {
 
-    //so... this is a multi-tiered map containing everything we need to know. 
+    /**
+     * A three-layered map containing all of the documents' feature information.
+     * The Outer Map is a map of author names to document maps
+     * The Middle Map is a map of document titles to feature maps
+     * The Inner Map is a map of feature indices to the feature values
+     */
     private ConcurrentHashMap<String, //outer layer is indexed on author identities
         ConcurrentHashMap<String, //middle layer is indexed on document titles
             ConcurrentHashMap<Integer, //inner layer is indexed on feature index
                 Double>>> //data value is the double value for a given doc for a given author for that index feature
                     datamap;
     
+    /**
+     * The map of index to feature name.
+     * Keying on index might seem weird, and maybe it is, but it makes a lot of operations easier
+     */
     private Map<Integer,String> features;
     
+    /**
+     * Name of the data set
+     */
     private String datasetName;
     
     public DataMap(String name, List<String> featureNames){
@@ -45,27 +57,46 @@ public class DataMap {
         datamap = new ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>>();
     }
     
-    //add all authors prior to documents to ensure minimum amount of reads in threads. 
+    /**
+     * Add a potential author to the datamap
+     * @param author
+     */
     public void initAuthor(String author){
         ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>> newAuthorMap = new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>();
         datamap.put(author, newAuthorMap);
     }
 
-    // add things
+    /**
+     * Adds the data from a single document to the datamap.
+     * @param author author to add to
+     * @param documentTitle title of the document
+     * @param map map of indices to values
+     */
     public void addDocumentData(String author, String documentTitle, ConcurrentHashMap<Integer, Double> map) {
         datamap.get(author).put(documentTitle, map);
     }
     
-    //returns things
+    /**
+     * 
+     * @return the internal datamap
+     */
     public ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>> getDataMap(){
         return datamap;
     }
 
+    /**
+     * 
+     * @return the feature map
+     */
     public Map<Integer,String> getFeatures() {
         return features;
     }
 
-    public void setFeatures(List<String> featureList) {
+    /**
+     * Sets the feature map - replacing it if it is already present
+     * @param featureList
+     */
+    private void setFeatures(List<String> featureList) {
         if (features != null){
             features.clear();
         }
@@ -78,7 +109,11 @@ public class DataMap {
         }
     }
     
-    //TODO think it's safe to say that this is causing the issue.
+    /**
+     * Removes a set of feature indexes and updates the feature set and document data as appropriate
+     * NOTE: this edits in place, so the old datamap is overwritten!
+     * @param indicesToRemove
+     */
     public void removeFeatures(Integer[] indicesToRemove){
         //empty feature list
         List<String> newFeatures = new ArrayList<String>();
@@ -122,11 +157,12 @@ public class DataMap {
                     indicesToRemove[j] = indicesToRemove[j]-1;
             }
         }
-        
-        //TODO set the new map
     }
 
-    
+    /**
+     * 
+     * @return the number of documents present in this datamap
+     */
     public int numDocuments(){
         int count = 0;
         for (String author : datamap.keySet()){
@@ -135,6 +171,10 @@ public class DataMap {
         return count;
     }
     
+    /**
+     * Writes the datamap to a dense CSV file
+     * @param path location to write the file
+     */
     public void saveDataMapToCSV(String path){
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path)));
@@ -171,6 +211,13 @@ public class DataMap {
         }
     }
     
+    /**
+     * Loads a DataMap from a CSV file. Note that the CSV file must be dense.
+     * The first row should consist solely of the datamap name
+     * The second row should describe all of the columns. The first column must be authorName and the second must be the document title
+     * @param path path to CSV file
+     * @return initialized datamap
+     */
     public DataMap loadDataMapFromCSV(String path){
         DataMap map = null;
         try {

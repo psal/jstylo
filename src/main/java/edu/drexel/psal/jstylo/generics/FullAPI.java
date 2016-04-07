@@ -205,8 +205,8 @@ public class FullAPI {
 			ib.extractEventsThreaded(); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
 			ib.initializeFeatureSet(); //creates the attribute list to base the Instances on
-			ib.createTrainingInstancesThreaded(); //creates train Instances
-			ib.createTestInstancesThreaded(); //creates test Instances (if present)
+			ib.createTrainingDataMapThreaded(); //creates train Instances
+			ib.createTestingDataMapThreaded(); //creates test Instances (if present)
 			ib.killThreads();
 		} catch (Exception e) {
 			System.out.println("Failed to prepare instances");
@@ -490,9 +490,9 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
-                    .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                    .numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
+                    .psPath("./jsan_resources/problem_sets/enron_demo.xml")
+                    .setAnalyzer(new WekaAnalyzer())
+                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
