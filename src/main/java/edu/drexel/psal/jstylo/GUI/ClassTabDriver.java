@@ -76,7 +76,6 @@ public class ClassTabDriver {
 
 						if (tmpObject instanceof Classifier) {
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
-							main.lpfeAPI.setUseDocTitles(false);
 							main.analysisCalcInfoGainJCheckBox.setSelected(true);
 						} else {
 							Logger.logln("Tried to add an Analyzer we do not yet support");

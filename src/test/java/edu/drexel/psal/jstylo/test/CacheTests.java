@@ -78,7 +78,7 @@ public class CacheTests
         Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false)
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN)
                 .useCache(false).build();
 		long bef1 = System.currentTimeMillis();
 		test.prepareInstances();
@@ -89,7 +89,7 @@ public class CacheTests
         
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false)
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN)
                 .useCache(false).build();
 		long bef2 = System.currentTimeMillis();
 		test.prepareInstances();
@@ -139,7 +139,7 @@ public class CacheTests
         Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results1 = test.getStatString();
@@ -147,7 +147,7 @@ public class CacheTests
         
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results2 = test.getStatString();
@@ -176,7 +176,7 @@ public class CacheTests
         Path path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		FullAPI test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results1 = test.getStatString();
@@ -184,7 +184,7 @@ public class CacheTests
         
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results2 = test.getStatString();
@@ -196,7 +196,7 @@ public class CacheTests
         deleteRecursive(Paths.get(JSANConstants.JSAN_CHUNK_DIR).toFile(), true);
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results3 = test.getStatString();
@@ -212,7 +212,7 @@ public class CacheTests
         }
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results4 = test.getStatString();
@@ -235,7 +235,7 @@ public class CacheTests
         path = Paths.get(JSANConstants.JSAN_FEATURESETS_PREFIX,"writeprints_feature_set_limited.xml");
 		test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         
@@ -260,7 +260,7 @@ public class CacheTests
         // now do it again with the cache
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results6 = test.getStatString();
@@ -272,7 +272,7 @@ public class CacheTests
         deleteRecursive(Paths.get(JSANConstants.JSAN_CHUNK_DIR).toFile(), true);
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results7 = test.getStatString();
@@ -287,7 +287,7 @@ public class CacheTests
         }
         test = new FullAPI.Builder().cfdPath(path.toString()).ps(ps)
                 .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).useDocTitles(false).build();
+                .numThreads(4).analysisType(FullAPI.analysisType.TRAIN_TEST_UNKNOWN).build();
         test.prepareInstances();
         test.run();
         String results8 = test.getStatString();
@@ -343,7 +343,7 @@ public class CacheTests
             FullAPI test = new FullAPI.Builder().cfdPath(path.toString())
                     .psPath(problem_set.getAbsolutePath())
                     .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                    .numThreads(4).analysisType(FullAPI.analysisType.CROSS_VALIDATION).useDocTitles(false).build();
+                    .numThreads(4).analysisType(FullAPI.analysisType.CROSS_VALIDATION).build();
 
             long bef1 = System.currentTimeMillis();
             test.prepareInstances();
@@ -356,7 +356,7 @@ public class CacheTests
             FullAPI test2 = new FullAPI.Builder().cfdPath(path.toString())
                     .psPath(problem_set.getAbsolutePath())
                     .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                    .numThreads(4).analysisType(FullAPI.analysisType.CROSS_VALIDATION).useDocTitles(false).build();
+                    .numThreads(4).analysisType(FullAPI.analysisType.CROSS_VALIDATION).build();
 
             long bef2 = System.currentTimeMillis();
             test2.prepareInstances();

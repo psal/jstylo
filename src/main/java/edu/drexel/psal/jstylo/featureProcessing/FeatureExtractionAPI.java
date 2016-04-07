@@ -405,7 +405,7 @@ public class FeatureExtractionAPI {
 	public ConcurrentHashMap<Integer,Double> createDocMap(List<String> features,
 	        List<EventSet> relevantEvents,
             CumulativeFeatureDriver cumulativeFeatureDriver,
-            List<EventSet> documentData){ //sparse and hasDocTitles are assumed to be true
+            List<EventSet> documentData){
 	    
         // generate training instances
         ConcurrentHashMap<Integer,Double> documentMap = new ConcurrentHashMap<Integer,Double>();

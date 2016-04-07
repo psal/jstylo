@@ -49,7 +49,6 @@ public class FullAPI {
 		private Analyzer analyzer;
 		private int numFolds = 10;
 		private analysisType type = analysisType.CROSS_VALIDATION;
-		private boolean useDocTitles = false;
 		private boolean isSparse = true;
 		private boolean loadDocContents = false;
 		private Preferences p = null;
@@ -105,11 +104,6 @@ public class FullAPI {
 		
 		public Builder analysisType(analysisType at){
 			type = at;
-			return this;
-		}
-		
-		public Builder useDocTitles(boolean udt){
-			useDocTitles = udt;
 			return this;
 		}
 		
@@ -194,7 +188,6 @@ public class FullAPI {
 			}
 		}
 		
-		ib.setUseDocTitles(b.useDocTitles);
 		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
 		ib.setUseSparse(b.isSparse);
@@ -334,13 +327,6 @@ public class FullAPI {
 	 */
 	public void setUseCache(boolean useCache) {
 		ib.setUseCache(useCache);
-	}
-	
-	/**
-	 * @param useDocTitles boolean value. Whether or not to set 1st attribute to the document title
-	 */
-	public void setUseDocTitles(boolean useDocTitles){
-		ib.setUseDocTitles(useDocTitles);
 	}
 	
 	public void setProblemSet(ProblemSet probSet){
@@ -522,7 +508,7 @@ public class FullAPI {
                     .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
                     .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
                     .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
-                    .useDocTitles(true).build();
+                    .build();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Failed to intialize API, exiting...");

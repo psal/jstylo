@@ -735,7 +735,7 @@ public class AnalysisTabDriver {
 					try {
 						jstylo = new FullAPI.Builder().cfd(new CumulativeFeatureDriver(main.cfd))
 								.setAnalyzer(main.analyzers.get(0))
-								.useDocTitles(false).ps(probSet)
+								.ps(probSet)
 								.analysisType(analysisType.TRAIN_TEST_KNOWN)
 								.numThreads(Integer.parseInt(main.analysisNThreadJTextField.getText())).build();
 						jstylo.prepareInstances();

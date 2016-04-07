@@ -36,8 +36,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	
 	// These vars should be initialized in the constructor and stay the same
 	// throughout the entire process
-	//private boolean isSparse;	//sparse instances if true, dense if false
-	//private boolean useDocTitles;	//use doc titles as a feature?
 	//private boolean loadDocContents; 
 	private Preferences preferences;
 	private boolean isCacheValid;
@@ -69,7 +67,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * 
 	 * All other parameters have the following default values:<br>
 	 * isSparse: false<br>
-	 * useDocTitles: false<br>
 	 * numThreads: 4<br>
 	 */
 	public static class Builder{
@@ -78,7 +75,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		private ProblemSet ps;
 		private CumulativeFeatureDriver cfd;
 		private boolean isSparse = false;
-		private boolean useDocTitles = false;
 		private boolean loadDocContents = false;
 		private boolean useCache = false;
 		private Preferences p = null;
@@ -105,11 +101,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		
 		public Builder isSparse(boolean is){
 			isSparse = is;
-			return this;
-		}
-		
-		public Builder useDocTitles(boolean udt){
-			useDocTitles = udt;
 			return this;
 		}
 		
@@ -189,11 +180,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			preferences.setPreference("useSparse", "1");
 		else
 			preferences.setPreference("useSparse", "0");
-
-		if (b.useDocTitles)
-			preferences.setPreference("useDocTitles", "1");
-		else
-			preferences.setPreference("useDocTitles","0");
 
 		if (b.loadDocContents)
 			preferences.setPreference("loadDocContents", "1");
@@ -472,15 +458,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		infoGain = doubles;
 	}
 	
-	/**
-	 * @param udt whether or not to use doc titles
-	 */
-	public void setUseDocTitles(boolean udt){
-		if (udt)
-			preferences.setPreference("useDocTitles","1");
-		else
-			preferences.setPreference("useDocTitles","0");
-	}
 	
 	/**
 	 * @param sparse whether or not to use sparse instances
@@ -576,13 +553,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public boolean loadingDocContents(){
 		return preferences.getBoolPreference("loadDocContents");
-	}
-	
-	/**
-	 * @return whether or not we're keeping doc titles
-	 */
-	public boolean usingDocTitles(){
-		return preferences.getBoolPreference("useDocTitles");
 	}
 	
 	/**
