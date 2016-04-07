@@ -1,9 +1,9 @@
 package edu.drexel.psal.jstylo.GUI;
 
-import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
+import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -76,7 +76,7 @@ public class ClassTabDriver {
 
 						if (tmpObject instanceof Classifier) {
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
-							main.ib.setUseDocTitles(false);
+							main.lpfeAPI.setUseDocTitles(false);
 							main.analysisCalcInfoGainJCheckBox.setSelected(true);
 						} else {
 							Logger.logln("Tried to add an Analyzer we do not yet support");

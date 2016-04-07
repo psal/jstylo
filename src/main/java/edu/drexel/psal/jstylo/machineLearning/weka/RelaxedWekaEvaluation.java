@@ -1,11 +1,11 @@
-package edu.drexel.psal.jstylo.machineLearning;
+package edu.drexel.psal.jstylo.machineLearning.weka;
 
 import weka.classifiers.CostMatrix;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 import java.util.Comparator;
 
-public class RelaxedEvaluation extends Evaluation {
+public class RelaxedWekaEvaluation extends Evaluation {
 
 	protected int relaxParam;
 
@@ -21,7 +21,7 @@ public class RelaxedEvaluation extends Evaluation {
 	 * @see 		#useNoPriors()
 	 * @see 		#setPriors(Instances)
 	 */
-	public RelaxedEvaluation(Instances data, int relaxParam) throws Exception {
+	public RelaxedWekaEvaluation(Instances data, int relaxParam) throws Exception {
 		super(data);
 		this.relaxParam = relaxParam;
 	}
@@ -41,7 +41,7 @@ public class RelaxedEvaluation extends Evaluation {
 	 * @see 		#useNoPriors()
 	 * @see 		#setPriors(Instances)
 	 */
-	public RelaxedEvaluation(Instances data, CostMatrix costMatrix, int relaxParam) 
+	public RelaxedWekaEvaluation(Instances data, CostMatrix costMatrix, int relaxParam) 
 			throws Exception {
 		super(data, costMatrix);
 		this.relaxParam = relaxParam;

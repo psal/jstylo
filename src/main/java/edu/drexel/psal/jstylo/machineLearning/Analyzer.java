@@ -1,11 +1,13 @@
 package edu.drexel.psal.jstylo.machineLearning;
 
-import java.util.*;
 
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Map;
+
+import com.jgaap.generics.Document;
 import weka.classifiers.Evaluation;
-
-import com.jgaap.generics.*;
-
 import edu.drexel.psal.jstylo.generics.DataMap;
 
 /**
@@ -25,8 +27,6 @@ public abstract class Analyzer{
 	/**
 	 * The type enumeration to allow us to avoid instanceofs
 	 */
-	protected AnalyzerTypeEnum type;
-	
 	protected DataMap trainingSet;
 	protected DataMap testSet;
 	
@@ -56,15 +56,6 @@ public abstract class Analyzer{
 	 * operations
 	 * ==========
 	 */
-	
-	/**
-	 * Checks to see if this Analyzer is of a given type
-	 * @param t the type to match
-	 * @return true if they match, false if they do not
-	 */
-	public boolean isType(AnalyzerTypeEnum t){
-		return (t==type);
-	}
 	
 	/**
 	 * Classifies the given test set based on the given training set. Should update the following fields along the classification:

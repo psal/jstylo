@@ -2,13 +2,13 @@ package edu.drexel.psal.jstylo.generics;
 
 import java.util.Map;
 
-import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
+import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 import weka.classifiers.Evaluation;
 
 /**

@@ -1,7 +1,6 @@
 package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
-import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
@@ -10,7 +9,6 @@ import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
-import edu.drexel.psal.jstylo.machineLearning.AnalyzerTypeEnum;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.FullAPI.analysisType;
 
@@ -151,7 +149,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Training to ARFF...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTrainingDataMap() == null) {
+				if (main.lpfeAPI.getTrainingDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis completed yet.", "Export Training Features Error",
 							JOptionPane.ERROR_MESSAGE);
 					return;
@@ -171,7 +169,7 @@ public class AnalysisTabDriver {
                     // Remove button / print something out!
                     boolean succeeded = true;
                     try {
-                        main.ib.getTrainingDataMap().saveDataMapToCSV(path);
+                        main.lpfeAPI.getTrainingDataMap().saveDataMapToCSV(path);
                     } catch (Exception e) {
                         succeeded = false;
                     }
@@ -199,7 +197,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Training to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTrainingDataMap() == null) {
+				if (main.lpfeAPI.getTrainingDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis completed yet.", "Export Training Features Error",
 							JOptionPane.ERROR_MESSAGE);
 					return;
@@ -218,7 +216,7 @@ public class AnalysisTabDriver {
 					
                     boolean succeeded = true;
                     try {
-                        main.ib.getTrainingDataMap().saveDataMapToCSV(path);
+                        main.lpfeAPI.getTrainingDataMap().saveDataMapToCSV(path);
                     } catch (Exception e) {
                         succeeded = false;
                     }
@@ -246,7 +244,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Test to ARFF...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTestDataMap() == null) {
+				if (main.lpfeAPI.getTestDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis with test documents completed yet.",
 							"Export Test Features Error", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -267,7 +265,7 @@ public class AnalysisTabDriver {
                     // Remove button / print something out!
                     boolean succeeded = true;
                     try {
-                        main.ib.getTestDataMap().saveDataMapToCSV(path);
+                        main.lpfeAPI.getTestDataMap().saveDataMapToCSV(path);
                     } catch (Exception e) {
                         succeeded = false;
                     }
@@ -295,7 +293,7 @@ public class AnalysisTabDriver {
 				Logger.logln("'Test to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.ib.getTestDataMap() == null) {
+				if (main.lpfeAPI.getTestDataMap() == null) {
 					JOptionPane.showMessageDialog(main, "No analysis with test documents completed yet.",
 							"Export Test Features Error", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -314,7 +312,7 @@ public class AnalysisTabDriver {
 					
 					boolean succeeded = true;
 					try {
-					    main.ib.getTestDataMap().saveDataMapToCSV(path);
+					    main.lpfeAPI.getTestDataMap().saveDataMapToCSV(path);
 					} catch (Exception e){
 					    succeeded = false;
 					}
@@ -447,8 +445,8 @@ public class AnalysisTabDriver {
 				lockUnlock(main, true);
 
 				// if the number of calc threads entered is different then the current stored one, change it
-				if (Integer.parseInt(main.analysisNThreadJTextField.getText()) != main.ib.getNumThreads()) {
-					main.ib.setNumThreads(Integer.parseInt(main.analysisNThreadJTextField.getText()));
+				if (Integer.parseInt(main.analysisNThreadJTextField.getText()) != main.lpfeAPI.getNumThreads()) {
+					main.lpfeAPI.setNumThreads(Integer.parseInt(main.analysisNThreadJTextField.getText()));
 				}
 
 				// start analysis thread
@@ -473,7 +471,7 @@ public class AnalysisTabDriver {
 				if (answer == JOptionPane.YES_OPTION) {
 					// stop run and update
 					Logger.logln("Stopping analysis");
-					main.ib.reset();
+					main.lpfeAPI.reset();
 					main.analysisThread.stop();
 					lockUnlock(main, false);
 				}
@@ -822,30 +820,30 @@ public class AnalysisTabDriver {
 				contentJTextArea.setText(content);
 
 				// create the instances builder
-				LocalParallelFeatureExtractionAPI tempBuilder = new LocalParallelFeatureExtractionAPI(main.ib);
-				main.ib.reset();
-				main.ib = tempBuilder;
-				main.ib.setProblemSet(main.ps);
-				main.ib.setLoadDocContents(false);
+				LocalParallelFeatureExtractionAPI tempBuilder = new LocalParallelFeatureExtractionAPI(main.lpfeAPI);
+				main.lpfeAPI.reset();
+				main.lpfeAPI = tempBuilder;
+				main.lpfeAPI.setProblemSet(main.ps);
+				main.lpfeAPI.setLoadDocContents(false);
 
 				try {
-					main.ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(main.cfd));
+					main.lpfeAPI.setCumulativeFeatureDriver(new CumulativeFeatureDriver(main.cfd));
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
-				main.ib.setUseSparse(main.analysisSparseInstancesJCheckBox.isSelected());
+				main.lpfeAPI.setUseSparse(main.analysisSparseInstancesJCheckBox.isSelected());
 
 				// Extract the training information
 				content += getTimestamp() + " Extracting features from training corpus ("
-						+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
+						+ (main.lpfeAPI.isSparse() ? "" : "not ") + "using sparse representation)...\n";
 				updateResultsView();
 				
-				if (main.ib.isUsingCache())
-					main.ib.validateCFDCache();
-				Chunker.chunkAllTrainDocs(main.ib.getProblemSet());
+				if (main.lpfeAPI.isUsingCache())
+					main.lpfeAPI.validateCFDCache();
+				Chunker.chunkAllTrainDocs(main.lpfeAPI.getProblemSet());
 				
 				try {
-					main.ib.extractEventsThreaded();
+					main.lpfeAPI.extractEventsThreaded();
 				} catch (Exception e) {
 					Logger.logln("Could not extract features from training corpus!", LogOut.STDERR);
 					e.printStackTrace();
@@ -863,7 +861,7 @@ public class AnalysisTabDriver {
 
 				// Cull the events
 				try {
-					main.ib.initializeRelevantEvents();
+					main.lpfeAPI.initializeRelevantEvents();
 				} catch (Exception e1) {
 					Logger.logln("Could not extract relevant events from training corpus!", LogOut.STDERR);
 					e1.printStackTrace();
@@ -881,7 +879,7 @@ public class AnalysisTabDriver {
 
 				// build an attributes list from the events
 				try {
-					main.ib.initializeFeatureSet();
+					main.lpfeAPI.initializeFeatureSet();
 				} catch (Exception e1) {
 					Logger.logln("Could not create attributes from training corpus!", LogOut.STDERR);
 					e1.printStackTrace();
@@ -899,7 +897,7 @@ public class AnalysisTabDriver {
 
 				// build the instances from the attributes
 				try {
-					main.ib.createTrainingInstancesThreaded();
+					main.lpfeAPI.createTrainingInstancesThreaded();
 				} catch (Exception e) {
 					Logger.logln("Could not create instances from training corpus!", LogOut.STDERR);
 					e.printStackTrace();
@@ -916,7 +914,7 @@ public class AnalysisTabDriver {
 				// if we're to print out the feature vectors, do so
 				if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
 					content += "Training corpus features (ARFF):\n" + "================================\n"
-							+ main.ib.getTrainingDataMap().toString() + "\n\n";
+							+ main.lpfeAPI.getTrainingDataMap().toString() + "\n\n";
 					updateResultsView();
 				}
 
@@ -925,17 +923,17 @@ public class AnalysisTabDriver {
 					Logger.logln("Extracting features from test documents...");
 
 					content += getTimestamp() + " Extracting features from test documents ("
-							+ (main.ib.isSparse() ? "" : "not ") + "using sparse representation)...\n";
+							+ (main.lpfeAPI.isSparse() ? "" : "not ") + "using sparse representation)...\n";
 					updateResultsView();
 
 					//if we're working with known authors, remove the "_Unknown_" author
 					if (main.analysisClassTestKnownJRadioButton.isSelected()) {
-						main.ib.getProblemSet().removeAuthor("_Unknown_");
+						main.lpfeAPI.getProblemSet().removeAuthor("_Unknown_");
 					}
 					
 					//create the instances
 					try {
-						main.ib.createTestInstancesThreaded();
+						main.lpfeAPI.createTestInstancesThreaded();
 					} catch (Exception e) {
 						Logger.logln("Could not create instances from test documents!", LogOut.STDERR);
 						e.printStackTrace();
@@ -952,7 +950,7 @@ public class AnalysisTabDriver {
 					updateResultsView();
 					if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
 						content += "Test documents features (ARFF):\n" + "===============================\n"
-								+ main.ib.getTestDataMap().toString() + "\n\n";
+								+ main.lpfeAPI.getTestDataMap().toString() + "\n\n";
 						updateResultsView();
 					}
 				}
@@ -976,16 +974,16 @@ public class AnalysisTabDriver {
 					
 					try {
 						boolean apply = main.analysisApplyInfoGainJCheckBox.isSelected();
-						double[][] infoGain = main.ib.calculateInfoGain();
+						double[][] infoGain = main.lpfeAPI.calculateInfoGain();
 						
 						//if we're applying infoGain to cull the features, do so here
 						if (apply) {
-							main.ib.applyInfoGain(igValue);
-							infoGain = main.ib.calculateInfoGain();
+							main.lpfeAPI.applyInfoGain(igValue);
+							infoGain = main.lpfeAPI.calculateInfoGain();
 						}
 						
 						//print out the remaining features and their infoGain values.
-						Map<Integer,String> features = main.ib.getTrainingDataMap().getFeatures();
+						Map<Integer,String> features = main.lpfeAPI.getTrainingDataMap().getFeatures();
 						for (int i = 0; i < infoGain.length; i++) {
 							
 							//once we hit a "0" infogain value, stop printing the data.
@@ -1036,7 +1034,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						//perform the actual analysis
-						main.analysisDriver.classify(main.ib.getTrainingDataMap(), main.ib.getTestDataMap(), main.ps.getAllTestDocs());
+						main.analysisDriver.classify(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap(), main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";
 						Logger.logln("Done!");
@@ -1074,7 +1072,7 @@ public class AnalysisTabDriver {
 						Logger.log("Starting cross validation...");
 						updateResultsView();
 						// run the experiment
-						Object results = main.analysisDriver.runCrossValidation(main.ib.getTrainingDataMap(),
+						Object results = main.analysisDriver.runCrossValidation(main.lpfeAPI.getTrainingDataMap(),
 								Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
 						main.setPreference("kFolds", main.analysisKFoldJTextField.getText());
 
@@ -1118,11 +1116,6 @@ public class AnalysisTabDriver {
 
 						main.analysisDriver = a;
 
-						if (a.isType(AnalyzerTypeEnum.WRITEPRINTS_ANALYZER)) {
-							a.classify(main.ib.getTrainingDataMap(), main.ib.getTestDataMap(),
-									main.ps.getAllTestDocs());
-						}
-
 						content += getTimestamp() + " Starting classification...\n";
 						Logger.log("Starting classification...\n");
 						updateResultsView();
@@ -1130,7 +1123,7 @@ public class AnalysisTabDriver {
 						//create the evaluation
 						Evaluation results = null;
 						try {
-							results = main.analysisDriver.getTrainTestEval(main.ib.getTrainingDataMap(), main.ib.getTestDataMap());
+							results = main.analysisDriver.getTrainTestEval(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap());
 						} catch (Exception e) {
 							Logger.logln("Failed to build train test eval with known authors!", LogOut.STDERR);
 							content += "Failed to build train test eval with known authors!";
@@ -1158,7 +1151,7 @@ public class AnalysisTabDriver {
 					}
 				}
 				main.setPreference("featureSet", "" + main.featuresSetJComboBox.getSelectedIndex());
-				Preferences.savePreferences(main.ib.getPreferences());
+				Preferences.savePreferences(main.lpfeAPI.getPreferences());
 			}
 			// unlock gui and update results
 			updateBeforeStop();

@@ -1,10 +1,10 @@
 package edu.drexel.psal.jstylo.test;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
+import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 import java.io.File;
 import java.io.IOException;

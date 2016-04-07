@@ -25,7 +25,6 @@ import com.jgaap.generics.EventHistogram;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.eventDrivers.CharCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
@@ -33,6 +32,7 @@ import edu.drexel.psal.jstylo.eventDrivers.SingleNumericEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.Logger;
+import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 /**
  * 

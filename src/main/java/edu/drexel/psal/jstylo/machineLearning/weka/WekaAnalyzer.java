@@ -1,9 +1,7 @@
-package edu.drexel.psal.jstylo.analyzers;
+package edu.drexel.psal.jstylo.machineLearning.weka;
 
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
-import edu.drexel.psal.jstylo.machineLearning.AnalyzerTypeEnum;
-import edu.drexel.psal.jstylo.machineLearning.RelaxedEvaluation;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -127,17 +125,14 @@ public class WekaAnalyzer extends Analyzer {
 	 */
 	public WekaAnalyzer() {
 		classifier = new weka.classifiers.functions.SMO();
-		type = AnalyzerTypeEnum.WEKA_ANALYZER;
 	}
 	
 	public WekaAnalyzer(Classifier classifier) {
 		this.classifier = classifier;
-		type = AnalyzerTypeEnum.WEKA_ANALYZER;
 	}
 	
 	public WekaAnalyzer(Object obj){
 		this.classifier = (Classifier) obj;
-		type = AnalyzerTypeEnum.WEKA_ANALYZER;
 	}
 	
 	/* ==========
@@ -295,9 +290,9 @@ public class WekaAnalyzer extends Analyzer {
 		randData.stratify(folds);
 
 		// run CV
-		RelaxedEvaluation eval = null;
+		RelaxedWekaEvaluation eval = null;
 		try {
-			eval = new RelaxedEvaluation(randData, relaxFactor);
+			eval = new RelaxedWekaEvaluation(randData, relaxFactor);
 			for (int n = 0; n < folds; n++) {
 				Instances train = randData.trainCV(folds, n);
 				Instances test = randData.testCV(folds, n);

@@ -54,7 +54,7 @@ public class GUIMain extends javax.swing.JFrame {
 	protected ProblemSet ps;
 	protected CumulativeFeatureDriver cfd;
 	protected List<CumulativeFeatureDriver> presetCFDs;
-	protected LocalParallelFeatureExtractionAPI ib;
+	protected LocalParallelFeatureExtractionAPI lpfeAPI;
 	protected Analyzer analysisDriver;
 	protected List<Analyzer> analyzers;
 	protected Thread analysisThread;
@@ -272,7 +272,7 @@ public class GUIMain extends javax.swing.JFrame {
 		FeaturesTabDriver.initPresetCFDs(this);
 		FeatureWizardDriver.populateAll();
 		analyzers = new ArrayList<Analyzer>();
-		ib = new LocalParallelFeatureExtractionAPI(Preferences.loadPreferences());
+		lpfeAPI = new LocalParallelFeatureExtractionAPI(Preferences.loadPreferences());
 		results = new ArrayList<String>();
 	}
 	
@@ -1401,7 +1401,7 @@ public class GUIMain extends javax.swing.JFrame {
 						{
 							analysisSparseInstancesJCheckBox = new JCheckBox();
 							analysisSparseInstancesJCheckBox.setToolTipText("Display non-zero features only.");
-							analysisSparseInstancesJCheckBox.setSelected(ib.isSparse());
+							analysisSparseInstancesJCheckBox.setSelected(lpfeAPI.isSparse());
 							options.add(analysisSparseInstancesJCheckBox);
 							analysisSparseInstancesJCheckBox.setText("Use sparse representation for feature vectors");
 						}
@@ -1434,7 +1434,7 @@ public class GUIMain extends javax.swing.JFrame {
 							}
 						}
 						{
-							int numCalcThreads = ib.getNumThreads();
+							int numCalcThreads = lpfeAPI.getNumThreads();
 							JPanel analysisNPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 							analysisNThreadJTextField = new JTextField(""+numCalcThreads);
 							analysisNThreadJTextField.setColumns(5);
@@ -1650,6 +1650,6 @@ public class GUIMain extends javax.swing.JFrame {
 	}
 	
 	private Preferences getPreferences(){
-		return ib.getPreferences();
+		return lpfeAPI.getPreferences();
 	}
 }
