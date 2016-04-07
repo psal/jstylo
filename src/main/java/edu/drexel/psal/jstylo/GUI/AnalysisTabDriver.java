@@ -855,7 +855,7 @@ public class AnalysisTabDriver {
 
 				// build an attributes list from the events
 				try {
-					main.ib.initializeAttributes();
+					main.ib.initializeFeatureSet();
 				} catch (Exception e1) {
 					Logger.logln("Could not create attributes from training corpus!", LogOut.STDERR);
 					e1.printStackTrace();

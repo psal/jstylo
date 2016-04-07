@@ -219,7 +219,7 @@ public class FullAPI {
 			    Chunker.chunkAllTrainDocs(ib.getProblemSet());
 			ib.extractEventsThreaded(); //extracts events from documents
 			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
-			ib.initializeAttributes(); //creates the attribute list to base the Instances on
+			ib.initializeFeatureSet(); //creates the attribute list to base the Instances on
 			ib.createTrainingInstancesThreaded(); //creates train Instances
 			ib.createTestInstancesThreaded(); //creates test Instances (if present)
 			ib.killThreads();

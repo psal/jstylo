@@ -3,7 +3,6 @@ package edu.drexel.psal.jstylo.generics;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,7 +23,6 @@ public class DataMap {
     
     private Map<Integer,String> features;
     
-    @SuppressWarnings("unused")
     private String datasetName;
     
     public DataMap(String name, List<String> featureNames){
@@ -33,15 +31,15 @@ public class DataMap {
         datamap = new ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>>();
     }
     
-    //add things
-    public void addDocumentData(String author, String documentTitle ,ConcurrentHashMap<Integer,Double> map){
-        if (datamap.containsKey(author)){
-            datamap.get(author).put(documentTitle, map);
-        } else {
-            ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>> newAuthorMap = new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>();
-            newAuthorMap.put(documentTitle, map);
-            datamap.put(author, newAuthorMap);
-        }
+    //add all authors prior to documents to ensure minimum amount of reads in threads. 
+    public void initAuthor(String author){
+        ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>> newAuthorMap = new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>();
+        datamap.put(author, newAuthorMap);
+    }
+
+    // add things
+    public void addDocumentData(String author, String documentTitle, ConcurrentHashMap<Integer, Double> map) {
+        datamap.get(author).put(documentTitle, map);
     }
     
     //returns things

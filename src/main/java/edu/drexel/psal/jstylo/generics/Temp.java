@@ -7,6 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import weka.core.Instance;
 import weka.core.Instances;
 
+/**
+ * Temp methods to be removed / moved elsewhere after this is all converted.
+ * @author tdutko001c
+ *
+ */
 public class Temp {
 
     public static DataMap datamapFromInstances(Instances instances,boolean hasTitle){

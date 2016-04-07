@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
@@ -23,10 +24,7 @@ import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
-import edu.drexel.psal.jstylo.generics.Temp;
-import weka.core.FastVector;
 import weka.core.Instance;
-import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
 
@@ -52,15 +50,16 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	private CumulativeFeatureDriver cfd;	//the driver used to extract features
 	private List<List<EventSet>> eventList;	//the events/sets created from the extracted features
 	private List<EventSet> relevantEvents;	//the events/sets to pay attention to
-	private FastVector attributes;	//the relevant events converted into attributes
-
+	//private FastVector attributes;	//the relevant events converted into attributes
+	private List<String> features;
+	
 	//ThreadArrays so that we can stop them if the user cancels something mid process
 	FeatureExtractionThread[] featThreads;
 	CreateTrainInstancesThread[] trainThreads;
 	CreateTestInstancesThread[] testThreads;
 	
 	// Relevant data to spit out at the end
-	private DataMap trainingDataMap;	//training doc Instances
+	private DataMap trainingDataMap; //training doc Instances
 	private DataMap testingDataMap;	//testDoc Instances
 	private double[][] infoGain;	//infoGain scores for all features
 
@@ -316,13 +315,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		relevantEvents = getRelevantEvents(eventList, cfd);
 	}
 
-	/**
-	 * Initializes and stores the list of attributes created from the eventSets and relevantEvents
-	 * @throws Exception
-	 */
-	public void initializeAttributes() throws Exception {
-		attributes = getAttributeList(eventList, relevantEvents, cfd,
-				usingDocTitles());
+	
+	public void initializeFeatureSet() throws Exception {
+	    features = getFeatureList(eventList,relevantEvents,cfd);
 	}
 
 	/**
@@ -331,12 +326,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public void createTrainingInstancesThreaded() throws Exception {
 
-		//create dataset from attributes and numDocs
-		Instances trainingInstances = new Instances("Instances", attributes,
-				eventList.size());
-		
+	    trainingDataMap = new DataMap("Training",features);
+	    
 		//initialize/fetch data
-		List<Instance> generatedInstances = new ArrayList<Instance>();
 		int numThreads = getNumThreads();
 		int threadsToUse = numThreads;
 		int numInstances = eventList.size();
@@ -351,26 +343,25 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		if (div % threadsToUse != 0)
 			div++;
 
+		//pre-process the map to add all authors
+		for (List<EventSet> docEvents : eventList){
+		    EventSet metadata = docEvents.get(docEvents.size()-1);
+		    String author = metadata.eventAt(0).getEvent();
+		    trainingDataMap.initAuthor(author);
+		}
+		
 		//Parallelized magic
 		trainThreads = new CreateTrainInstancesThread[threadsToUse];
 		for (int thread = 0; thread < threadsToUse; thread++)
-			trainThreads[thread] = new CreateTrainInstancesThread(trainingInstances,div,thread,numInstances,new CumulativeFeatureDriver(cfd));
+			trainThreads[thread] = new CreateTrainInstancesThread(div,thread,numInstances,new CumulativeFeatureDriver(cfd));
 		for (int thread = 0; thread < threadsToUse; thread++)
 			trainThreads[thread].start();
 		for (int thread = 0; thread < threadsToUse; thread++)
 			trainThreads[thread].join();
 		for (int thread = 0; thread < threadsToUse; thread++)
-			generatedInstances.addAll(trainThreads[thread].list);
-		for (int thread = 0; thread < threadsToUse; thread++)
 			trainThreads[thread] = null;
 		trainThreads = null;
 		
-		//add all of the generated instance objects into the Instances object.
-		for (Instance inst: generatedInstances){
-			trainingInstances.add(inst);
-		}
-		
-		trainingDataMap = Temp.datamapFromInstances(trainingInstances, true); 
 	}
 
 	/**
@@ -378,21 +369,24 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public void createTestInstancesThreaded() throws Exception {
-		// create the empty Test instances object
-		Instances testInstances = new Instances("TestInstances", attributes, ps
-				.getAllTestDocs().size());
 		
 		//if there are no test instances, set the instance object to null and move on with our lives
 		if (ps.getAllTestDocs().size()==0){
-			testInstances=null;
+			testingDataMap=null;
 		} else { //otherwise go through the whole process
 			
 			//create/fetch data
-			List<Instance> generatedInstances = new ArrayList<Instance>();
 			int numThreads = getNumThreads();
 			int threadsToUse = numThreads;
 			int numInstances = ps.getAllTestDocs().size();
 		
+		    //pre-process the map to add all authors
+	        for (List<EventSet> docEvents : eventList){
+	            EventSet metadata = docEvents.get(docEvents.size()-1);
+	            String author = metadata.eventAt(0).getEvent();
+	            testingDataMap.initAuthor(author);
+	        }
+			
 			//make sure number of threads isn't silly
 			if (numThreads > numInstances) {
 				threadsToUse = numInstances;
@@ -406,26 +400,16 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			//Perform some parallelization magic
 			testThreads = new CreateTestInstancesThread[threadsToUse];
 			for (int thread = 0; thread < threadsToUse; thread++)
-				testThreads[thread] = new CreateTestInstancesThread(testInstances,div,thread,numInstances, new CumulativeFeatureDriver(cfd));
+				testThreads[thread] = new CreateTestInstancesThread(div,thread,numInstances, new CumulativeFeatureDriver(cfd));
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread].start();
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread].join();
 			for (int thread = 0; thread < threadsToUse; thread++)
-				generatedInstances.addAll(testThreads[thread].list);
-			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread] = null;
 			testThreads = null;
 			
-			//add all of the instance objects to the Instances object
-			for (Instance inst: generatedInstances){
-				testInstances.add(inst);
-			}		
 		}
-		if (testInstances != null)
-		    testingDataMap = Temp.datamapFromInstances(testInstances, true);
-		else 
-		    testingDataMap = null;
 	}
 
 	//////////////////////////////////////////// InfoGain related things
@@ -436,7 +420,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public void applyInfoGain(int n) throws Exception {
-		//setInfoGain(applyInfoGain(getInfoGain(), trainingInstances, n));
+		//setInfoGain(applyInfoGain(getInfoGain(), trainingInstances, n)); //TODO need to port this.
 		applyInfoGain(getInfoGain(), trainingDataMap, n);
 		if (testingDataMap != null){ // Apply infoGain to test set if we have one
 			applyInfoGain(getInfoGain(), testingDataMap, n);
@@ -738,26 +722,17 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public class CreateTestInstancesThread extends Thread {
 		
-		Instances dataset; //the dataset the test instances belong to
-		ArrayList<Instance> list; //the list of test instances produced by this thread
 		int div; //the number of instances to be created per thread
 		int threadId; //the div this thread is dealing with
 		int numInstances; //the total number of instances to be created
 		CumulativeFeatureDriver cfd; //the cfd used to assess features
 		
 		//Constructor
-		public CreateTestInstancesThread(Instances data, int d, int t, int n, CumulativeFeatureDriver cd){
+		public CreateTestInstancesThread(int d, int t, int n, CumulativeFeatureDriver cd){
 			cfd=cd;
-			dataset = data;
-			list = new ArrayList<Instance>();
 			div = d;
 			threadId = t;
 			numInstances = n;
-		}
-		
-		//returns the list of instances created by this thread
-		public ArrayList<Instance> getList() {
-			return list;
 		}
 		
 		//Run method
@@ -773,13 +748,17 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(),isCacheValid);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
-					//build the instance
-					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							events, isSparse(), usingDocTitles());
+					
+					//build the doc data
+	                String author = eventList.get(i).get(eventList.get(i).size()-1).eventAt(0).getEvent();
+	                String title = eventList.get(i).get(eventList.get(i).size()-1).eventAt(1).getEvent();
+	                ConcurrentHashMap<Integer,Double> docdata = createDocMap(features, relevantEvents, cfd, events);
+
 					//normalize it
-					normInstance(cfd, instance, events, usingDocTitles(), attributes);
-					//add it to the collection of instances to be returned by the thread
-					list.add(instance);
+					normDocData(cfd, docdata, events, features);
+					
+					//add it to datamap
+					testingDataMap.addDocumentData(author, title, docdata);
 				} catch (Exception e) {
 					Logger.logln("Error creating Test Instances!", LogOut.STDERR);
 					Logger.logln(ps.getAllTestDocs().get(i).getFilePath()+" author: "+ps.getAllTestDocs().get(i).getAuthor());
@@ -801,20 +780,17 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public class CreateTrainInstancesThread extends Thread {
 		
-		Instances dataset; //The dataset to map the instance to
 		ArrayList<Instance> list; //the collection of instances for this div
 		int div; //the number of instances to be created per thread
 		int threadId; //the div for this thread
-		int numInstances; //the total number of instances to be created
+		int numdocs; //the total number of docs to be processed
 		CumulativeFeatureDriver cfd; //the cfd used to identify features/attributes
 		
 		//Constructor
-		public CreateTrainInstancesThread(Instances data, int d, int t, int n,CumulativeFeatureDriver cd){
-			dataset = data;
-			list = new ArrayList<Instance>();
+		public CreateTrainInstancesThread(int d, int t, int n,CumulativeFeatureDriver cd){
 			div = d;
 			threadId = t;
-			numInstances = n;
+			numdocs = n;
 			cfd=cd;
 		}
 		
@@ -827,21 +803,21 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		@Override
 		public void run() {
 			//for all docs in this div
-			for (int i = div * threadId; i < Math.min(numInstances, div
+			for (int i = div * threadId; i < Math.min(numdocs, div
 					* (threadId + 1)); i++)
 				try {
 					//grab the document
-					//Document doc = ps.getAllTrainDocs().get(i);
-					//create the instance using it
-				    Logger.logln("[THREAD-" + threadId + "] Processing instance " + i);
-					Instance instance = createInstance(attributes, relevantEvents, cfd,
-							eventList.get(i), isSparse(), usingDocTitles());
+				    Logger.logln("[THREAD-" + threadId + "] Processing document " + i);
+					String author = eventList.get(i).get(eventList.get(i).size()-1).eventAt(0).getEvent();
+				    String title = eventList.get(i).get(eventList.get(i).size()-1).eventAt(1).getEvent();
+				    ConcurrentHashMap<Integer,Double> docdata = createDocMap(features, relevantEvents, cfd, eventList.get(i));
 					//normalize it
-					normInstance(cfd, instance, eventList.get(i), usingDocTitles(),attributes);
+					normDocData(cfd, docdata, eventList.get(i), features);
 					//add it to this div's list of completed instances
-					list.add(instance);
+					trainingDataMap.addDocumentData(author, title, docdata);
+					
 				} catch (Exception e) {
-					Logger.logln("[THREAD-" + threadId + "] Error creating instance " + i + "!", LogOut.STDERR);
+					Logger.logln("[THREAD-" + threadId + "] Error creating datamap " + i + "!", LogOut.STDERR);
 					Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
 					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
 				}

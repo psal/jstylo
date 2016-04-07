@@ -7,20 +7,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.SparseInstance;
 
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
@@ -331,393 +330,297 @@ public class FeatureExtractionAPI {
 		return relevantEvents;
 	}
 
-	/**
-	 * Generates the List of Attributes from the List of Lists of EventSets that will be used to create the Instances object.<br>
-	 * @param culledEventSets The culled list of EventSets that have been gathered from the document set
-	 * @return A List of Attribute which will be used to create the Instances object 
-	 * @throws Exception
-	 */
-	public FastVector getAttributeList(
-			List<List<EventSet>> culledEventSets,
-			List<EventSet> relevantEvents,
-			CumulativeFeatureDriver cumulativeFeatureDriver,
-			boolean hasDocTitles) throws Exception {
+	public List<String> getFeatureList(List<List<EventSet>> culledEventSets,List<EventSet> relevantEvents,CumulativeFeatureDriver cumulativeFeatureDriver) throws Exception{
+	    
+        //remove the metdata prior to generating attribute list
+        ArrayList<EventSet> docMetaData = new ArrayList<EventSet>();
+        for (List<EventSet> les : culledEventSets){
+            docMetaData.add(les.remove(les.size()-1));
+        }
+        
+        //initialize useful things
+        int numOfFeatureClasses = relevantEvents.size();
+        List<EventSet> list;
+        
+        List<String> features = new ArrayList<String>(numOfFeatureClasses);
 
-		//remove the metdata prior to generating attribute list
-		ArrayList<EventSet> docMetaData = new ArrayList<EventSet>();
-		for (List<EventSet> les : culledEventSets){
-			docMetaData.add(les.remove(les.size()-1));
-		}
-		
-		//initialize useful things
-		int numOfFeatureClasses = relevantEvents.size();
-		int numOfVectors = culledEventSets.size();
-		List<EventSet> list;
+        // initialize list of sets of events, which will eventually become the
+        // attributes
+        List<EventSet> allEvents = new ArrayList<EventSet>(numOfFeatureClasses);
+        
+        //Neither the doc title nor the author is in the List<List<EventSet>>, so this should work fine
+        for (int currEventSet = 0; currEventSet < numOfFeatureClasses; currEventSet++){
+            // initialize relevant list of event sets and histograms
+            list = new ArrayList<EventSet>();
+            for (int i = 0; i < numOfFeatureClasses; i++)
+                list.add(relevantEvents.get(i));
+            
+            //initialize eventSet
+            EventSet events = new EventSet();
+            events.setEventSetID(relevantEvents.get(currEventSet)
+                    .getEventSetID());
 
-		// initialize author name set
-		LinkedList<String> authors = new LinkedList<String>();
-		for (int i = 0; i < numOfVectors; i++) {
-			String author = culledEventSets.get(i).get(0).getAuthor();
-			if (!authors.contains(author))
-				authors.add(author);
-		}
-		Collections.sort(authors);
+            if (cumulativeFeatureDriver.featureDriverAt(currEventSet)
+                    .isCalcHist()) { //histogram feature
 
-		// initialize Weka attributes vector (but authors attribute will be
-		// added last)
-		FastVector attributeList = new FastVector(relevantEvents.size() + 1);
-		FastVector authorNames = new FastVector();
-		authorNames.addElement("_Unknown_");
-		for (String name : authors)
-			authorNames.addElement(name);
-		Attribute authorNameAttribute = new Attribute("authorName", authorNames);
+                // generate event histograms and unique event list
+                EventSet eventSet = list.get(currEventSet);
+                for (Event event : eventSet) {
+                    events.addEvent(event);
+                }
+                allEvents.add(events);
 
-		// initialize list of sets of events, which will eventually become the
-		// attributes
-		List<EventSet> allEvents = new ArrayList<EventSet>(numOfFeatureClasses);
-		
-		for (int currEventSet = 0; currEventSet < numOfFeatureClasses; currEventSet++){
-			// initialize relevant list of event sets and histograms
-			list = new ArrayList<EventSet>();
-			for (int i = 0; i < numOfFeatureClasses; i++)
-				list.add(relevantEvents.get(i));
-			
-			//initialize eventSet
-			EventSet events = new EventSet();
-			events.setEventSetID(relevantEvents.get(currEventSet)
-					.getEventSetID());
+            } else { // one unique numeric event
 
-			if (cumulativeFeatureDriver.featureDriverAt(currEventSet)
-					.isCalcHist()) { //histogram feature
+                // generate sole event (give placeholder value)
+                Event event = new Event("{-}");
+                events.addEvent(event);
+                allEvents.add(events);
+            }
+        }
+        
+        // Adds all of the events to the fast vector
+        int featureIndex = 0;
+        for (EventSet es : allEvents) {
+            Iterator<Event> iterator = es.iterator();
+            if (cumulativeFeatureDriver.featureDriverAt(featureIndex)
+                    .isCalcHist()) {
+                if (iterator.hasNext()){
+                    //grab first event; there should be at least one
+                    Event nextEvent = (Event) iterator.next();
+                    //get and add all middle events if they exist
+                    while (iterator.hasNext()) {
+                        features.add(nextEvent.getEvent());
+                        nextEvent = (Event) iterator.next();
+                    }
+                    //add the last event
+                    features.add(nextEvent.getEvent());
+                }
+            } else {
+                features.add(es.getEventSetID());
+            }
+            featureIndex++;
+        }
+        
+        //add the metadata back in
+        int index = 0;
+        for (List<EventSet> les : culledEventSets){
+            les.add(docMetaData.get(index));
+            index++;
+        }
+        
+        return features;
+	}
 
-				// generate event histograms and unique event list
-				EventSet eventSet = list.get(currEventSet);
-				for (Event event : eventSet) {
-					events.addEvent(event);
-				}
-				allEvents.add(events);
+	public ConcurrentHashMap<Integer,Double> createDocMap(List<String> features,
+	        List<EventSet> relevantEvents,
+            CumulativeFeatureDriver cumulativeFeatureDriver,
+            List<EventSet> documentData){ //sparse and hasDocTitles are assumed to be true
+	    
+        // generate training instances
+        ConcurrentHashMap<Integer,Double> documentMap = new ConcurrentHashMap<Integer,Double>();
+        
+        //remove metadata event
+        EventSet metadata = documentData.remove(documentData.size()-1);
+        
+        //go through all eventSets in the document
+        for (EventSet es: documentData){
+            
+            //initialize relevant information
+            ArrayList<Integer> indices = new ArrayList<Integer>();
+            ArrayList<Event> events = new ArrayList<Event>();
+            EventHistogram currHistogram = new EventHistogram();
+            
+            //whether or not we actually need this eventSet
+            boolean eventSetIsRelevant = false;
+            
+            //find out if it is a histogram or not
+            if (cumulativeFeatureDriver.featureDriverAt(
+                    documentData.indexOf(es)).isCalcHist()) {
+                
+                //find the event set in the list of relevant events
+                for (EventSet res : relevantEvents) {
+                    if (es.getEventSetID().equals(res.getEventSetID())) {
+                        eventSetIsRelevant = true;
+                        break;
+                    }
+                }
+                
+                //if it is relevant
+                if (eventSetIsRelevant) {
 
-			} else { // one unique numeric event
+                    // find the indices of the events
+                    // and count all of the events
+                    for (Event e : es) {
+                        int currIndex=0;
+                        boolean hasInner = false;
 
-				// generate sole event (give placeholder value)
-				Event event = new Event("{-}");
-				events.addEvent(event);
-				allEvents.add(events);
-			}
-		}
-		
-		// Adds all of the events to the fast vector
-		int featureIndex = 0;
-		for (EventSet es : allEvents) {
-			Iterator<Event> iterator = es.iterator();
-			if (cumulativeFeatureDriver.featureDriverAt(featureIndex)
-					.isCalcHist()) {
-				if (iterator.hasNext()){
-					//grab first event; there should be at least one
-					Event nextEvent = (Event) iterator.next();
-					//get and add all middle events if they exist
-					while (iterator.hasNext()) {
-						attributeList.addElement(nextEvent);
-						nextEvent = (Event) iterator.next();
-					}
-					//add the last event
-					attributeList.addElement(nextEvent);
-				}
-			} else {
-				attributeList.addElement(es); //add the non-hist feature
-			}
-			featureIndex++;
-		}
-		
-		// The actual list of attributes to return
-		FastVector attributes = new FastVector();
-		
-		// Add the attribute for document title if enabled
-		if (hasDocTitles) {
-			Attribute docTitle = new Attribute("Document Title", (FastVector) null);
-			attributes.addElement(docTitle);
-		}
-			
-		// here's where we create the new Attribute object and add it to the
-		// attributes list to be returned
-		for (int i = 0; i < attributeList.size(); i++) {
+                        //for the events n the set
+                        for (EventSet res : relevantEvents) {
+                            boolean found = false;
+                            for (Event re : res) {
+                                hasInner = true;
+                                
+                                //if they are the same event
+                                if (e.getEvent().equals(re.getEvent())) {
+                                    boolean inList = false;
+                                    for (Event el : events) {
+                                        if (el.getEvent().equals(e.getEvent())) {
+                                            inList = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (!inList) {
+                                        indices.add(currIndex);
+                                        events.add(e);
+                                    }
+                                    //Old location revert if change breaks
+                                    currHistogram.add(e);
+                                    found = true;
+                                }
+                                if (found){
+                                    break;
+                                }
+                                currIndex++;
+                            }
+                            if (found){
+                                break;
+                            }
+                            
+                            //if there's no inner, it was a non-hist feature.
+                            //increment by one
+                            if (!hasInner){
+                                currIndex++;
+                            }
+                        }
+                    }
+                    //calculate/add the histograms
+                    int index = 0;
+                    for (Integer i: indices){
+                        documentMap.put(i, 0.0+currHistogram.getAbsoluteFrequency(events.get(index)));
+                        index++;
+                    }
+                    
+                }
+            } else { //non histogram feature
+                
+                //initialize the index
+                int nonHistIndex = 0;
+                
+                //find the indices of the events
+                //and count all of the events
+                for (EventSet res : relevantEvents) {
+                    
+                    if (es.getEventSetID().equals(res.getEventSetID())){
+                        break;
+                    }
+                    
+                    //count to find the index
+                    boolean hasInner = false;
+                    for (@SuppressWarnings("unused") Event re : res) {
+                        hasInner = true;
+                        nonHistIndex++;
+                    }
+                    
+                    //if ther's no inner feature, incrememnt by one; we just passed a non-histogram
+                    if (!hasInner)
+                        nonHistIndex++;
+                }
 
-			// initialize parameters
-			int index = -1;
-			String eventString = "";
+                //Extract and add the event             
+                String eventString = es.eventAt(0).getEvent();
+                int startIndex = eventString.indexOf("{");
+                int endIndex = eventString.indexOf("}");
+                eventString = eventString.substring(startIndex+1,endIndex);
 
-			//we have to determine dynamically if it is an EventSet or Event
-			Object temp = (Object) attributeList.elementAt(i);
-			if (temp instanceof EventSet) {
-				//If EventSet
-				int tempIndex = 0;
-				EventSet nonHist = (EventSet) attributeList.elementAt(i);
-				boolean found = false;
+                double value = Double.parseDouble(eventString);
+                documentMap.put(nonHistIndex, value);
+            }
+        }
+        //add metadata back. Not sure if necessary
+        documentData.add(metadata);
+        
+	    return documentMap;
+	}
 
-				//for all of the EventSets in relecvant events
-				for (EventSet es : relevantEvents) {
+	public void normDocData(CumulativeFeatureDriver cfd, ConcurrentHashMap<Integer,Double> docmap, List<EventSet> documentData, List<String> features){
 
-					boolean hasInner = false;
+        int i;
+        int numOfFeatureClasses = cfd.numOfFeatureDrivers();
 
-					//increment the index if it is not this event 
-					if (nonHist.getEventSetID().equals(es.getEventSetID())) {
-						found = true;
-						index = tempIndex;
-						break;
-					}
-					for (@SuppressWarnings("unused") Event e : es) {
-						hasInner = true;
-						tempIndex++;
-					}
-					//if there is no inner feature, it was a non-hist event; incrememner by one
-					if (!hasInner)
-						tempIndex++;
-				}
+        int sentencesPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(2).getEvent());
+        int wordsPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(3).getEvent());
+        int charsPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(4).getEvent());
+        int lettersPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(5).getEvent());
+        int[] featureClassAttrsFirstIndex = new int[numOfFeatureClasses + 1];
+        
+        // initialize vector size (including authorName and title if required)
+        // and first indices of feature classes array
+        int vectorSize = 0;
+        for (i = 0; i < numOfFeatureClasses; i++) {
+            
+            String featureDriverName = cfd.featureDriverAt(i).displayName()
+                    .replace(" ", "-");
+            
+            String nextFeature = features.get(vectorSize).replace(" ", "-");
+            
+            featureClassAttrsFirstIndex[i] = vectorSize;
+            while (nextFeature.contains(featureDriverName)) {
+                vectorSize++;
+                if (vectorSize == numOfFeatureClasses)
+                    break;
+                nextFeature = features.get(vectorSize);
+            }
+        }
+        
+        //add the end index
+        featureClassAttrsFirstIndex[featureClassAttrsFirstIndex.length-1] = features.size();
+        
+        // normalizes features
+        for (i = 0; i < numOfFeatureClasses; i++) {
 
-				//if it is relevant, add to attributes
-				if (found) {
-					attributes
-							.addElement(new Attribute(nonHist.getEventSetID(), index));
-				}
+            NormBaselineEnum norm = cfd.featureDriverAt(i).getNormBaseline();
+            double factor = cfd.featureDriverAt(i).getNormFactor();
+            int start = featureClassAttrsFirstIndex[i], end = featureClassAttrsFirstIndex[i + 1], k;
+            if (norm == NormBaselineEnum.SENTENCES_IN_DOC) {
+                // use sentencesInDoc
+                if (!cfd.featureDriverAt(i).isCalcHist()) {
+                    docmap.put(start, docmap.get(start) * factor / ((double) sentencesPerDoc));
+                } else {
+                    for (k = start; k < end; k++)
+                        docmap.put(k, docmap.get(k) * factor / ((double) sentencesPerDoc));
+                }
+            } else if (norm == NormBaselineEnum.WORDS_IN_DOC) {
+                // use wordsInDoc
+                if (!cfd.featureDriverAt(i).isCalcHist()) {
+                    docmap.put(start, docmap.get(start) * factor / ((double) wordsPerDoc));
+                } else {
+                    for (k = start; k < end; k++){
+                        docmap.put(k, docmap.get(k) * factor / ((double) wordsPerDoc));
+                    }
+                }
 
-			} else {
-
-				// and current event to be transformed into an attribute
-				Event tempEvent = (Event) attributeList.elementAt(i);
-				int tempIndex = 0;
-				// get the attribute string
-				eventString = tempEvent.getEvent();
-
-				for (EventSet es : relevantEvents) {
-
-					boolean found = false; // if we've found the event, break
-											// out of the loop
-
-					// iterate over the histogram/eventset (if it is a
-					// non-histogram, this will not occur)
-					for (Event e : es) {
-						boolean innerFound = false; // if we find the event,
-													// break out of the loop
-
-						// check all of the events
-						if (e.getEvent().equals(tempEvent.getEvent())) {
-							innerFound = true;
-							found = true;
-						}
-
-						// break the loop if we found it
-						if (innerFound) {
-							index = tempIndex;
-							break;
-						}
-						// otherwise increment the index and keep looking
-						tempIndex++;
-					}
-					// break the loop if we found it
-					if (found) {
-						index = tempIndex;
-						break;
-					}
-				}
-
-				// if the feature is a relevant event, add it to the attribute
-				// list
-				if (index != -1) {
-					attributes.addElement(new Attribute(eventString, index));
-				}
-
-			}
-		}
-
-		//add the metadata back in
-		int index = 0;
-		for (List<EventSet> les : culledEventSets){
-			les.add(docMetaData.get(index));
-			index++;
-		}
-		
-		// add authors attribute as last attribute
-		attributes.addElement(authorNameAttribute);
-		return attributes;
+            } else if (norm == NormBaselineEnum.CHARS_IN_DOC) {
+                // use charsInDoc
+                if (!cfd.featureDriverAt(i).isCalcHist()) {
+                    docmap.put(start, docmap.get(start) * factor / ((double) charsPerDoc));
+                } else {
+                    for (k = start; k < end; k++)
+                        docmap.put(k, docmap.get(k) * factor / ((double) charsPerDoc));
+                }
+            } else if (norm == NormBaselineEnum.LETTERS_IN_DOC) {
+                // use charsInDoc
+                if (!cfd.featureDriverAt(i).isCalcHist()) {
+                    docmap.put(start, docmap.get(start) * factor / ((double) lettersPerDoc));
+                } else {
+                    for (k = start; k < end; k++)
+                        docmap.put(k, docmap.get(k) * factor / ((double) lettersPerDoc));
+                }
+            }
+        }
 	}
 	
-
-	/**
-	 * Creates an Instance object from a document's extracted features and the relevant event list.<br>
-	 * @param attributes the data used to construct the Instance object
-	 * @param cumulativeFeatureDriver driver used to determine the type of feature being added
-	 * @param documentData used to determine the values to assign each attribute
-	 * @return The instance object representing this document
-	 * @throws Exception
-	 */
-	//TODO replace this with a createDataMap 
-	public Instance createInstance(FastVector attributes,
-			List<EventSet> relevantEvents,
-			CumulativeFeatureDriver cumulativeFeatureDriver,
-			List<EventSet> documentData, boolean isSparse,
-			boolean hasDocTitles) throws Exception {
-
-		// initialize vector size (including authorName and title if required)
-		// and first indices of feature classes array
-		int vectorSize = attributes.size();
-		
-		// generate training instances
-		Instance inst = null;
-		if (isSparse)
-			inst = new SparseInstance(vectorSize);
-		else
-			inst = new Instance(vectorSize);
-		
-		int start = 0;
-		
-		//add the document title if need be
-		if (hasDocTitles){
-			start = 1;
-			inst.setValue((Attribute)attributes.elementAt(0),(documentData.get(documentData.size()-1).eventAt(1).getEvent().replaceAll("\\\\","/")));
-		}
-		
-		// add the document author
-		if (!(documentData.get(documentData.size()-1).eventAt(0).getEvent() == null)) {
-			inst.setValue((Attribute) attributes.elementAt(attributes.size() - 1),
-					documentData.get(documentData.size()-1).eventAt(0).getEvent());
-		}
-		
-		//remove metadata event
-		EventSet metadata = documentData.remove(documentData.size()-1);
-		
-		//-1 for indexing
-		for (int i=start; i<attributes.size()-1;i++){
-			inst.setValue((Attribute)(attributes.elementAt(i)), 0);
-		}
-		
-		//go through all eventSets in the document
-		for (EventSet es: documentData){
-			
-			//initialize relevant information
-			ArrayList<Integer> indices = new ArrayList<Integer>();
-			ArrayList<Event> events = new ArrayList<Event>();
-			EventHistogram currHistogram = new EventHistogram();
-			
-			//whether or not we actually need this eventSet
-			boolean eventSetIsRelevant = false;
-			
-			//find out if it is a histogram ot not
-			if (cumulativeFeatureDriver.featureDriverAt(
-					documentData.indexOf(es)).isCalcHist()) {
-				
-				//find the event set in the list of relevant events
-				for (EventSet res : relevantEvents) {
-					if (es.getEventSetID().equals(res.getEventSetID())) {
-						eventSetIsRelevant = true;
-						break;
-					}
-				}
-				
-				//if it is relevant
-				if (eventSetIsRelevant) {
-
-					// find the indices of the events
-					// and count all of the events
-					for (Event e : es) {
-						int currIndex=0;
-						if (hasDocTitles) {
-							currIndex=1;
-						}
-						boolean hasInner = false;
-
-						//for the events n the set
-						for (EventSet res : relevantEvents) {
-							boolean found = false;
-							for (Event re : res) {
-								hasInner = true;
-								
-								//if they are the same event
-								if (e.getEvent().equals(re.getEvent())) {
-									boolean inList = false;
-									for (Event el : events) {
-										if (el.getEvent().equals(e.getEvent())) {
-											inList = true;
-											break;
-										}
-									}
-									
-									if (!inList) {
-										indices.add(currIndex);
-										events.add(e);
-									}
-									//Old location revert if change breaks
-									currHistogram.add(e);
-									found = true;
-								}
-								//currHistogram.add(e);
-								if (found){
-									break;
-								}
-								currIndex++;
-							}
-							if (found){
-								break;
-							}
-							
-							//if there's no inner, it was a non-hist feature.
-							//increment by one
-							if (!hasInner){
-								currIndex++;
-							}
-						}
-					}
-					//calculate/add the histograms
-					int index = 0;
-					for (Integer i: indices){
-						inst.setValue((Attribute)attributes.elementAt(i),currHistogram.getAbsoluteFrequency(events.get(index)));
-						index++;
-					}
-					
-				}
-			} else { //non histogram feature
-				
-				//initialize the index
-				int nonHistIndex = 0;
-				if (hasDocTitles){
-					nonHistIndex=1;
-				}
-				
-				//find the indices of the events
-				//and count all of the events
-				for (EventSet res : relevantEvents) {
-					
-					if (es.getEventSetID().equals(res.getEventSetID())){
-						break;
-					}
-					
-					//count to find the index
-					boolean hasInner = false;
-					for (@SuppressWarnings("unused") Event re : res) {
-						hasInner = true;
-						nonHistIndex++;
-					}
-					
-					//if ther's no inner feature, incrememnt by one; we just passed a non-histogram
-					if (!hasInner)
-						nonHistIndex++;
-				}
-
-				//Extract and add the event				
-				String eventString = es.eventAt(0).getEvent();
-				int startIndex = eventString.indexOf("{");
-				int endIndex = eventString.indexOf("}");
-				eventString = eventString.substring(startIndex+1,endIndex);
-
-				double value = Double.parseDouble(eventString);
-				inst.setValue((Attribute) attributes.elementAt(nonHistIndex), value);
-			}
-		}
-		//add metadata back. Not sure if necessary
-		documentData.add(metadata);
-		
-		return inst;
-	}
-
 	/**
 	 * Normalizes all of the features of the specified instance.<br>
 	 * Does not support global normalization baselines!<br>
@@ -730,8 +633,6 @@ public class FeatureExtractionAPI {
 
 		int i;
 		int numOfFeatureClasses = cfd.numOfFeatureDrivers();
-
-		//HashMap<Instance, int[]> featureClassPerInst = null;
 	
 		int sentencesPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(2).getEvent());
 		int wordsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(3).getEvent());
@@ -752,7 +653,6 @@ public class FeatureExtractionAPI {
 			featureClassAttrsFirstIndex[i] = vectorSize;
 			while (nextFeature.contains(featureDriverName)) {
 				vectorSize++;
-			//	nextFeature = instance.attribute(vectorSize).name();
 				nextFeature = ((Attribute)attributes.elementAt(vectorSize)).name();
 			}
 		}
