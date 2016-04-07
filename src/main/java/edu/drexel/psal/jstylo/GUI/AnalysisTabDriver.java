@@ -168,7 +168,14 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTrainingDataMap());
+                    // TODO fix this--writing to ARFF no longer supported.
+                    // Remove button / print something out!
+                    boolean succeeded = true;
+                    try {
+                        main.ib.getTrainingDataMap().saveDataMapToCSV(path);
+                    } catch (Exception e) {
+                        succeeded = false;
+                    }
 					if (succeeded) {
 						Logger.log("Saved training features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -209,7 +216,13 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".csv"))
 						path += ".csv";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTrainingDataMap());
+					
+                    boolean succeeded = true;
+                    try {
+                        main.ib.getTrainingDataMap().saveDataMapToCSV(path);
+                    } catch (Exception e) {
+                        succeeded = false;
+                    }
 					if (succeeded) {
 						Logger.log("Saved training features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
@@ -250,8 +263,16 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".arff"))
 						path += ".arff";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToARFF(path, main.ib.getTestDataMap());
-					if (succeeded) {
+
+                    // TODO fix this--writing to ARFF no longer supported.
+                    // Remove button / print something out!
+                    boolean succeeded = true;
+                    try {
+                        main.ib.getTestDataMap().saveDataMapToCSV(path);
+                    } catch (Exception e) {
+                        succeeded = false;
+                    }
+                    if (succeeded) {
 						Logger.log("Saved test features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
 					} else {
@@ -291,7 +312,13 @@ public class AnalysisTabDriver {
 					String path = f.getAbsolutePath();
 					if (!path.toLowerCase().endsWith(".csv"))
 						path += ".csv";
-					boolean succeeded = LocalParallelFeatureExtractionAPI.writeToCSV(path, main.ib.getTestDataMap());
+					
+					boolean succeeded = true;
+					try {
+					    main.ib.getTestDataMap().saveDataMapToCSV(path);
+					} catch (Exception e){
+					    succeeded = false;
+					}
 					if (succeeded) {
 						Logger.log("Saved test features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();

@@ -17,16 +17,12 @@ import com.jgaap.generics.Event;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.analyzers.WekaAnalyzer;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
-import weka.core.Instance;
-import weka.core.converters.ArffSaver;
-import weka.core.converters.CSVSaver;
 
 /**
  * An API for the feature extraction process. Designed for running on a single machine
@@ -612,50 +608,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	}
 
 	//////////////////////////////////////////// Utilities
-	/**
-	 * Writes the given Instances set into an ARFF file in the given filename.
-	 * @param filename
-	 * 		The filename of the ARFF file to create.
-	 * @param set
-	 * 		The Weka Instances object from which to create an ARFF file.
-	 * @return
-	 * 		True iff the write succeeded.
-	 */
-	public static boolean writeToARFF(String filename, DataMap set) {
-		try {
-			ArffSaver saver = new ArffSaver();
-			
-			saver.setInstances(WekaAnalyzer.instancesFromDataMap(set));
-			saver.setFile(new File(filename));
-			saver.writeBatch();
-			return true;
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			return false;
-		}
-	}
-	
-	/**
-	 * Writes the given Instances set into an CSV file in the given filename.
-	 * @param filename
-	 * 		The filename of the CSV file to create.
-	 * @param set
-	 * 		The Weka Instances object from which to create an ARFF file.
-	 * @return
-	 * 		True iff the write succeeded.
-	 */
-	public static boolean writeToCSV(String filename, DataMap set) {
-		try {
-			CSVSaver saver = new CSVSaver();
-			saver.setInstances(WekaAnalyzer.instancesFromDataMap(set));
-			saver.setFile(new File(filename));
-			saver.writeBatch();
-			return true;
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			return false;
-		}
-	}
 	
 	/**
 	 * Sets classification relevant data to null
@@ -780,7 +732,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 */
 	public class CreateTrainInstancesThread extends Thread {
 		
-		ArrayList<Instance> list; //the collection of instances for this div
 		int div; //the number of instances to be created per thread
 		int threadId; //the div for this thread
 		int numdocs; //the total number of docs to be processed
@@ -792,11 +743,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			threadId = t;
 			numdocs = n;
 			cfd=cd;
-		}
-		
-		//Used to fetch this div's list of instances
-		public ArrayList<Instance> getList() {
-			return list;
 		}
 		
 		//Run method

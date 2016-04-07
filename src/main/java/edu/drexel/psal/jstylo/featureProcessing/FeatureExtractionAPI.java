@@ -17,8 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.core.Attribute;
-import weka.core.FastVector;
-import weka.core.Instance;
 import weka.core.Instances;
 
 import com.jgaap.generics.Document;
@@ -620,98 +618,6 @@ public class FeatureExtractionAPI {
             }
         }
 	}
-	
-	/**
-	 * Normalizes all of the features of the specified instance.<br>
-	 * Does not support global normalization baselines!<br>
-	 * @param cumulativeFeatureDriver the driver used to tell what to normalize and in what fashion. 
-	 * @param instance the object to be normalized
-	 * @throws Exception
-	 */
-	public void normInstance(CumulativeFeatureDriver cfd, Instance instance,
-			List<EventSet> documentData, boolean hasDocTitles, FastVector attributes) throws Exception {
-
-		int i;
-		int numOfFeatureClasses = cfd.numOfFeatureDrivers();
-	
-		int sentencesPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(2).getEvent());
-		int wordsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(3).getEvent());
-		int charsPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(4).getEvent());
-		int lettersPerInst = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(5).getEvent());
-		int[] featureClassAttrsFirstIndex = new int[numOfFeatureClasses + 1];
-		
-		// initialize vector size (including authorName and title if required)
-		// and first indices of feature classes array
-		int vectorSize = (hasDocTitles ? 1 : 0);
-		for (i = 0; i < numOfFeatureClasses; i++) {
-			
-			String featureDriverName = cfd.featureDriverAt(i).displayName()
-					.replace(" ", "-");
-			
-			String nextFeature = ((Attribute)attributes.elementAt(vectorSize)).name().replace(" ", "-");;
-			
-			featureClassAttrsFirstIndex[i] = vectorSize;
-			while (nextFeature.contains(featureDriverName)) {
-				vectorSize++;
-				nextFeature = ((Attribute)attributes.elementAt(vectorSize)).name();
-			}
-		}
-		
-		//add the end index
-		featureClassAttrsFirstIndex[featureClassAttrsFirstIndex.length-1] = instance.numAttributes()-1;
-		
-		// normalizes features
-		for (i = 0; i < numOfFeatureClasses; i++) {
-
-			NormBaselineEnum norm = cfd.featureDriverAt(i).getNormBaseline();
-			double factor = cfd.featureDriverAt(i).getNormFactor();
-			int start = featureClassAttrsFirstIndex[i], end = featureClassAttrsFirstIndex[i + 1], k;
-
-			if (norm == NormBaselineEnum.SENTENCES_IN_DOC) {
-				// use wordsInDoc
-				if (!cfd.featureDriverAt(i).isCalcHist()) {
-					instance.setValue(start, instance.value(start) * factor
-							/ ((double) sentencesPerInst));
-				} else {
-					for (k = start; k < end; k++)
-						instance.setValue(k, instance.value(k) * factor
-								/ ((double) sentencesPerInst));
-				}
-			} else if (norm == NormBaselineEnum.WORDS_IN_DOC) {
-				// use wordsInDoc
-				if (!cfd.featureDriverAt(i).isCalcHist()) {
-					instance.setValue(start, instance.value(start) * factor
-							/ ((double) wordsPerInst));
-				} else {
-					for (k = start; k < end; k++){
-						instance.setValue(k, instance.value(k) * factor
-								/ ((double) wordsPerInst));
-					}
-				}
-
-			} else if (norm == NormBaselineEnum.CHARS_IN_DOC) {
-				// use charsInDoc
-				if (!cfd.featureDriverAt(i).isCalcHist()) {
-					instance.setValue(start, instance.value(start) * factor
-							/ ((double) charsPerInst));
-				} else {
-					for (k = start; k < end; k++)
-						instance.setValue(k, instance.value(k) * factor
-								/ ((double) charsPerInst));
-				}
-			} else if (norm == NormBaselineEnum.LETTERS_IN_DOC) {
-				// use charsInDoc
-				if (!cfd.featureDriverAt(i).isCalcHist()) {
-					instance.setValue(start, instance.value(start) * factor
-							/ ((double) lettersPerInst));
-				} else {
-					for (k = start; k < end; k++)
-						instance.setValue(k, instance.value(k) * factor
-								/ ((double) lettersPerInst));
-				}
-			}
-		}
-	}
 
 	/**
 	 * Calculates InfoGain on the instances to provide information on how useful each feature was to identifying the documents.<br>
@@ -803,56 +709,6 @@ public class FeatureExtractionAPI {
 		
 		//return the array consisting only of the top n values
 		return keepArray;
-	}
-
-	/**
-	 * Removes all but the top N features from a single Instance object.<br>
-	 * @param sortedFeatures
-	 * @param inst
-	 * @param n
-	 * @throws Exception
-	 */
-	public void applyInfoGain(double[][] sortedFeatures, Instance inst, int n)
-			throws Exception {
-		
-		// find out how many values to remove
-		int valuesToRemove = -1;
-		if (n > sortedFeatures.length)
-			;
-		else
-			valuesToRemove = sortedFeatures.length - n;
-
-		if (!(valuesToRemove == -1)) {
-			double[][] removeArray = new double[valuesToRemove][2]; // array to be sorted and be removed from the Instances object
-
-			// populate the arrays
-			for (int i = 0; i < sortedFeatures.length; i++) {
-				if (i < n) {
-					;
-				} else {
-					removeArray[i - n][0] = sortedFeatures[i][0];
-					removeArray[i - n][1] = sortedFeatures[i][1];
-				}
-			}
-
-			// sort based on index
-			Arrays.sort(removeArray, new Comparator<double[]>() {
-				@Override
-				public int compare(final double[] first, final double[] second) {
-					return -1 * ((Double) first[1]).compareTo(((Double) second[1]));
-				}
-			});
-
-			// for all of the values to remove
-			for (int i = 0; i < removeArray.length; i++) {
-
-				// get the index to remove
-				int indexToRemove = (int) Math.round(removeArray[i][1]);
-
-				// remove from the Instances object
-				inst.deleteAttributeAt(indexToRemove);
-			}
-		}
 	}
 	
 	/**
