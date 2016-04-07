@@ -38,7 +38,6 @@ public class FullAPI {
 	 * numFolds = 10<br>
 	 * type = analysisType.CROSS_VALIDATION<br>
 	 * useDocTitles = false<br>
-	 * isSparse = true<br>
 	 */
 	public static class Builder{
 		private String psXMLPath;
@@ -49,7 +48,6 @@ public class FullAPI {
 		private Analyzer analyzer;
 		private int numFolds = 10;
 		private analysisType type = analysisType.CROSS_VALIDATION;
-		private boolean isSparse = true;
 		private boolean loadDocContents = false;
 		private Preferences p = null;
 		private boolean useCache = false;
@@ -115,11 +113,6 @@ public class FullAPI {
 		public Builder chunkDocs(boolean ch){
 		    chunkDocs = ch;
 		    return this;
-		}
-		
-		public Builder isSparse(boolean is){
-			isSparse = is;
-			return this;
 		}
 		
 		public Builder loadDocContents(boolean ldc){
@@ -190,7 +183,6 @@ public class FullAPI {
 		
 		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
-		ib.setUseSparse(b.isSparse);
 		ib.setChunkDocs(b.chunkDocs);
 		verifierName = b.verifierName;
 		selected = b.type;
@@ -331,13 +323,6 @@ public class FullAPI {
 	
 	public void setProblemSet(ProblemSet probSet){
 		ib.setProblemSet(probSet);
-	}
-	
-	/**
-	 * @param sparse boolean value. Whether or not to use sparse instances
-	 */
-	public void setUseSparse(boolean sparse){
-		ib.setUseSparse(sparse);
 	}
 	
 	/**
@@ -507,7 +492,7 @@ public class FullAPI {
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
                     .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
                     .setAnalyzer(new WekaAnalyzer(Class.forName("weka.classifiers.functions.SMO").newInstance()))
-                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
+                    .numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -516,7 +501,7 @@ public class FullAPI {
         }
 
 		test.prepareInstances();
-		test.calcInfoGain(); //Low priority
+		test.calcInfoGain();
 		//test.applyInfoGain(5);
 		test.run();
 		System.out.println(test.getStatString());

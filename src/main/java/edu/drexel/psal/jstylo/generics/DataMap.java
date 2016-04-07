@@ -12,6 +12,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class is a generic class designed to hold all of the information extracted from documents prior to classification.
+ * It consists of a few key data structures:
+ * 
+ * 1) A Massive nested map that keys authors to a map of documents (which is keyed on document title and mapped to a map of data)
+ *      This is the data extracted from the documents
+ *      
+ * 2) A Map<Integer,String> which is the map of index to feature name. These indices correspond to the indices used as a key
+ *      in the innermost map of the primary data structure.
+ *      
+ * This class is backed by ConcurrentHashMaps as it is intended to be multi-thread capable.
+ * 
+ * @author Travis Dutko
+ */
 public class DataMap {
 
     //so... this is a multi-tiered map containing everything we need to know. 

@@ -123,22 +123,6 @@ public class AnalysisTabDriver {
 			}
 		});
 
-		// sparse checkbox
-		// =======================
-
-		main.analysisSparseInstancesJCheckBox.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				boolean selected = main.analysisSparseInstancesJCheckBox.isSelected();
-				if (selected)
-					main.setPreference("useSparse", "1");
-				else
-					main.setPreference("useSparse", "0");
-			}
-		});
-
 		// export training to ARFF button
 		// ==============================
 
@@ -601,7 +585,6 @@ public class AnalysisTabDriver {
 		// main.analysisOutputAccByClassJCheckBox.setEnabled(!lock);
 		// main.analysisOutputConfusionMatrixJCheckBox.setEnabled(!lock);
 		main.analysisOutputFeatureVectorJCheckBox.setEnabled(!lock);
-		main.analysisSparseInstancesJCheckBox.setEnabled(!lock);
 		main.analysisCalcInfoGainJCheckBox.setEnabled(!lock);
 		main.analysisApplyInfoGainJCheckBox.setEnabled(!lock);
 		main.infoGainValueJTextField.setEnabled(!lock);
@@ -831,11 +814,9 @@ public class AnalysisTabDriver {
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
-				main.lpfeAPI.setUseSparse(main.analysisSparseInstancesJCheckBox.isSelected());
 
 				// Extract the training information
-				content += getTimestamp() + " Extracting features from training corpus ("
-						+ (main.lpfeAPI.isSparse() ? "" : "not ") + "using sparse representation)...\n";
+				content += getTimestamp() + " Extracting features from training corpus using sparse representation)...\n";
 				updateResultsView();
 				
 				if (main.lpfeAPI.isUsingCache())
@@ -922,8 +903,7 @@ public class AnalysisTabDriver {
 				if (classifyTestDocs) {
 					Logger.logln("Extracting features from test documents...");
 
-					content += getTimestamp() + " Extracting features from test documents ("
-							+ (main.lpfeAPI.isSparse() ? "" : "not ") + "using sparse representation)...\n";
+					content += getTimestamp() + " Extracting features from test documents (using sparse representation)...\n";
 					updateResultsView();
 
 					//if we're working with known authors, remove the "_Unknown_" author

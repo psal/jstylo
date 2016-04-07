@@ -66,7 +66,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * cfdPath and cfd<br>
 	 * 
 	 * All other parameters have the following default values:<br>
-	 * isSparse: false<br>
 	 * numThreads: 4<br>
 	 */
 	public static class Builder{
@@ -74,7 +73,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		private String cfdPath;
 		private ProblemSet ps;
 		private CumulativeFeatureDriver cfd;
-		private boolean isSparse = false;
 		private boolean loadDocContents = false;
 		private boolean useCache = false;
 		private Preferences p = null;
@@ -96,11 +94,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		
 		public Builder cfd(CumulativeFeatureDriver cfdr){
 			cfd = cfdr;
-			return this;
-		}
-		
-		public Builder isSparse(boolean is){
-			isSparse = is;
 			return this;
 		}
 		
@@ -175,12 +168,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			preferences = b.p;
 		}
 		
-		
-		if(b.isSparse)
-			preferences.setPreference("useSparse", "1");
-		else
-			preferences.setPreference("useSparse", "0");
-
 		if (b.loadDocContents)
 			preferences.setPreference("loadDocContents", "1");
 		else
@@ -458,17 +445,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		infoGain = doubles;
 	}
 	
-	
-	/**
-	 * @param sparse whether or not to use sparse instances
-	 */
-	public void setUseSparse(boolean sparse){
-		if (sparse)
-			preferences.setPreference("useSparse","1");
-		else
-			preferences.setPreference("useSparse","0");
-	}
-	
 	/**
 	 * @param ldc whether or not we should load doc contents
 	 */
@@ -538,14 +514,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	public int getNumThreads() {
 		String s = preferences.getPreference("numCalcThreads");
 		return Integer.parseInt(s);
-	}
-	
-
-	/**
-	 * @return true if we are using sparse instances, false if not
-	 */
-	public boolean isSparse() {
-		return preferences.getBoolPreference("useSparse");
 	}
 	
 	/**

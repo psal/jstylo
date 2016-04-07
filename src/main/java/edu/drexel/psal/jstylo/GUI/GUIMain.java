@@ -225,7 +225,6 @@ public class GUIMain extends javax.swing.JFrame {
 	protected JButton analysisSaveResultsJButton;
 	protected JCheckBox analysisOutputAccByClassJCheckBox;
 	protected JCheckBox analysisOutputConfusionMatrixJCheckBox;
-	protected JCheckBox analysisSparseInstancesJCheckBox;
 	protected JCheckBox analysisOutputFeatureVectorJCheckBox;
 	protected JCheckBox analysisCalcInfoGainJCheckBox;
 	protected JTextField infoGainValueJTextField;
@@ -1397,13 +1396,6 @@ public class GUIMain extends javax.swing.JFrame {
 							analysisOutputFeatureVectorJCheckBox.setSelected(getBoolPreference("printVectors"));
 							options.add(analysisOutputFeatureVectorJCheckBox);
 							analysisOutputFeatureVectorJCheckBox.setText("Output feature vectors (ARFF format)");
-						}
-						{
-							analysisSparseInstancesJCheckBox = new JCheckBox();
-							analysisSparseInstancesJCheckBox.setToolTipText("Display non-zero features only.");
-							analysisSparseInstancesJCheckBox.setSelected(lpfeAPI.isSparse());
-							options.add(analysisSparseInstancesJCheckBox);
-							analysisSparseInstancesJCheckBox.setText("Use sparse representation for feature vectors");
 						}
 						{	
 							analysisCalcInfoGainJCheckBox = new JCheckBox();
