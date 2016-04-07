@@ -190,7 +190,7 @@ public class GenericProblemSetCreator
             File blogDir = new File("/Users/bekahoverdorf/Documents/PSAL/bt/" +
                     "blogs/grouped_blogs_" + i + "/");
 
-            int numGreaterThanTen = 0;
+            //int numGreaterThanTen = 0;
             if(!blogDir.exists())
             {
                 throw new Exception(blogDir.getPath());
@@ -199,10 +199,10 @@ public class GenericProblemSetCreator
             for(File author : authorDirs)
             {
                 File[] docs = BekahUtil.listNotHiddenFiles(author);
-                if(docs.length > 10)
-                {
-                    numGreaterThanTen++;
-                }
+//                if(docs.length > 10)
+//                {
+//                    numGreaterThanTen++;
+//                }
                 String name = author.getName();
                 String authorNamePure = "";
                 for(int j = 0; j < name.length(); j++)

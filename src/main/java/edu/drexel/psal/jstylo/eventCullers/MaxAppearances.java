@@ -2,8 +2,6 @@ package edu.drexel.psal.jstylo.eventCullers;
 
 import java.util.*;
 
-import com.jgaap.canonicizers.UnifyCase;
-import com.jgaap.eventDrivers.NaiveWordEventDriver;
 import com.jgaap.generics.*;
 
 /**

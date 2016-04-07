@@ -7,7 +7,6 @@ import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger; 
-import edu.stanford.nlp.tagger.maxent.TTags;
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 import java.io.*;
@@ -71,14 +70,12 @@ public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDri
 				es.addEvent(new Event(tw.tag()));
 		}
 		
-		//TODO trying to clean out the sub objects
 		int n = sentences.size();
 		for (int i = 0; i<n; i++){
 			List<HasWord> sentence =sentences.remove(0);
 			int m = sentence.size();
 			for (int j = 0; j<m; j++){
-				HasWord hw = sentence.remove(0);
-				hw = null;
+				sentence.remove(0);
 			}
 			sentence.clear();
 			sentence = null;
@@ -106,12 +103,8 @@ public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDri
 		}
 		return t;
 	}
-	//TODO
+	
 	public void destroyTagger() {
-		TTags tt;
-		if (tagger != null)
-			tt = tagger.getTags();
-		
 		setTaggerPath(null);
 		tagger = null;
 	}

@@ -3,7 +3,6 @@ package edu.drexel.psal.jstylo.canonicizers;
 import java.util.*;
 
 import com.jgaap.generics.Canonicizer;
-import com.jgaap.generics.Document;
 
 /** 
  * Applies special keys from the text onto it.

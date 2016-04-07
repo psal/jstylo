@@ -508,9 +508,5 @@ public class FullAPI {
 		System.out.println(test.getReadableInfoGain(false));
 		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
- /*
-  *                 analysisDriver = new WekaAnalyzer(Class.forName(classifierPath) //make a wekaAnalyzer
-                        .newInstance());
-  */
 	}
 }

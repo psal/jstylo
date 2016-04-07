@@ -49,6 +49,7 @@ public class BekahUtil
             System.out.println("deleation in progress... ");
             deleteDirAndAllChildrenInner(file);
         }
+        in.close();
     }
 
     /**
@@ -273,7 +274,8 @@ public class BekahUtil
         String backup = "/Users/bekahoverdorf/btbackup/timestamp" + BekahUtil.getNow();
 
         String path = f.getAbsolutePath();
-        Scanner pathScanner = new Scanner(path).useDelimiter("/");
+        Scanner baseScanner = new Scanner(path);
+        Scanner pathScanner = baseScanner.useDelimiter("/");
 
         boolean record = false;
         while (pathScanner.hasNext())
@@ -312,6 +314,8 @@ public class BekahUtil
         BufferedWriter out = new BufferedWriter(fstream);
         out.write(toWrite);
         out.close();
+        pathScanner.close();
+        baseScanner.close();
     }
 
     /**
@@ -331,6 +335,7 @@ public class BekahUtil
 
     }
 
+    @SuppressWarnings("unused")
     private static void findMe(String toFind, File inDir)
     {
         try
@@ -374,6 +379,7 @@ public class BekahUtil
         }
     }
 
+    @SuppressWarnings("unused")
     private static void countWords() throws InterruptedException
     {
         while (true)
@@ -390,7 +396,7 @@ public class BekahUtil
             catch (Exception ex)
             {
                 int oneMinute = 1000 * 60;
-                int thritySeconds = 1000 * 60 / 2;
+                int thritySeconds = oneMinute / 2;
                 Thread.sleep(thritySeconds);
             }
         }
@@ -448,6 +454,7 @@ public class BekahUtil
         }
     }
 
+    @SuppressWarnings("restriction")
     public static synchronized void playSound(File file) throws FileNotFoundException, IOException, InterruptedException
     {
         InputStream in = new FileInputStream(file);
