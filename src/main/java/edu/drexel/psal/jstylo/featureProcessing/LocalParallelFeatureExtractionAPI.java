@@ -23,6 +23,7 @@ import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
+import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
 
 /**
  * An API for the feature extraction process. Designed for running on a single machine
@@ -416,10 +417,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public void applyInfoGain(int n) throws Exception {
-		//setInfoGain(applyInfoGain(getInfoGain(), trainingInstances, n)); //TODO need to port this.
-		applyInfoGain(getInfoGain(), trainingDataMap, n);
+		setInfoGain(InfoGain.applyInfoGain(getInfoGain(), trainingDataMap, n));
 		if (testingDataMap != null){ // Apply infoGain to test set if we have one
-			applyInfoGain(getInfoGain(), testingDataMap, n);
+			InfoGain.applyInfoGain(getInfoGain(), testingDataMap, n);
 		}
 	}
 
@@ -429,7 +429,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @throws Exception
 	 */
 	public double[][] calculateInfoGain() throws Exception{
-		setInfoGain(calcInfoGain(trainingDataMap));
+		setInfoGain(InfoGain.calcInfoGain(trainingDataMap));
 		return getInfoGain();
 	}
 	
