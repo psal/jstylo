@@ -8,7 +8,6 @@ import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAP
 import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
-import edu.drexel.psal.jstylo.generics.Temp;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.AnalyzerTypeEnum;
@@ -28,6 +27,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -40,7 +40,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import com.jgaap.generics.Document;
 
 import weka.classifiers.Evaluation;
-import weka.core.Instances;
 
 public class AnalysisTabDriver {
 
@@ -986,14 +985,14 @@ public class AnalysisTabDriver {
 						}
 						
 						//print out the remaining features and their infoGain values.
-						Instances trainingInstances = new Instances(WekaAnalyzer.instancesFromDataMap(main.ib.getTrainingDataMap()));
+						Map<Integer,String> features = main.ib.getTrainingDataMap().getFeatures();
 						for (int i = 0; i < infoGain.length; i++) {
 							
 							//once we hit a "0" infogain value, stop printing the data.
 							if (infoGain[i][0]==0){ break; }
 							
 							int index = (int) Math.round(infoGain[i][1]);
-							content += String.format("> %-50s   %f\n", trainingInstances.attribute(index).name(),
+							content += String.format("> %-50s   %f\n", features.get(index),
 									infoGain[i][0]);
 						}
 						updateResultsView();
@@ -1128,15 +1127,10 @@ public class AnalysisTabDriver {
 						Logger.log("Starting classification...\n");
 						updateResultsView();
 
-						//get the instances
-						Instances train = WekaAnalyzer.instancesFromDataMap(main.ib.getTrainingDataMap());
-						Instances test = WekaAnalyzer.instancesFromDataMap(main.ib.getTestDataMap());
-						test.setClassIndex(test.numAttributes() - 1);
-
 						//create the evaluation
 						Evaluation results = null;
 						try {
-							results = main.analysisDriver.getTrainTestEval(Temp.datamapFromInstances(train,true), Temp.datamapFromInstances(test,true));
+							results = main.analysisDriver.getTrainTestEval(main.ib.getTrainingDataMap(), main.ib.getTestDataMap());
 						} catch (Exception e) {
 							Logger.logln("Failed to build train test eval with known authors!", LogOut.STDERR);
 							content += "Failed to build train test eval with known authors!";
