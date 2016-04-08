@@ -2,6 +2,7 @@ package edu.drexel.psal.jstylo.test;
 
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
+import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
@@ -348,9 +349,10 @@ public class CacheTests
             long bef1 = System.currentTimeMillis();
             test.prepareInstances();
             test.run();
+            ExperimentResults r1 = test.getResults();
             long aft1 = System.currentTimeMillis();
             
-            String result1 = test.getEvaluation().toSummaryString();
+            String result1 = r1.getStatisticsString();
             System.out.println(result1);
             
             FullAPI test2 = new FullAPI.Builder().cfdPath(path.toString())
@@ -361,8 +363,9 @@ public class CacheTests
             long bef2 = System.currentTimeMillis();
             test2.prepareInstances();
             test2.run();
+            ExperimentResults r2 = test2.getResults();
             long aft2 = System.currentTimeMillis();
-            String result2 = test2.getEvaluation().toSummaryString();
+            String result2 = r2.getStatisticsString();
             System.out.println(result2);
             
             Assert.assertEquals("Cached results different from non-cached results", result1, result2);

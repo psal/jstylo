@@ -1,6 +1,8 @@
 package edu.drexel.psal.jstylo.machineLearning.weka;
 
 import edu.drexel.psal.jstylo.generics.DataMap;
+import edu.drexel.psal.jstylo.generics.DocResult;
+import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 
 import java.util.ArrayList;
@@ -42,6 +44,10 @@ public class WekaAnalyzer extends Analyzer {
 	 */
 	private Instances testingInstances;
 	
+	/**
+	 * Document titles
+	 */
+	private List<String> documentTitles;
 	
 	/* ============
 	 * constructors
@@ -83,10 +89,12 @@ public class WekaAnalyzer extends Analyzer {
 	 * 		classification probability.
 	 */
 	@Override
-	public Map<String, Map<String, Double>> classify(DataMap trainMap,	
+	public ExperimentResults classify(DataMap trainMap,	
 			DataMap testMap, List<Document> unknownDocs) {
+	    documentTitles = testMap.getDocumentTitles();
 		trainingInstances = WekaUtils.instancesFromDataMap(trainMap);					
 		testingInstances = WekaUtils.instancesFromDataMap(testMap);
+		ExperimentResults results = new ExperimentResults();
 		// initialize authors (extract from training set)
 		List<String> authors = new ArrayList<String>();
 		Attribute authorsAttr = trainingInstances.attribute("authorName");
@@ -109,6 +117,7 @@ public class WekaAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 		
+		
 		// classify test cases
 		Map<String,Double> map;
 		double[] currRes;
@@ -123,13 +132,14 @@ public class WekaAnalyzer extends Analyzer {
 				for (int j=0; j<numOfAuthors; j++) {
 					map.put(authors.get(j), currRes[j]);
 				}
+				//TODO
+				results.addDocResult(new DocResult(documentTitles.get(i),map));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 		
-		results = res;
-		return res;
+		return results;
 	}
 	
 	/**
@@ -144,10 +154,15 @@ public class WekaAnalyzer extends Analyzer {
 	 * 		The evaluation object with cross-validation results, or null if failed running.
 	 */
 	@Override
-	public Evaluation runCrossValidation(DataMap datamap, int folds, long randSeed) {
+	//FIXME
+	public ExperimentResults runCrossValidation(DataMap datamap, int folds, long randSeed) {
+	    documentTitles = datamap.getDocumentTitles();
 	    Instances data = WekaUtils.instancesFromDataMap(datamap);
+	    //System.exit(1);
 		// setup
 		data.setClass(data.attribute("authorName"));
+		
+		
 		Instances randData = new Instances(data);
 		Random rand = new Random(randSeed);
 		randData.randomize(rand);
@@ -159,7 +174,6 @@ public class WekaAnalyzer extends Analyzer {
 			eval = new Evaluation(randData);
 			for (int n = 0; n < folds; n++) {
 				Instances train = randData.trainCV(folds, n);
-							
 				Instances test = randData.testCV(folds, n);
 				// build and evaluate classifier
 				Classifier clsCopy = Classifier.makeCopy(classifier);
@@ -170,7 +184,7 @@ public class WekaAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 		
-		return eval;
+		return WekaUtils.resultsFromEvaluation(eval, data.attribute(data.numAttributes()-1).toString(),documentTitles);
 	}
 	
 	protected String resultsString(Evaluation eval){
@@ -188,7 +202,8 @@ public class WekaAnalyzer extends Analyzer {
 	}
 	
 	@Override
-	public Evaluation getTrainTestEval(DataMap trainMap, DataMap testMap) throws Exception{
+	public ExperimentResults getTrainTestEval(DataMap trainMap, DataMap testMap) throws Exception{
+	    documentTitles = testMap.getDocumentTitles();
 	    Instances train = WekaUtils.instancesFromDataMap(trainMap);
 	    Instances test = WekaUtils.instancesFromDataMap(testMap);
         test.setClassIndex(test.numAttributes()-1);
@@ -198,15 +213,17 @@ public class WekaAnalyzer extends Analyzer {
 		Evaluation eval = new Evaluation(train);
 		test.setClassIndex(test.numAttributes()-1);
 		eval.evaluateModel(cls,test);
-		return eval;
+		return WekaUtils.resultsFromEvaluation(eval,train.attribute(train.numAttributes()-1).toString(),documentTitles);
 	}
 	
 	@Override
-	public Evaluation runCrossValidation(DataMap datamap, int folds, long randSeed,
+	public ExperimentResults runCrossValidation(DataMap datamap, int folds, long randSeed,
 			int relaxFactor) {
 	    
 		if (relaxFactor==1)
 			return runCrossValidation(datamap,folds,randSeed);
+		
+		documentTitles = datamap.getDocumentTitles();
 		
 		Instances data = WekaUtils.instancesFromDataMap(datamap);
 		
@@ -233,7 +250,7 @@ public class WekaAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 
-		return eval; 
+		return WekaUtils.resultsFromEvaluation(eval,data.attribute(data.numAttributes()-1).toString(),documentTitles); 
 	}
 	
 	/**
@@ -246,7 +263,7 @@ public class WekaAnalyzer extends Analyzer {
 	 * @return
 	 * 		The evaluation object with cross-validation results, or null if did not succeed running.
 	 */
-	public Evaluation runCrossValidation(DataMap datamap, int folds) {
+	public ExperimentResults runCrossValidation(DataMap datamap, int folds) {
 		long randSeed = 0;
 		return runCrossValidation(datamap, folds, randSeed);
 	}

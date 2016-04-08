@@ -313,7 +313,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		if (ps.getAllTestDocs().size()==0){
 			testingDataMap=null;
 		} else { //otherwise go through the whole process
-			
+			testingDataMap = new DataMap("testing data",features);
 			//create/fetch data
 			int numThreads = getNumThreads();
 			int threadsToUse = numThreads;

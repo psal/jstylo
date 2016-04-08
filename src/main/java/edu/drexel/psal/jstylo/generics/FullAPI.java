@@ -1,7 +1,5 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.util.Map;
-
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
@@ -9,7 +7,6 @@ import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
-import weka.classifiers.Evaluation;
 
 /**
  * 
@@ -147,8 +144,7 @@ public class FullAPI {
 	
 	
 	//Result Data
-	Map<String,Map<String, Double>> trainTestResults;
-	Evaluation resultsEvaluation;
+	ExperimentResults experimentResults;
 	
 	///////////////////////////////// Constructor
 	/**
@@ -250,12 +246,12 @@ public class FullAPI {
 	
 		//do a cross val
 		case CROSS_VALIDATION:
-			resultsEvaluation = analysisDriver.runCrossValidation(ib.getTrainingDataMap(), numFolds, 0);
+			experimentResults = analysisDriver.runCrossValidation(ib.getTrainingDataMap(), numFolds, 0);
 			break;
 
 		// do a train/test
 		case TRAIN_TEST_UNKNOWN:
-			trainTestResults = analysisDriver.classify(ib.getTrainingDataMap(), ib.getTestDataMap(), ib.getProblemSet().getAllTestDocs());
+		    experimentResults = analysisDriver.classify(ib.getTrainingDataMap(), ib.getTestDataMap(), ib.getProblemSet().getAllTestDocs());
 			break;
 
 		//do a train/test where we know the answer and just want statistics
@@ -264,7 +260,7 @@ public class FullAPI {
 			try {
 				DataMap train = ib.getTrainingDataMap();
 				DataMap test = ib.getTestDataMap();
-				resultsEvaluation = analysisDriver.getTrainTestEval(train,test);
+				experimentResults = analysisDriver.getTrainTestEval(train,test);
 			} catch (Exception e) {
 				Logger.logln("Failed to build trainTest Evaluation");
 				e.printStackTrace();
@@ -435,35 +431,22 @@ public class FullAPI {
 	}
 	
 	/**
-	 * @return Map containing train/test results
-	 */
-	public Map<String,Map<String, Double>> getTrainTestResults(){
-		return trainTestResults;
-	}
-	
-	/**
 	 * @return the evaluation object containing the classification data
 	 */
-	public Evaluation getEvaluation(){
-		return resultsEvaluation;
+	public ExperimentResults getResults(){
+		return experimentResults;
 	}
 	
 	/**
 	 * @return String containing accuracy, metrics, and confusion matrix from the evaluation
 	 */
-	public String getStatString() {
-		
-		try {
-			Evaluation eval = getEvaluation();
-			String resultsString = "";
-			resultsString += eval.toSummaryString(false) + "\n";
-			resultsString += eval.toClassDetailsString() + "\n";
-			resultsString += eval.toMatrixString() + "\n";
-			return resultsString;
-		
-		} catch (Exception e) {
-			return analysisDriver.getLastStringResults();
-		}
+    public String getStatString() {
+        ExperimentResults eval = getResults();
+        String resultsString = "";
+        resultsString += eval.getStatisticsString() + "\n";
+        resultsString += eval.getAllDocumentResults() + "\n";
+        resultsString += eval.getConfusionMatrix() + "\n";
+        return resultsString;
 	}
 	
 	/**
@@ -471,8 +454,8 @@ public class FullAPI {
 	 */
 	public String getClassificationAccuracy(){
 		String results = "";
-		Evaluation eval = getEvaluation();
-		results+= String.format("%.4f",eval.weightedTruePositiveRate()*100);
+		ExperimentResults eval = getResults();
+		results+= eval.getTruePositiveRate();
 		
 		return results;
 	}
@@ -490,9 +473,9 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("./jsan_resources/problem_sets/enron_demo.xml")
+                    .psPath("./jsan_resources/problem_sets/enron_train_test.xml")
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
+                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -501,11 +484,11 @@ public class FullAPI {
         }
 
 		test.prepareInstances();
-		test.calcInfoGain();
+		//test.calcInfoGain();
 		//test.applyInfoGain(5);
 		test.run();
 		System.out.println(test.getStatString());
-		System.out.println(test.getReadableInfoGain(false));
+		//System.out.println(test.getReadableInfoGain(false));
 		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
 	}

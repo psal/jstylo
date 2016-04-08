@@ -73,6 +73,7 @@ public class DataMap {
      * @param map map of indices to values
      */
     public void addDocumentData(String author, String documentTitle, ConcurrentHashMap<Integer, Double> map) {
+        System.out.println("Adding "+documentTitle+" which is written by: "+author);
         datamap.get(author).put(documentTitle, map);
     }
     
@@ -199,6 +200,7 @@ public class DataMap {
                         else
                             nextline+="0,";
                     }
+                    nextline = nextline.substring(0,nextline.length()-1);
                     nextline+="\n";
                     bw.write(nextline);
                 }
@@ -209,6 +211,19 @@ public class DataMap {
             e.printStackTrace();
             System.err.println("Failed to write out to CSV file.");
         }
+    }
+    
+    public List<String> getDocumentTitles(){
+        List<String> titles = new ArrayList<String>();
+        
+        for (String author : datamap.keySet()){ //TODO
+            
+            for (String doctitle : datamap.get(author).keySet()){ //TODO
+                System.out.println("Adding document title "+doctitle+" by "+author);
+                titles.add(doctitle);
+            }
+        }
+        return titles;
     }
     
     /**
@@ -241,9 +256,12 @@ public class DataMap {
                 String[] parts = line.split(",");
                 ConcurrentHashMap<Integer,Double> docfeatures = new ConcurrentHashMap<Integer,Double>();
                 for (int i = 2; i<parts.length; i++){
-                    if (!parts[i].equalsIgnoreCase(""))
-                        docfeatures.put(i-2, Double.parseDouble(parts[i]));
+                    docfeatures.put(i-2, Double.parseDouble(parts[i]));
                 }
+                
+                if (!map.getDataMap().containsKey(parts[0]))
+                    map.initAuthor(parts[0]);
+                    
                 map.addDocumentData(parts[0], parts[1], docfeatures);
             }
             

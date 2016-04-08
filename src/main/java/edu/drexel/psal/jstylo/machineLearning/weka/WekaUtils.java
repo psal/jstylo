@@ -1,12 +1,17 @@
 package edu.drexel.psal.jstylo.machineLearning.weka;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import edu.drexel.psal.jstylo.generics.DataMap;
+import edu.drexel.psal.jstylo.generics.DocResult;
+import edu.drexel.psal.jstylo.generics.ExperimentResults;
+import weka.classifiers.Evaluation;
+import weka.classifiers.evaluation.NominalPrediction;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
@@ -21,13 +26,13 @@ import weka.core.SparseInstance;
  * @author Travis Dutko
  */
 public class WekaUtils {
+    
     protected static Instances instancesFromDataMap(DataMap datamap){
         Instances instances = null;
         FastVector attributes = createFastVector(datamap.getFeatures(),datamap.getDataMap().keySet());
         
         int numfeatures = attributes.size();
         instances = new Instances("Instances",attributes,datamap.numDocuments());
-        
         //for each author...
         for (String author : datamap.getDataMap().keySet()){
             ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>> authormap 
@@ -51,38 +56,6 @@ public class WekaUtils {
         return instances;
     }
     
-    protected static DataMap datamapFromInstances(Instances instances,boolean hasTitle){
-        
-        //get all feature labels
-        List<String> features = new ArrayList<String> (instances.numAttributes());
-        for (int i = 0; i<instances.numAttributes(); i++){
-            if (!instances.attribute(i).name().equalsIgnoreCase("authorName"))
-                features.add(i, instances.attribute(i).name());
-        }
-        
-        DataMap datamap = new DataMap("developingMap",features);
-        
-        for (int i = 0; i<instances.numInstances(); i++){
-            Instance document = instances.instance(i);
-            
-            String author = document.stringValue(document.numAttributes()-1);
-            String doctitle = "post-processed";
-            if (hasTitle)
-                doctitle = document.stringValue(0);
-            
-            ConcurrentHashMap<Integer,Double> docMap = new ConcurrentHashMap<Integer,Double>();
-            for (int j = 1; j<document.numAttributes()-1; j++){
-                
-                //shifting left 1 for generics sake--most ML libraries don't use the 0th as doc title.
-                docMap.put(j-1, document.value(j));
-            }
-
-            datamap.addDocumentData(author, doctitle, docMap);
-        }
-
-        return datamap;
-    }
-    
     protected static FastVector createFastVector(Map<Integer,String> features, Set<String> authors){
         FastVector fv = new FastVector(features.size()+1);
         
@@ -104,4 +77,32 @@ public class WekaUtils {
         
         return fv;
     }
+    
+    protected static ExperimentResults resultsFromEvaluation(Evaluation eval, String authorCSV, List<String> documentTitles){
+        ExperimentResults results = new ExperimentResults();
+        
+        FastVector predictions = eval.predictions();
+        String[] authors  = getAuthorsFromAttributeString(authorCSV);
+        
+        for (int i = 0; i<predictions.size(); i++){
+            NominalPrediction prediction = (NominalPrediction)predictions.elementAt(i);
+            String actual = authors[(int)prediction.actual()];
+            double[] probabilities = prediction.distribution();
+            
+            Map<String,Double> probMap = new HashMap<String,Double>();
+            for (int j = 0; j< probabilities.length; j++){
+                probMap.put(authors[j], probabilities[j]);
+            }
+            
+            results.addDocResult(new DocResult(documentTitles.get(i),actual,probMap));
+        }
+        
+        return results;
+    }
+    
+    private static String[] getAuthorsFromAttributeString(String authorCSV){
+        authorCSV = authorCSV.substring(authorCSV.indexOf('{')+1, authorCSV.indexOf('}'));
+        return authorCSV.split(",");
+    }
+    
 }

@@ -9,6 +9,7 @@ import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
+import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.FullAPI.analysisType;
 
@@ -1014,7 +1015,8 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						//perform the actual analysis
-						main.analysisDriver.classify(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap(), main.ps.getAllTestDocs());
+						ExperimentResults results = 
+						        main.analysisDriver.classify(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap(), main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";
 						Logger.logln("Done!");
@@ -1022,7 +1024,7 @@ public class AnalysisTabDriver {
 
 						// print out results
 						content += "Results:\n" + "========\n";
-						content += main.analysisDriver.getLastStringResults();
+						content += results.getStatisticsString();
 						updateResultsView();
 					}
 
@@ -1101,7 +1103,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						//create the evaluation
-						Evaluation results = null;
+						ExperimentResults results = null;
 						try {
 							results = main.analysisDriver.getTrainTestEval(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap());
 						} catch (Exception e) {
@@ -1119,8 +1121,8 @@ public class AnalysisTabDriver {
 
 						//print results
 						try {
-							content += results.toSummaryString() + "\n" + results.toClassDetailsString() + "\n"
-									+ results.toMatrixString() + "\n";
+							content += results.getStatisticsString() + "\n" + results.getAllDocumentResults() + "\n"
+									+ results.getConfusionMatrix() + "\n";
 						} catch (Exception e) {
 							Logger.logln("Failed to build the statistics string!", LogOut.STDERR);
 							content += "Failed to build the statistics string!";
