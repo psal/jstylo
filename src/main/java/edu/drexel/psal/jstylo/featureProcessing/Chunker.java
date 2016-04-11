@@ -22,8 +22,10 @@ import java.util.Map;
 import com.jgaap.generics.Document;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Chunks the training documents into chunks (close to) the size of the (first) test document
@@ -39,6 +41,8 @@ import edu.drexel.psal.jstylo.generics.ProblemSet;
  * @author Andrew DiNunzio
  */
 public final class Chunker {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(Chunker.class);
 	
 	private static final int chunkMinSize = 475;
 	private static final int chunkDefaultSize = 500;
@@ -127,22 +131,22 @@ public final class Chunker {
 	 */
 	public static void chunkAllTrainDocs(ProblemSet ps) {
 		if (!chunkTrainDocs) {
-			Logger.logln("WARNING: Chunking is turned off. Training documents will be used as-is.");
+		    LOG.warn("Chunking is turned off. Training documents will be used as-is");
 			return;
 			}
 		List<Document> testDocuments = ps.getAllTestDocs();
 
 		int chunkSize = chunkDefaultSize;
 		if (testDocuments.size() == 0) {
-			Logger.logln("INFO: No test documents found. Will use chunkDefaultSize as default chunk size.");
+			LOG.info("INFO: No test documents found. Will use chunkDefaultSize as default chunk size.");
 		} else {
 			if (testDocuments.size() > 1) {
-				Logger.logln("INFO: More than one test document found. Chunking size for training docs"
+				LOG.info("More than one test document found. Chunking size for training docs"
 						+ " will only be checked against the first.");
 			}
 			String testDocument = readFile(testDocuments.get(0).getFilePath());
 			if (testDocument == null || testDocument.length() == 0) {
-				Logger.logln("WARNING: Test document was null or empty. Using chunkDefaultSize as default chunk size.");
+				LOG.warn("Test document was null or empty. Using chunkDefaultSize as default chunk size.");
 				chunkSize = chunkDefaultSize;
 			} else {
 				chunkSize = testDocument.split("(?<! ) ").length; // (?<! ) 
@@ -205,7 +209,7 @@ public final class Chunker {
 				if (documentList.size() > 0) {
 					ps.setTrainDocs(entry.getKey(), documentList);
 				} else {
-					Logger.logln("WARNING: Unable to use previously chunked documents. Using training docs as is.");
+					LOG.warn("Unable to use previously chunked documents. Using training docs as is.");
 				}
 
 			} else {
@@ -229,7 +233,7 @@ public final class Chunker {
 				if (newTrainDocs != null) {
 					ps.setTrainDocs(entry.getKey(), newTrainDocs);
 				} else {
-					Logger.logln("WARNING: Unable to chunk documents. Using training docs as is.");
+					LOG.warn("Unable to chunk documents. Using training docs as is.");
 				}
 			}
 		} // end of for loop over author map
@@ -357,10 +361,10 @@ public final class Chunker {
 		
 		if (!chunkDir.exists()) {
 			chunkDir.mkdirs();
-			Logger.logln("chunkDir created: " + chunkDir.getAbsolutePath());
+			LOG.info("chunkDir created: " + chunkDir.getAbsolutePath());
 		} else {
 			if (!chunkDir.isDirectory()) {
-				Logger.logln("WARNING: A file exists with the name of the desired chunking directory.");
+				LOG.warn("A file exists with the name of the desired chunking directory.");
 				return;
 			}
 		}
@@ -371,7 +375,7 @@ public final class Chunker {
 			writer = new BufferedWriter(new FileWriter(chunkHash));
 		} catch (IOException e1) {
 			e1.printStackTrace();
-			Logger.logln("WARNING: Failed to make hash for the chunker.");
+			LOG.warn("Failed to make hash for the chunker.");
 			return;
 		}
 
@@ -413,7 +417,7 @@ public final class Chunker {
 		String[] words = sb.toString().trim().split("(?<! ) "); // (?<! ) 
 
 		if (words.length < JSANConstants.REQUIRED_NUM_OF_WORDS) {
-			Logger.logln("WARNING: Too few words in author " + author + "'s documents. Expected "
+			LOG.warn("Too few words in author " + author + "'s documents. Expected "
 					+ JSANConstants.REQUIRED_NUM_OF_WORDS + " words. Got "
 					+ words.length + " words.");
 			//return null; // TODO: should I return here?
@@ -422,7 +426,7 @@ public final class Chunker {
 		ArrayList<Document> documentList = new ArrayList<Document>();
 
 		if (!chunkDir.exists()) {
-			Logger.logln("WARNING: Chunking dir not found for author " + author
+			LOG.warn("Chunking dir not found for author " + author
 					+ ". Chunking has been disabled for this author.");
 			return null; // it will not chunk the documents; it will
 							// just use the training docs as they are
@@ -478,7 +482,7 @@ public final class Chunker {
 			return new String(bytes);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Logger.logln("ERROR: Failed to read file at path: " + filePath);
+			LOG.error("Failed to read file at path: " + filePath,e);
 			return null;
 		}
 	}

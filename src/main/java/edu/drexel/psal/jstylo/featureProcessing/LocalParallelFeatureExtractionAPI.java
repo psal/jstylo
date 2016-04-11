@@ -12,6 +12,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
 import com.jgaap.generics.EventSet;
@@ -19,8 +22,6 @@ import com.jgaap.generics.EventSet;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.DataMap;
-import edu.drexel.psal.jstylo.generics.Logger;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
@@ -31,6 +32,8 @@ import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
  */
 public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 
+    private static final Logger LOG = LoggerFactory.getLogger(LocalParallelFeatureExtractionAPI.class);
+    
 	// These vars should be initialized in the constructor and stay the same
 	// throughout the entire process
 	private Preferences preferences;
@@ -648,10 +651,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					//add it to datamap
 					testingDataMap.addDocumentData(author, title, docdata);
 				} catch (Exception e) {
-					Logger.logln("Error creating Test Instances!", LogOut.STDERR);
-					Logger.logln(ps.getAllTestDocs().get(i).getFilePath()+" author: "+ps.getAllTestDocs().get(i).getAuthor());
-					Logger.logln(e.getMessage(), LogOut.STDERR);
-					e.printStackTrace();
+				    LOG.error("Error creating Test Document data for "+
+				            ps.getAllTestDocs().get(i).getFilePath()+" author: "+ps.getAllTestDocs().get(i).getAuthor(),e);
 				}
 		}
 		
@@ -698,9 +699,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					trainingDataMap.addDocumentData(author, title, docdata);
 					
 				} catch (Exception e) {
-					Logger.logln("[THREAD-" + threadId + "] Error creating datamap " + i + "!", LogOut.STDERR);
-					Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
-					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
+				    LOG.error("[THREAD-" + threadId + "] Error creating datamap " + i + " for document "+ps.getAllTrainDocs().get(i).getFilePath(),e);
 				}
 		}
 		
@@ -754,14 +753,11 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					* (threadId + 1)); i++){
 				try {
 					//try to extract the events
-				    Logger.logln("[THREAD-" + threadId + "] Extracting features from document " + i);
+				    LOG.info("[THREAD-" + threadId + "] Extracting features from document " + i);
 					List<EventSet> extractedEvents = extractEventSets(ps.getAllTrainDocs().get(i),cfd,loadingDocContents(),isCacheValid);
 					list.add(extractedEvents); //and add them to the list of list of eventsets
 				} catch (Exception e) {
-					Logger.logln("[THREAD-" + threadId + "] Error extracting features for document " + i + "!\n", LogOut.STDERR);
-					Logger.logln("[THREAD-" + threadId + "] Problematic document: "+ps.getAllTrainDocs().get(i).getFilePath());
-					Logger.logln("[THREAD-" + threadId + "] " + e.getMessage(), LogOut.STDERR);
-					e.printStackTrace();
+				    LOG.error("[THREAD-" + threadId + "] Error extracting features for document " + i + " from "+ps.getAllTrainDocs().get(i).getFilePath(),e);
 				} 
 			}
 		}

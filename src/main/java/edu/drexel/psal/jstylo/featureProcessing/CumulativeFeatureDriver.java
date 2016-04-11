@@ -10,12 +10,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.helpers.DefaultHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jgaap.generics.*;
 
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.eventDrivers.StanfordDriver;
-import edu.drexel.psal.jstylo.generics.Logger;
+
+
 
 /**
  * The cumulative feature driver class is designed to create a concatenated result of several feature drivers.
@@ -26,6 +29,8 @@ import edu.drexel.psal.jstylo.generics.Logger;
  */
 public class CumulativeFeatureDriver implements Serializable {
 
+    private static final Logger LOG = LoggerFactory.getLogger(CumulativeFeatureDriver.class);
+    
 	private static final long serialVersionUID = 1L;
 	/**
 	 * Used when serializing it to XML. The initial size is
@@ -101,7 +106,7 @@ public class CumulativeFeatureDriver implements Serializable {
 	 * @throws Exception
 	 */
 	public CumulativeFeatureDriver(String filename) throws Exception {
-		Logger.logln("Reading CumulativeFeatureDriver from "+filename);
+	    LOG.info("Reading CFD from file: "+filename);
 		XMLParser parser = new XMLParser(filename);
 		CumulativeFeatureDriver generated = parser.cfd;
 		this.name = generated.name;
@@ -173,14 +178,14 @@ public class CumulativeFeatureDriver implements Serializable {
 					currDoc.addCanonicizer(c);
 			} catch (NullPointerException e) {
 				// no canonicizers
-				Logger.logln("No canonicizers in use");
+				LOG.error("No canoncizers!",e);
 			}
 			
 			if (!loadDocContents) {
 				try {
 					currDoc.load();
 				} catch (Exception e) {
-					Logger.logln("Failed to load document contents!");
+					LOG.error("Failed to load document!",e);
 					if (usingCache)
 						writer.close();
 					throw new Exception();
@@ -190,7 +195,7 @@ public class CumulativeFeatureDriver implements Serializable {
 			try {
 				currDoc.processCanonicizers();
 			} catch (LanguageParsingException | CanonicizationException e1) {
-				Logger.logln("Failed to canonicize the document!");
+				LOG.error("Failed to canonicize document",e1);
 				if (usingCache)
 					writer.close();
 				throw new Exception();
@@ -202,7 +207,7 @@ public class CumulativeFeatureDriver implements Serializable {
 			try {
 				tmpEs = ed.createEventSet(currDoc);
 			} catch (EventGenerationException e1) {
-				Logger.logln("Failed to create EventSet!");
+				LOG.error("Failed to create event set!",e1);
 				if (usingCache)
 					writer.close();
 				throw new Exception();
@@ -755,7 +760,7 @@ public class CumulativeFeatureDriver implements Serializable {
 				} catch (Exception e){
 					successful = false;
 					Element currentElement = (Element) xmlDoc.importNode(items.item(i), true);
-					Logger.logln("Failed to load feature driver: "+currentElement.getAttribute("name"),Logger.LogOut.STDERR);
+					LOG.error("Failed to load feature driver: "+currentElement.getAttribute("name"));
 				}
 				
 				if (successful){

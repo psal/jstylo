@@ -47,6 +47,11 @@
          <version>5.2.0-lite</version>
          <systemPath>${basedir}/lib/jgaap-5.2.0-lite.jar</systemPath>
       </dependency>
+      <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
+      </dependency>
     </dependencies>
   
     <build>

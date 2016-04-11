@@ -24,7 +24,9 @@ import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SingleNumericEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
-import edu.drexel.psal.jstylo.generics.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -34,6 +36,8 @@ import edu.drexel.psal.jstylo.generics.Logger;
  */
 public class FeatureExtractionAPI {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FeatureExtractionAPI.class);
+    
 	/**
 	 * Extracts the List of EventSets from a document using the provided CumulativeFeatureDriver.<br>
 	 * @param document the document to have features extracted and made into event sets
@@ -72,7 +76,7 @@ public class FeatureExtractionAPI {
 		try {
 			generatedEvents = cumulativeFeatureDriver.createEventSets(document, loadDocContents,isUsingCache);
 		} catch (Exception e) {
-			Logger.logln("Failed to extract events from documents!");
+			LOG.error("Failed to extract events from a document!",e);
 			throw e;
 		}
 		// create metadata event to store document information
@@ -106,8 +110,8 @@ public class FeatureExtractionAPI {
 					doc.load();
 					tempEvent = new Event("" + (int) counter.getValue(doc));
 				} catch (Exception e) {
-					Logger.logln("Failed to extract sentence count from document!");
-					throw new Exception();
+					LOG.error("Failed to extract num sentences from document",e);
+					throw e;
 				}
 
 			documentInfo.addEvent(tempEvent);
@@ -124,8 +128,8 @@ public class FeatureExtractionAPI {
 					doc.load();
 				tempEvent = new Event("" + (int) counter.getValue(doc));
 			} catch (Exception e) {
-				Logger.logln("Failed to extract word count from document!");
-				throw new Exception();
+			    LOG.error("Failed to extract num words from document",e);
+				throw e;
 			}
 			documentInfo.addEvent(tempEvent);
 		}
@@ -141,8 +145,8 @@ public class FeatureExtractionAPI {
 					doc.load();
 				tempEvent = new Event("" + (int) counter.getValue(doc));
 			} catch (Exception e) {
-				Logger.logln("Failed to extract character count from document!");
-				throw new Exception();
+			    LOG.error("Failed to extract num characters from document",e);
+				throw e;
 			}
 			documentInfo.addEvent(tempEvent);
 		}
@@ -158,8 +162,8 @@ public class FeatureExtractionAPI {
 					doc.load();
 				tempEvent = new Event("" + (int) counter.getValue(doc));
 			} catch (Exception e) {
-				Logger.logln("Failed to extract character count from document!");
-				throw new Exception();
+			    LOG.error("Failed to extract num letters from document",e);
+				throw e;
 			}
 			documentInfo.addEvent(tempEvent);
 		}

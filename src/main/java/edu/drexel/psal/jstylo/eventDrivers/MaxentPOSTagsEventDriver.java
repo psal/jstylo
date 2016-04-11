@@ -3,8 +3,6 @@ package edu.drexel.psal.jstylo.eventDrivers;
 import com.jgaap.generics.*;
 import com.jgaap.generics.Document;
 
-import edu.drexel.psal.jstylo.generics.Logger;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger; 
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
@@ -98,7 +96,6 @@ public class MaxentPOSTagsEventDriver extends EventDriver implements StanfordDri
 			t = new MaxentTagger(getTaggerPath(), new TaggerConfig("-model", getTaggerPath()),false);
 			
 		} catch (Exception e) {
-			Logger.logln("MaxentTagger failed to load tagger from ",LogOut.STDERR);
 			e.printStackTrace();
 		}
 		return t;

@@ -4,10 +4,8 @@ import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
-import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import edu.drexel.psal.jstylo.generics.FullAPI;
@@ -36,12 +34,17 @@ import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgaap.generics.Document;
 
 import weka.classifiers.Evaluation;
 
 public class AnalysisTabDriver {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AnalysisTabDriver.class);
+    
 	/*
 	 * ====================== Analysis tab listeners ======================
 	 */
@@ -58,7 +61,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("Calculate InfoGain checkbox was clicked on the analysis tab.");
+				LOG.info("Calculate InfoGain checkbox was clicked on the analysis tab.");
 
 				// enable / disable the apply InfoGain option
 				boolean selected = main.analysisCalcInfoGainJCheckBox.isSelected();
@@ -66,7 +69,7 @@ public class AnalysisTabDriver {
 					main.setPreference("calcInfoGain", "1");
 				else
 					main.setPreference("calcInfoGain", "0");
-				Logger.logln("Calculate InfoGain option - " + (selected ? "selected" : "unselected"));
+				LOG.info("Calculate InfoGain option - " + (selected ? "selected" : "unselected"));
 				main.analysisApplyInfoGainJCheckBox.setEnabled(selected);
 				main.infoGainValueJTextField.setEnabled(selected);
 			}
@@ -79,7 +82,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("Apply InfoGain checkbox was clicked on the analysis tab.");
+				LOG.info("Apply InfoGain checkbox was clicked on the analysis tab.");
 
 				// enable / disable apply InfoGain text field
 				boolean selected = main.analysisApplyInfoGainJCheckBox.isSelected();
@@ -87,7 +90,7 @@ public class AnalysisTabDriver {
 					main.setPreference("applyInfoGain", "1");
 				else
 					main.setPreference("applyInfoGain", "0");
-				Logger.logln("Apply InfoGain option - " + (selected ? "selected" : "unselected"));
+				LOG.info("Apply InfoGain option - " + (selected ? "selected" : "unselected"));
 				main.infoGainValueJTextField.setEnabled(selected);
 			}
 		});
@@ -131,7 +134,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Training to ARFF...' button clicked on the analysis tab.");
+				LOG.info("'Training to ARFF...' button clicked on the analysis tab.");
 
 				// check if not null
 				if (main.lpfeAPI.getTrainingDataMap() == null) {
@@ -156,18 +159,19 @@ public class AnalysisTabDriver {
                     try {
                         main.lpfeAPI.getTrainingDataMap().saveDataMapToCSV(path);
                     } catch (Exception e) {
+                        LOG.error("Failed opening " + path + " for writing", e);
                         succeeded = false;
                     }
 					if (succeeded) {
-						Logger.log("Saved training features to arff: " + path);
+						LOG.info("Saved training features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
 					} else {
-						Logger.logln("Failed opening " + path + " for writing", LogOut.STDERR);
+						
 						JOptionPane.showMessageDialog(null, "Failed saving training features into:\n" + path,
 								"Export Training Features Failure", JOptionPane.ERROR_MESSAGE);
 					}
 				} else {
-					Logger.logln("Export training features to ARFF canceled");
+					LOG.info("Export training features to ARFF canceled");
 				}
 			}
 		});
@@ -179,7 +183,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Training to CSV...' button clicked on the analysis tab.");
+				LOG.info("'Training to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
 				if (main.lpfeAPI.getTrainingDataMap() == null) {
@@ -203,18 +207,19 @@ public class AnalysisTabDriver {
                     try {
                         main.lpfeAPI.getTrainingDataMap().saveDataMapToCSV(path);
                     } catch (Exception e) {
+                        LOG.error("Failed opening " + path + " for writing", e);
                         succeeded = false;
                     }
 					if (succeeded) {
-						Logger.log("Saved training features to csv: " + path);
+						LOG.info("Saved training features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
 					} else {
-						Logger.logln("Failed opening " + path + " for writing", LogOut.STDERR);
+						
 						JOptionPane.showMessageDialog(null, "Failed saving training features into:\n" + path,
 								"Export Training Features Failure", JOptionPane.ERROR_MESSAGE);
 					}
 				} else {
-					Logger.logln("Export training features to CSV canceled");
+					LOG.info("Export training features to CSV canceled");
 				}
 			}
 		});
@@ -226,7 +231,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Test to ARFF...' button clicked on the analysis tab.");
+				LOG.info("'Test to ARFF...' button clicked on the analysis tab.");
 
 				// check if not null
 				if (main.lpfeAPI.getTestDataMap() == null) {
@@ -252,18 +257,18 @@ public class AnalysisTabDriver {
                     try {
                         main.lpfeAPI.getTestDataMap().saveDataMapToCSV(path);
                     } catch (Exception e) {
+                        LOG.error("Failed opening " + path + " for writing", e);
                         succeeded = false;
                     }
                     if (succeeded) {
-						Logger.log("Saved test features to arff: " + path);
+						LOG.info("Saved test features to arff: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
 					} else {
-						Logger.logln("Failed opening " + path + " for writing", LogOut.STDERR);
 						JOptionPane.showMessageDialog(null, "Failed saving test features into:\n" + path,
 								"Export Test Features Failure", JOptionPane.ERROR_MESSAGE);
 					}
 				} else {
-					Logger.logln("Export training features to ARFF canceled");
+					LOG.info("Export training features to ARFF canceled");
 				}
 			}
 		});
@@ -275,7 +280,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Test to CSV...' button clicked on the analysis tab.");
+				LOG.info("'Test to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
 				if (main.lpfeAPI.getTestDataMap() == null) {
@@ -299,18 +304,19 @@ public class AnalysisTabDriver {
 					try {
 					    main.lpfeAPI.getTestDataMap().saveDataMapToCSV(path);
 					} catch (Exception e){
+					    LOG.error("Failed opening " + path + " for writing", e);
 					    succeeded = false;
 					}
 					if (succeeded) {
-						Logger.log("Saved test features to csv: " + path);
+						LOG.info("Saved test features to csv: " + path);
 						main.defaultLoadSaveDir = (new File(path)).getParent();
 					} else {
-						Logger.logln("Failed opening " + path + " for writing", LogOut.STDERR);
+						
 						JOptionPane.showMessageDialog(null, "Failed saving test features into:\n" + path,
 								"Export Test Features Failure", JOptionPane.ERROR_MESSAGE);
 					}
 				} else {
-					Logger.logln("Export training features to CSV canceled");
+					LOG.info("Export training features to CSV canceled");
 				}
 			}
 		});
@@ -323,7 +329,7 @@ public class AnalysisTabDriver {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				main.setPreference("analysisType", "0");
-				Logger.logln("K-Fold radio button selected");
+				LOG.info("K-Fold radio button selected");
 
 				boolean selected = main.analysisTrainCVJRadioButton.isSelected();
 				if (selected) {
@@ -339,7 +345,7 @@ public class AnalysisTabDriver {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				main.setPreference("analysisType", "1");
-				Logger.logln("Test and Classify Unknown radio button selected");
+				LOG.info("Test and Classify Unknown radio button selected");
 
 				boolean selected = main.analysisClassTestUnknownJRadioButton.isSelected();
 				if (selected) {
@@ -355,7 +361,7 @@ public class AnalysisTabDriver {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				main.setPreference("analysisType", "2");
-				Logger.logln("Test and Classify Known radio button selected");
+				LOG.info("Test and Classify Known radio button selected");
 
 				boolean selected = main.analysisClassTestKnownJRadioButton.isSelected();
 				if (selected) {
@@ -374,7 +380,7 @@ public class AnalysisTabDriver {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Run Analysis' button clicked in the analysis tab.");
+				LOG.info("'Run Analysis' button clicked in the analysis tab.");
 
 				// check
 				if (main.ps == null || main.ps.getAllTrainDocs().size() == 0) {
@@ -421,7 +427,7 @@ public class AnalysisTabDriver {
 						JOptionPane.showMessageDialog(main,
 								"K and N do not have correct values. Both must be integers in the range:\n1<K<="
 										+ docCount + "\n1<=N<=50", "Run Analysis Error", JOptionPane.ERROR_MESSAGE);
-						Logger.logln(exc.getMessage(), LogOut.STDERR);
+						LOG.error("K and N are not valid",exc);
 						return;
 					}
 				}
@@ -448,14 +454,14 @@ public class AnalysisTabDriver {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Stop' button clicked in the analysis tab.");
+				LOG.info("'Stop' button clicked in the analysis tab.");
 
 				// confirm
 				int answer = JOptionPane.showConfirmDialog(main, "Are you sure you want to abort analysis?",
 						"Stop Analysis", JOptionPane.YES_NO_OPTION);
 				if (answer == JOptionPane.YES_OPTION) {
 					// stop run and update
-					Logger.logln("Stopping analysis");
+					LOG.info("Stopping analysis");
 					main.lpfeAPI.reset();
 					main.analysisThread.stop();
 					lockUnlock(main, false);
@@ -470,7 +476,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Save Results...' button clicked on the analysis tab.");
+				LOG.info("'Save Results...' button clicked on the analysis tab.");
 
 				// check there are results
 				if (main.analysisResultsJTabbedPane.getTabCount() == 0) {
@@ -499,7 +505,7 @@ public class AnalysisTabDriver {
 						bw.close();
 						main.defaultLoadSaveDir = (new File(path)).getParent();
 					} catch (Exception e) {
-						Logger.logln("Failed opening " + path + " for writing", LogOut.STDERR);
+						LOG.error("Failed opening " + path + " for writing", e);
 						JOptionPane.showMessageDialog(null, "Failed saving analysis results into:\n" + path,
 								"Save Analysis Results Failure", JOptionPane.ERROR_MESSAGE);
 						if (bw != null) {
@@ -511,10 +517,10 @@ public class AnalysisTabDriver {
 						return;
 					}
 
-					Logger.log("Saved analysis results: " + path);
+					LOG.info("Saved analysis results: " + path);
 
 				} else {
-					Logger.logln("Export analysis results canceled");
+					LOG.info("Export analysis results canceled");
 				}
 			}
 		});
@@ -526,7 +532,7 @@ public class AnalysisTabDriver {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 
-				Logger.logln("'Remove Result Tab' button clicked on the analysis tab.");
+				LOG.info("'Remove Result Tab' button clicked on the analysis tab.");
 				int i = main.analysisResultsJTabbedPane.getSelectedIndex();
 				if (i != -1) {
 					main.analysisResultsJTabbedPane.remove(i);
@@ -556,7 +562,7 @@ public class AnalysisTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Back' button clicked in the analysis tab");
+				LOG.info("'Back' button clicked in the analysis tab");
 				main.mainJTabbedPane.setSelectedIndex(2);
 			}
 		});
@@ -638,7 +644,7 @@ public class AnalysisTabDriver {
 
 		@SuppressWarnings({ "unchecked", "deprecation" })
 		public void run() {
-			Logger.logln(">>> Run Analysis thread started.");
+			LOG.info(">>> Run Analysis thread started.");
 
 			// initialize results tab
 			JPanel tab = new JPanel(new BorderLayout());
@@ -729,9 +735,9 @@ public class AnalysisTabDriver {
 						cumulativeAccuracy += Double.parseDouble(jstylo.getClassificationAccuracy());
 						System.out.println("Cumulative acurracy after " + j + " is " + cumulativeAccuracy);
 					} catch (NumberFormatException e) {
-						e.printStackTrace();
+						
 					} catch (Exception e) {
-						e.printStackTrace();
+						
 					}
 				}
 
@@ -827,8 +833,8 @@ public class AnalysisTabDriver {
 				try {
 					main.lpfeAPI.extractEventsThreaded();
 				} catch (Exception e) {
-					Logger.logln("Could not extract features from training corpus!", LogOut.STDERR);
-					e.printStackTrace();
+					LOG.error("Could not extract features from training corpus!", e);
+					
 
 					JOptionPane.showMessageDialog(main,
 							"Could not extract features from training corpus:\n" + e.getMessage() + "\n"
@@ -845,7 +851,7 @@ public class AnalysisTabDriver {
 				try {
 					main.lpfeAPI.initializeRelevantEvents();
 				} catch (Exception e1) {
-					Logger.logln("Could not extract relevant events from training corpus!", LogOut.STDERR);
+					LOG.error("Could not extract relevant events from training corpus!", e1);
 					e1.printStackTrace();
 
 					JOptionPane.showMessageDialog(main, "Could not extract relevant events from training corpus:\n"
@@ -863,8 +869,7 @@ public class AnalysisTabDriver {
 				try {
 					main.lpfeAPI.initializeFeatureSet();
 				} catch (Exception e1) {
-					Logger.logln("Could not create attributes from training corpus!", LogOut.STDERR);
-					e1.printStackTrace();
+					LOG.error("Could not create attributes from training corpus!", e1);
 
 					JOptionPane.showMessageDialog(main,
 							"Could not create attributes from training corpus:\n" + e1.getMessage() + "\n"
@@ -881,8 +886,8 @@ public class AnalysisTabDriver {
 				try {
 					main.lpfeAPI.createTrainingDataMapThreaded();
 				} catch (Exception e) {
-					Logger.logln("Could not create instances from training corpus!", LogOut.STDERR);
-					e.printStackTrace();
+					LOG.error("Could not create instances from training corpus!", e);
+					
 
 					JOptionPane.showMessageDialog(main,
 							"Could not create instances from training corpus:\n" + e.getMessage() + "\n"
@@ -902,7 +907,7 @@ public class AnalysisTabDriver {
 
 				// if we're to extract testing data, do so
 				if (classifyTestDocs) {
-					Logger.logln("Extracting features from test documents...");
+					LOG.info("Extracting features from test documents...");
 
 					content += getTimestamp() + " Extracting features from test documents (using sparse representation)...\n";
 					updateResultsView();
@@ -916,8 +921,7 @@ public class AnalysisTabDriver {
 					try {
 						main.lpfeAPI.createTestingDataMapThreaded();
 					} catch (Exception e) {
-						Logger.logln("Could not create instances from test documents!", LogOut.STDERR);
-						e.printStackTrace();
+						LOG.error("Could not create instances from test documents!", e);
 
 						JOptionPane.showMessageDialog(main,
 								"Could not create instances from test documents:\n" + e.getMessage() + "\n"
@@ -949,7 +953,7 @@ public class AnalysisTabDriver {
 						igValue = Integer.parseInt(main.infoGainValueJTextField.getText());
 						main.setPreference("numInfoGain", "" + igValue);
 					} catch (NumberFormatException e) {
-						e.printStackTrace();
+						
 					}
 
 					
@@ -977,7 +981,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 					} catch (Exception e) {
 						content += "ERROR! Could not calculate InfoGain!\n";
-						e.printStackTrace();
+						
 					}
 
 					content += "done!\n\n";
@@ -992,7 +996,7 @@ public class AnalysisTabDriver {
 				 */
 				if (main.analysisClassTestUnknownJRadioButton.isSelected()) {
 
-					Logger.logln("Starting training and testing phase...");
+					LOG.info("Starting training and testing phase...");
 
 					content += getTimestamp() + " Starting training and testing phase...\n";
 					content += "\n================================================================================\n\n";
@@ -1011,7 +1015,7 @@ public class AnalysisTabDriver {
 						main.analysisDriver = a;
 						
 						content += getTimestamp() + " Starting classification...\n";
-						Logger.log("Starting classification...\n");
+						LOG.info("Starting classification...\n");
 						updateResultsView();
 
 						//perform the actual analysis
@@ -1019,7 +1023,7 @@ public class AnalysisTabDriver {
 						        main.analysisDriver.classify(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap(), main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";
-						Logger.logln("Done!");
+						LOG.info("Done!");
 						updateResultsView();
 
 						// print out results
@@ -1033,7 +1037,7 @@ public class AnalysisTabDriver {
 				 */
 				} else if (main.analysisTrainCVJRadioButton.isSelected()) {
 
-					Logger.logln("Starting training K-folds CV phase...");
+					LOG.info("Starting training K-folds CV phase...");
 
 					content += getTimestamp() + " Starting K-folds cross-validation on training corpus phase...\n";
 					content += "\n================================================================================\n\n";
@@ -1051,7 +1055,7 @@ public class AnalysisTabDriver {
 						main.analysisDriver = a;
 
 						content += getTimestamp() + " Starting cross validation...\n";
-						Logger.log("Starting cross validation...");
+						LOG.info("Starting cross validation...");
 						updateResultsView();
 						// run the experiment
 						Object results = main.analysisDriver.runCrossValidation(main.lpfeAPI.getTrainingDataMap(),
@@ -1059,7 +1063,7 @@ public class AnalysisTabDriver {
 						main.setPreference("kFolds", main.analysisKFoldJTextField.getText());
 
 						content += getTimestamp() + " done!\n\n";
-						Logger.logln("Done!");
+						LOG.info("Done!");
 						updateResultsView();
 
 						if (results == null) {
@@ -1073,7 +1077,7 @@ public class AnalysisTabDriver {
 						try {
 							content += eval.toClassDetailsString() + "\n" + eval.toMatrixString() + "\n";
 						} catch (Exception e) {
-							e.printStackTrace();
+							
 						}
 
 						updateResultsView();
@@ -1083,7 +1087,7 @@ public class AnalysisTabDriver {
 				 * Perform a train test on known authors
 				 */
 				} else {
-					Logger.logln("Starting training and testing phase...");
+					LOG.info("Starting training and testing phase...");
 
 					content += getTimestamp() + " Starting training and testing phase...\n";
 					content += "\n================================================================================\n\n";
@@ -1099,7 +1103,7 @@ public class AnalysisTabDriver {
 						main.analysisDriver = a;
 
 						content += getTimestamp() + " Starting classification...\n";
-						Logger.log("Starting classification...\n");
+						LOG.info("Starting classification...\n");
 						updateResultsView();
 
 						//create the evaluation
@@ -1107,13 +1111,13 @@ public class AnalysisTabDriver {
 						try {
 							results = main.analysisDriver.getTrainTestEval(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap());
 						} catch (Exception e) {
-							Logger.logln("Failed to build train test eval with known authors!", LogOut.STDERR);
+							LOG.error("Failed to build train test eval with known authors!", e);
 							content += "Failed to build train test eval with known authors!";
-							e.printStackTrace();
+							
 						}
 
 						content += getTimestamp() + " done!\n\n";
-						Logger.logln("Done!");
+						LOG.info("Done!");
 						updateResultsView();
 
 						// print out results
@@ -1124,9 +1128,9 @@ public class AnalysisTabDriver {
 							content += results.getStatisticsString() + "\n" + results.getAllDocumentResults() + "\n"
 									+ results.getConfusionMatrix() + "\n";
 						} catch (Exception e) {
-							Logger.logln("Failed to build the statistics string!", LogOut.STDERR);
+							LOG.error("Failed to build the statistics string!", e);
 							content += "Failed to build the statistics string!";
-							e.printStackTrace();
+							
 						}
 
 						updateResultsView();
@@ -1139,7 +1143,7 @@ public class AnalysisTabDriver {
 			updateBeforeStop();
 			main.results.add(content);
 
-			Logger.logln(">>> Run Analysis thread finished.");
+			LOG.info(">>> Run Analysis thread finished.");
 		}
 
 		public void updateBeforeStop() {
