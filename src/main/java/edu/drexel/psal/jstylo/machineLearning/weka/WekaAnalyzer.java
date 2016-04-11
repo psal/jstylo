@@ -132,7 +132,8 @@ public class WekaAnalyzer extends Analyzer {
 				for (int j=0; j<numOfAuthors; j++) {
 					map.put(authors.get(j), currRes[j]);
 				}
-				//TODO
+				//FIXME something around here isn't working properly
+				
 				results.addDocResult(new DocResult(documentTitles.get(i),map));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -154,14 +155,12 @@ public class WekaAnalyzer extends Analyzer {
 	 * 		The evaluation object with cross-validation results, or null if failed running.
 	 */
 	@Override
-	//FIXME
+	//FIXME see FullAPI for current bug documentation
 	public ExperimentResults runCrossValidation(DataMap datamap, int folds, long randSeed) {
 	    documentTitles = datamap.getDocumentTitles();
 	    Instances data = WekaUtils.instancesFromDataMap(datamap);
-	    //System.exit(1);
 		// setup
 		data.setClass(data.attribute("authorName"));
-		
 		
 		Instances randData = new Instances(data);
 		Random rand = new Random(randSeed);

@@ -465,7 +465,26 @@ public class FullAPI {
 	}
 	
 	///////////////////////////////// Main method for testing purposes
-	
+	//FIXME
+	/*
+	 * So right now there's 2 major bugs--
+	 * 
+	 * 1: Crossvalidation--weka seems to shuffle instances when cross-validating. 
+	 *     This causes document titles to be improperly tracked throughout the whole process.
+	 *     
+	 *     Fix idea--do cross validation "manually"--randomly determine which docs to use as testing ourselves,
+	 *     keeping track of it as we go. Use the source instances to break apart and create new train test and accumulate
+	 *     results manually.
+	 *     Note: this is purely incorrect in terms of labels. The overall statistics produced is correct, just the wrong doc titles are being assigned.
+	 *     
+	 * 2: Testing
+	 *     Train/Test on known isn't working. More difficult to test due to replacing old classification. Seems to be present in old version.
+	 *     Basically results are incredibly bad. 
+	 *     It looks like testing author is being inaccurately assigned. As well as title.
+	 *     Fixed /A/ problem. Now get exceptions. Much better. 
+	 * 
+	 * 
+	 */
 	public static void main(String[] args){
 	    
 	    FullAPI test = null;
@@ -473,7 +492,7 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("./jsan_resources/problem_sets/enron_train_test.xml")
+                    .psPath("./jsan_resources/problem_sets/drexel_1_train_test.xml")
                     .setAnalyzer(new WekaAnalyzer())
                     .numThreads(1).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
                     .build();

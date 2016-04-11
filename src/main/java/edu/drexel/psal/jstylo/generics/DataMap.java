@@ -73,7 +73,6 @@ public class DataMap {
      * @param map map of indices to values
      */
     public void addDocumentData(String author, String documentTitle, ConcurrentHashMap<Integer, Double> map) {
-        System.out.println("Adding "+documentTitle+" which is written by: "+author);
         datamap.get(author).put(documentTitle, map);
     }
     
@@ -215,11 +214,8 @@ public class DataMap {
     
     public List<String> getDocumentTitles(){
         List<String> titles = new ArrayList<String>();
-        
-        for (String author : datamap.keySet()){ //TODO
-            
-            for (String doctitle : datamap.get(author).keySet()){ //TODO
-                System.out.println("Adding document title "+doctitle+" by "+author);
+        for (String author : datamap.keySet()){
+            for (String doctitle : datamap.get(author).keySet()){
                 titles.add(doctitle);
             }
         }
