@@ -3,6 +3,8 @@ package edu.drexel.psal.jstylo.generics;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.JsonObject;
+
 /**
  * This class is a post-processing data holding class.
  * It contains all of the results on a per-document basis and computes some basic statistics.
@@ -94,6 +96,12 @@ public class ExperimentResults {
             results+="\n";
         }
         return results;
+    }
+    
+    public JsonObject toJson(){
+        //TODO
+        //Make a JSON object which is an array of DocResult JSON objects
+        return null;
     }
     
     //TODO

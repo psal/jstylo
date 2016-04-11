@@ -85,6 +85,12 @@ public class DocResult {
     
     public JsonObject toJson(){
         //TODO
+        // Make a json object which includes:
+        // document title
+        // actual author
+        //      array of:
+        //          suspect author              probabilityMap.keySet() <- any entry in that
+        //          probability for that suspect probabilityMap.get(<some key>)
         return null;
     }
     
