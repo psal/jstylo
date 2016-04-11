@@ -14,12 +14,15 @@ import javax.swing.tree.TreePath;
 
 import com.jgaap.generics.Document;
 
-import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DocsTabDriver {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DocsTabDriver.class);
+    
 	/*
 	 * ======================= Documents tab listeners =======================
 	 */
@@ -36,7 +39,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'New Problem Set' button clicked on the documents tab");
+				LOG.info("'New Problem Set' button clicked on the documents tab");
 
 				int answer = 0;
 				// ask if current problem set is not empty
@@ -57,7 +60,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Load Problem Set' button clicked on the documents tab");
+				LOG.info("'Load Problem Set' button clicked on the documents tab");
 
 				int answer = 0;
 				// ask if current problem set is not empty
@@ -73,20 +76,19 @@ public class DocsTabDriver {
 
 					if (answer == JFileChooser.APPROVE_OPTION) {
 						String path = load.getSelectedFile().getPath();
-						Logger.logln("Trying to load problem set from " + path);
+						LOG.info("Trying to load problem set from " + path);
 						try {
 							main.ps = new ProblemSet(path);
 							main.defaultLoadSaveDir = (new File(path)).getParent();
 							GUIUpdateInterface.updateProblemSet(main);
 						} catch (Exception exc) {
-							Logger.logln("Failed loading " + path, LogOut.STDERR);
-							Logger.logln(exc.toString(), LogOut.STDERR);
+							LOG.error("Failed loading " + path, exc);
 							JOptionPane.showMessageDialog(null, "Failed loading problem set from:\n" + path,
 									"Load Problem Set Failure", JOptionPane.ERROR_MESSAGE);
 						}
 
 					} else {
-						Logger.logln("Load problem set canceled");
+						LOG.info("Load problem set canceled");
 					}
 				}
 			}
@@ -97,7 +99,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Save Problem Set' button clicked on the documents tab.");
+				LOG.info("'Save Problem Set' button clicked on the documents tab.");
 
 				JFileChooser save = new JFileChooser(new File(main.defaultLoadSaveDir));
 				save.addChoosableFileFilter(new ExtFilter("XML files (*.xml)", "xml"));
@@ -114,15 +116,14 @@ public class DocsTabDriver {
 						bw.flush();
 						bw.close();
 						main.defaultLoadSaveDir = (new File(path)).getParent();
-						Logger.log("Saved problem set to " + path + ":\n" + main.ps.toXMLString());
+						LOG.info("Saved problem set to " + path + ":\n" + main.ps.toXMLString());
 					} catch (IOException exc) {
-						Logger.logln("Failed opening " + path + " for writing", LogOut.STDERR);
-						Logger.logln(exc.toString(), LogOut.STDERR);
+						LOG.error("Failed opening " + path + " for writing",exc);
 						JOptionPane.showMessageDialog(null, "Failed saving problem set into:\n" + path,
 								"Save Problem Set Failure", JOptionPane.ERROR_MESSAGE);
 					}
 				} else {
-					Logger.logln("Save problem set canceled");
+					LOG.info("Save problem set canceled");
 				}
 			}
 		});
@@ -138,13 +139,13 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Add Document(s)...' button clicked under the 'Test Docs' section on the documents tab.");
+				LOG.info("'Add Document(s)...' button clicked under the 'Test Docs' section on the documents tab.");
 
 				if (main.testDocsJTree.getSelectionCount() == 0
 						|| main.testDocsJTree.getSelectionPath().getPath().length != 2) {
 					JOptionPane.showMessageDialog(null, "You must select an author.", "Add Training Documents Error",
 							JOptionPane.ERROR_MESSAGE);
-					Logger.logln("tried to add training documents without selecting an author", LogOut.STDERR);
+					LOG.error("tried to add training documents without selecting an author");
 
 				} else {
 					String author = main.testDocsJTree.getSelectionPath().getPath()[1].toString();
@@ -158,7 +159,7 @@ public class DocsTabDriver {
 						String msg = "Trying to load training documents for author \"" + author + "\":\n";
 						for (File file : files)
 							msg += "\t\t> " + file.getPath() + "\n";
-						Logger.log(msg);
+						LOG.info(msg);
 
 						String path = null;
 						String skipList = "";
@@ -195,14 +196,14 @@ public class DocsTabDriver {
 								JOptionPane.showMessageDialog(null, "Skipping too many documents to list...",
 										"Add Testing Documents", JOptionPane.WARNING_MESSAGE);
 							}
-							Logger.logln("skipped the following training documents:" + skipList);
+							LOG.info("skipped the following training documents:" + skipList);
 						}
 
 						GUIUpdateInterface.updateTestDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 
 					} else {
-						Logger.logln("Load testing documents canceled");
+						LOG.info("Load testing documents canceled");
 					}
 				}
 			}
@@ -213,7 +214,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Remove Document(s)' button clicked under the 'Test Docs' section on the documents tab.");
+				LOG.info("'Remove Document(s)' button clicked under the 'Test Docs' section on the documents tab.");
 
 				TreePath[] paths = main.testDocsJTree.getSelectionPaths();
 				List<DefaultMutableTreeNode> selectedDocs = new ArrayList<DefaultMutableTreeNode>();
@@ -223,7 +224,7 @@ public class DocsTabDriver {
 							selectedDocs.add((DefaultMutableTreeNode) path.getPath()[2]);
 
 				if (selectedDocs.isEmpty()) {
-					Logger.logln("Failed removing training documents - no documents are selected", LogOut.STDERR);
+					LOG.error("Failed removing training documents - no documents are selected");
 					JOptionPane.showMessageDialog(null, "You must select training documents to remove.",
 							"Remove Testing Documents Failure", JOptionPane.WARNING_MESSAGE);
 				} else {
@@ -239,11 +240,11 @@ public class DocsTabDriver {
 							main.ps.removeTestDocAt(author, doc.toString());
 							msg += "\t\t> " + doc.toString() + "\n";
 						}
-						Logger.log(msg);
+						LOG.info(msg);
 						GUIUpdateInterface.updateTestDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 					} else {
-						Logger.logln("Removing testing documents canceled");
+						LOG.info("Removing testing documents canceled");
 					}
 				}
 			}
@@ -254,14 +255,14 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Preview Document' button clicked under the 'Test Documents' section on the documents tab.");
+				LOG.info("'Preview Document' button clicked under the 'Test Documents' section on the documents tab.");
 
 				TreePath path = main.testDocsJTree.getSelectionPath();
 				if (path == null || path.getPathCount() != 3) {
 					JOptionPane.showMessageDialog(null,
 							"You must select a test document in order to show its preview.",
 							"Show Testing Document Preview Error", JOptionPane.ERROR_MESSAGE);
-					Logger.logln("No testing document is selected for preview", LogOut.STDERR);
+					LOG.error("No testing document is selected for preview");
 				} else {
 					String docTitle = path.getPath()[2].toString();
 					Document doc = main.ps.testDocAt(path.getPath()[1].toString(), docTitle);
@@ -273,8 +274,7 @@ public class DocsTabDriver {
 						JOptionPane.showMessageDialog(null,
 								"Failed opening testing document for preview:\n" + doc.getFilePath(),
 								"Show Testing Document Preview Error", JOptionPane.ERROR_MESSAGE);
-						Logger.logln("Failed opening testing document for preview", LogOut.STDERR);
-						Logger.logln(exc.toString(), LogOut.STDERR);
+						LOG.info("Failed opening testing document for preview", exc);
 						GUIUpdateInterface.clearDocPreview(main);
 					}
 				}
@@ -286,7 +286,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Add Author...' button clicked under the 'Test Docs' section on the documents tab.");
+				LOG.info("'Add Author...' button clicked under the 'Test Docs' section on the documents tab.");
 
 				String ans = JOptionPane
 						.showInputDialog(
@@ -294,10 +294,10 @@ public class DocsTabDriver {
 								"Enter new author name or press ok without entering anything\nto select an author folder to read documents from.",
 								"", JOptionPane.OK_CANCEL_OPTION);
 				if (ans == null) {
-					Logger.logln("Aborted adding new author");
+					LOG.info("Aborted adding new author");
 				} else if (ans.isEmpty()) {
 
-					Logger.logln("No author name entered, attempting to load from folder...");
+					LOG.info("No author name entered, attempting to load from folder...");
 
 					JFileChooser open = new JFileChooser(new File(main.defaultLoadSaveDir));
 					open.setMultiSelectionEnabled(true);
@@ -306,7 +306,7 @@ public class DocsTabDriver {
 
 					if (answer == JFileChooser.APPROVE_OPTION) {
 						File[] authors = open.getSelectedFiles();
-						Logger.logln("Trying to load testing documents");
+						LOG.info("Trying to load testing documents");
 
 						String path = null;
 						String skipList = "";
@@ -347,25 +347,25 @@ public class DocsTabDriver {
 								JOptionPane.showMessageDialog(null, "Skipping too many documents to list...",
 										"Add Testing Documents", JOptionPane.WARNING_MESSAGE);
 							}
-							Logger.logln("skipped the following testing documents:" + skipList);
+							LOG.info("skipped the following testing documents:" + skipList);
 						}
 
 						GUIUpdateInterface.updateTestDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 
 					} else {
-						Logger.logln("Load testing documents canceled");
+						LOG.info("Load testing documents canceled");
 					}
 
 				} else {
 					if (main.ps.getTestAuthorMap().keySet().contains(ans)) {
 						JOptionPane.showMessageDialog(null, "Author \"" + ans + "\" already exists.",
 								"Add New Author Error", JOptionPane.ERROR_MESSAGE);
-						Logger.logln("tried to add author that already exists: " + ans, LogOut.STDERR);
+						LOG.error("tried to add author that already exists: " + ans);
 					} else {
 						main.ps.addTestDocs(ans, new ArrayList<Document>());
 						GUIUpdateInterface.updateTestDocTree(main);
-						Logger.logln("Added new author: " + ans);
+						LOG.info("Added new author: " + ans);
 					}
 				}
 			}
@@ -376,7 +376,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Remove Author(s)' button clicked under the 'Test Docs' section on the documents tab.");
+				LOG.info("'Remove Author(s)' button clicked under the 'Test Docs' section on the documents tab.");
 
 				TreePath[] paths = main.testDocsJTree.getSelectionPaths();
 				List<DefaultMutableTreeNode> selectedAuthors = new ArrayList<DefaultMutableTreeNode>();
@@ -386,7 +386,7 @@ public class DocsTabDriver {
 							selectedAuthors.add((DefaultMutableTreeNode) path.getPath()[1]);
 
 				if (selectedAuthors.isEmpty()) {
-					Logger.logln("Failed removing authors - no authors are selected", LogOut.STDERR);
+					LOG.error("Failed removing authors - no authors are selected");
 					JOptionPane.showMessageDialog(null, "You must select authors to remove.", "Remove Authors Failure",
 							JOptionPane.WARNING_MESSAGE);
 				} else {
@@ -400,11 +400,11 @@ public class DocsTabDriver {
 							main.ps.removeTestAuthor(author.toString());
 							msg += "\t\t> " + author.toString() + "\n";
 						}
-						Logger.log(msg);
+						LOG.info(msg);
 						GUIUpdateInterface.updateTestDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 					} else {
-						Logger.logln("Removing authors canceled");
+						LOG.info("Removing authors canceled");
 					}
 				}
 			}
@@ -421,7 +421,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Add Author...' button clicked under the 'Training Corpus' section on the documents tab.");
+				LOG.info("'Add Author...' button clicked under the 'Training Corpus' section on the documents tab.");
 
 				String ans = JOptionPane
 						.showInputDialog(
@@ -429,10 +429,10 @@ public class DocsTabDriver {
 								"Enter new author name or press ok without entering anything\nto select an author folder to read documents from.",
 								"", JOptionPane.OK_CANCEL_OPTION);
 				if (ans == null) {
-					Logger.logln("Aborted adding new author");
+					LOG.info("Aborted adding new author");
 				} else if (ans.isEmpty()) {
 
-					Logger.logln("No author name entered, attempting to load from folder...");
+					LOG.info("No author name entered, attempting to load from folder...");
 
 					JFileChooser open = new JFileChooser(new File(main.defaultLoadSaveDir));
 					open.setMultiSelectionEnabled(true);
@@ -441,7 +441,7 @@ public class DocsTabDriver {
 
 					if (answer == JFileChooser.APPROVE_OPTION) {
 						File[] authors = open.getSelectedFiles();
-						Logger.logln("Trying to load training documents");
+						LOG.info("Trying to load training documents");
 
 						String path = null;
 						String skipList = "";
@@ -479,25 +479,25 @@ public class DocsTabDriver {
 								JOptionPane.showMessageDialog(null, "Skipping too many documents to list...",
 										"Add Training Documents", JOptionPane.WARNING_MESSAGE);
 							}
-							Logger.logln("skipped the following training documents:" + skipList);
+							LOG.info("skipped the following training documents:" + skipList);
 						}
 
 						GUIUpdateInterface.updateTrainDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 
 					} else {
-						Logger.logln("Load training documents canceled");
+						LOG.info("Load training documents canceled");
 					}
 
 				} else {
 					if (main.ps.getAuthorMap().keySet().contains(ans)) {
 						JOptionPane.showMessageDialog(null, "Author \"" + ans + "\" already exists.",
 								"Add New Author Error", JOptionPane.ERROR_MESSAGE);
-						Logger.logln("tried to add author that already exists: " + ans, LogOut.STDERR);
+						LOG.error("tried to add author that already exists: " + ans);
 					} else {
 						main.ps.addTrainDocs(ans, new ArrayList<Document>());
 						GUIUpdateInterface.updateTrainDocTree(main);
-						Logger.logln("Added new author: " + ans);
+						LOG.info("Added new author: " + ans);
 					}
 				}
 			}
@@ -508,13 +508,13 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Add Document(s)...' button clicked under the 'Training Corpus' section on the documents tab.");
+				LOG.info("'Add Document(s)...' button clicked under the 'Training Corpus' section on the documents tab.");
 
 				if (main.trainCorpusJTree.getSelectionCount() == 0
 						|| main.trainCorpusJTree.getSelectionPath().getPath().length != 2) {
 					JOptionPane.showMessageDialog(null, "You must select an author.", "Add Training Documents Error",
 							JOptionPane.ERROR_MESSAGE);
-					Logger.logln("tried to add training documents without selecting an author", LogOut.STDERR);
+					LOG.error("tried to add training documents without selecting an author");
 
 				} else {
 					String author = main.trainCorpusJTree.getSelectionPath().getPath()[1].toString();
@@ -528,7 +528,7 @@ public class DocsTabDriver {
 						String msg = "Trying to load training documents for author \"" + author + "\":\n";
 						for (File file : files)
 							msg += "\t\t> " + file.getPath() + "\n";
-						Logger.log(msg);
+						LOG.info(msg);
 
 						String path = null;
 						String skipList = "";
@@ -561,14 +561,14 @@ public class DocsTabDriver {
 								JOptionPane.showMessageDialog(null, "Skipping too many documents to list...",
 										"Add Training Documents", JOptionPane.WARNING_MESSAGE);
 							}
-							Logger.logln("skipped the following training documents:" + skipList);
+							LOG.info("skipped the following training documents:" + skipList);
 						}
 
 						GUIUpdateInterface.updateTrainDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 
 					} else {
-						Logger.logln("Load training documents canceled");
+						LOG.info("Load training documents canceled");
 					}
 				}
 			}
@@ -579,15 +579,15 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Edit Name...' button clicked under the 'Training Corpus' section on the documents tab.");
+				LOG.info("'Edit Name...' button clicked under the 'Training Corpus' section on the documents tab.");
 
 				String answer = JOptionPane.showInputDialog(null, "Edit corpus name:", main.ps.getTrainCorpusName());
 				if (answer == null) {
-					Logger.logln("Aborted editing corpus name");
+					LOG.info("Aborted editing corpus name");
 				} else if (answer.isEmpty()) {
 					JOptionPane.showMessageDialog(null, "Training corpus name must be a non-empty string.",
 							"Edit Training Corpus Name Error", JOptionPane.ERROR_MESSAGE);
-					Logger.logln("tried to change training corpus name to an empty string", LogOut.STDERR);
+					LOG.error("tried to change training corpus name to an empty string");
 				} else {
 					main.ps.setTrainCorpusName(answer);
 					GUIUpdateInterface.updateTrainDocTree(main);
@@ -600,7 +600,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Remove Author(s)' button clicked under the 'Training Corpus' section on the documents tab.");
+				LOG.info("'Remove Author(s)' button clicked under the 'Training Corpus' section on the documents tab.");
 
 				TreePath[] paths = main.trainCorpusJTree.getSelectionPaths();
 				List<DefaultMutableTreeNode> selectedAuthors = new ArrayList<DefaultMutableTreeNode>();
@@ -610,7 +610,7 @@ public class DocsTabDriver {
 							selectedAuthors.add((DefaultMutableTreeNode) path.getPath()[1]);
 
 				if (selectedAuthors.isEmpty()) {
-					Logger.logln("Failed removing authors - no authors are selected", LogOut.STDERR);
+					LOG.error("Failed removing authors - no authors are selected");
 					JOptionPane.showMessageDialog(null, "You must select authors to remove.", "Remove Authors Failure",
 							JOptionPane.WARNING_MESSAGE);
 				} else {
@@ -624,11 +624,11 @@ public class DocsTabDriver {
 							main.ps.removeAuthor(author.toString());
 							msg += "\t\t> " + author.toString() + "\n";
 						}
-						Logger.log(msg);
+						LOG.info(msg);
 						GUIUpdateInterface.updateTrainDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 					} else {
-						Logger.logln("Removing authors canceled");
+						LOG.info("Removing authors canceled");
 					}
 				}
 			}
@@ -639,7 +639,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Remove Document(s)' button clicked under the 'Training Corpus' section on the documents tab.");
+				LOG.info("'Remove Document(s)' button clicked under the 'Training Corpus' section on the documents tab.");
 
 				TreePath[] paths = main.trainCorpusJTree.getSelectionPaths();
 				List<DefaultMutableTreeNode> selectedDocs = new ArrayList<DefaultMutableTreeNode>();
@@ -649,7 +649,7 @@ public class DocsTabDriver {
 							selectedDocs.add((DefaultMutableTreeNode) path.getPath()[2]);
 
 				if (selectedDocs.isEmpty()) {
-					Logger.logln("Failed removing training documents - no documents are selected", LogOut.STDERR);
+					LOG.info("Failed removing training documents - no documents are selected");
 					JOptionPane.showMessageDialog(null, "You must select training documents to remove.",
 							"Remove Training Documents Failure", JOptionPane.WARNING_MESSAGE);
 				} else {
@@ -665,11 +665,11 @@ public class DocsTabDriver {
 							main.ps.removeTrainDocAt(author, doc.toString());
 							msg += "\t\t> " + doc.toString() + "\n";
 						}
-						Logger.log(msg);
+						LOG.info(msg);
 						GUIUpdateInterface.updateTrainDocTree(main);
 						GUIUpdateInterface.clearDocPreview(main);
 					} else {
-						Logger.logln("Removing training documents canceled");
+						LOG.info("Removing training documents canceled");
 					}
 				}
 			}
@@ -680,14 +680,14 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Preview Document' button clicked under the 'Training Corpus' section on the documents tab.");
+				LOG.info("'Preview Document' button clicked under the 'Training Corpus' section on the documents tab.");
 
 				TreePath path = main.trainCorpusJTree.getSelectionPath();
 				if (path == null || path.getPathCount() != 3) {
 					JOptionPane.showMessageDialog(null,
 							"You must select a training document in order to show its preview.",
 							"Show Training Document Preview Error", JOptionPane.ERROR_MESSAGE);
-					Logger.logln("No training document is selected for preview", LogOut.STDERR);
+					LOG.error("No training document is selected for preview");
 				} else {
 					String docTitle = path.getPath()[2].toString();
 					Document doc = main.ps.trainDocAt(path.getPath()[1].toString(), docTitle);
@@ -699,8 +699,7 @@ public class DocsTabDriver {
 						JOptionPane.showMessageDialog(null,
 								"Failed opening training document for preview:\n" + doc.getFilePath(),
 								"Show Training Document Preview Error", JOptionPane.ERROR_MESSAGE);
-						Logger.logln("Failed opening training document for preview", LogOut.STDERR);
-						Logger.logln(exc.toString(), LogOut.STDERR);
+						LOG.info("Failed opening training document for preview",exc);
 						GUIUpdateInterface.clearDocPreview(main);
 					}
 				}
@@ -715,7 +714,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Clear Preview' button clicked on the documents tab.");
+				LOG.info("'Clear Preview' button clicked on the documents tab.");
 
 				GUIUpdateInterface.clearDocPreview(main);
 			}
@@ -740,7 +739,7 @@ public class DocsTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Next' button clicked on the documents tab.");
+				LOG.info("'Next' button clicked on the documents tab.");
 
 				if (main.ps == null || !main.ps.hasAuthors() || !main.ps.hasTestDocs()) {
 					JOptionPane.showMessageDialog(null,

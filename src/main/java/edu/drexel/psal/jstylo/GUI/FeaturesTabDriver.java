@@ -20,13 +20,16 @@ import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.GUI.DocsTabDriver.ExtFilter;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver;
-import edu.drexel.psal.jstylo.generics.Logger;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jgaap.generics.*;
 
 public class FeaturesTabDriver {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FeaturesTabDriver.class);
+    
 	/*
 	 * ====================== Features tab listeners ======================
 	 */
@@ -43,14 +46,14 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("Preset feature set selected in the features tab.");
+				LOG.info("Preset feature set selected in the features tab.");
 
 				int selected = main.featuresSetJComboBox.getSelectedIndex() - 1;
 				if (selected == -1) {
 					main.cfd = new CumulativeFeatureDriver();
 				} else {
 					main.cfd = main.presetCFDs.get(selected);
-					Logger.logln("loaded preset feature set: " + main.cfd.getName());
+					LOG.info("loaded preset feature set: " + main.cfd.getName());
 				}
 				// update tab view
 				GUIUpdateInterface.updateFeatureSetView(main);
@@ -62,7 +65,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'New Feature Set' button clicked in the features tab.");
+				LOG.info("'New Feature Set' button clicked in the features tab.");
 
 				// check if the current CFD is not empty
 				int answer;
@@ -88,7 +91,7 @@ public class FeaturesTabDriver {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Add Feature Set' button clicked in the features tab.");
+				LOG.info("'Add Feature Set' button clicked in the features tab.");
 
 				// check name
 				if (main.cfd.getName() == null || main.cfd.getName().matches("\\s*")) {
@@ -119,7 +122,7 @@ public class FeaturesTabDriver {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Import from XML' button clicked in the features tab.");
+				LOG.info("'Import from XML' button clicked in the features tab.");
 
 				JFileChooser load = new JFileChooser(new File("."));
 				load.addChoosableFileFilter(new ExtFilter("XML files (*.xml)", "xml"));
@@ -127,7 +130,7 @@ public class FeaturesTabDriver {
 
 				if (answer == JFileChooser.APPROVE_OPTION) {
 					String path = load.getSelectedFile().getAbsolutePath();
-					Logger.logln("Trying to load cumulative feature driver from " + path);
+					LOG.info("Trying to load cumulative feature driver from " + path);
 					try {
 						// read CFD and update
 						CumulativeFeatureDriver cfd = new CumulativeFeatureDriver(path);
@@ -157,14 +160,13 @@ public class FeaturesTabDriver {
 						GUIUpdateInterface.updateFeatureSetView(main);
 
 					} catch (Exception exc) {
-						Logger.logln("Failed loading " + path, LogOut.STDERR);
-						Logger.logln(exc.toString(), LogOut.STDERR);
+						LOG.error("Failed loading " + path, exc);
 						JOptionPane.showMessageDialog(null, "Failed loading feature set from:\n" + path,
 								"Load Feature Set Failure", JOptionPane.ERROR_MESSAGE);
 					}
 
 				} else {
-					Logger.logln("Load cumulative feature driver canceled");
+					LOG.info("Load cumulative feature driver canceled");
 				}
 
 			}
@@ -175,7 +177,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Save Feature Set...' button clicked in the features tab.");
+				LOG.info("'Save Feature Set...' button clicked in the features tab.");
 
 				JFileChooser save = new JFileChooser(new File("."));
 				save.addChoosableFileFilter(new ExtFilter("XML files (*.xml)", "xml"));
@@ -191,15 +193,14 @@ public class FeaturesTabDriver {
 						bw.write(main.cfd.toXMLString());
 						bw.flush();
 						bw.close();
-						Logger.log("Saved cumulative feature driver to " + path + ":\n" + main.cfd.toXMLString());
+						LOG.info("Saved cumulative feature driver to " + path + ":\n" + main.cfd.toXMLString());
 					} catch (IOException exc) {
-						Logger.logln("Failed opening " + path + " for writing", LogOut.STDERR);
-						Logger.logln(exc.toString(), LogOut.STDERR);
+						LOG.error("Failed opening " + path + " for writing", exc);
 						JOptionPane.showMessageDialog(null, "Failed saving feature set set into:\n" + path,
 								"Save Feature Set Failure", JOptionPane.ERROR_MESSAGE);
 					}
 				} else {
-					Logger.logln("Save cumulative feature driver canceled");
+					LOG.info("Save cumulative feature driver canceled");
 				}
 			}
 		});
@@ -212,7 +213,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void focusLost(FocusEvent arg0) {
-				Logger.logln("Feature set name edited in the features tab.");
+				LOG.info("Feature set name edited in the features tab.");
 				main.cfd.setName(main.featuresSetNameJTextField.getText());
 			}
 
@@ -226,7 +227,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void focusLost(FocusEvent arg0) {
-				Logger.logln("Feature set description edited in the features tab.");
+				LOG.info("Feature set description edited in the features tab.");
 				main.cfd.setDescription(main.featuresSetDescJTextPane.getText());
 			}
 
@@ -248,7 +249,7 @@ public class FeaturesTabDriver {
 				// skip if already processed
 				if (selected == lastSelected)
 					return;
-				Logger.logln("Feature selected in the features tab: " + main.featuresJList.getSelectedValue());
+				LOG.info("Feature selected in the features tab: " + main.featuresJList.getSelectedValue());
 				GUIUpdateInterface.updateFeatureView(main, selected);
 				lastSelected = selected;
 			}
@@ -259,7 +260,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Add' feature button clicked in the features tab.");
+				LOG.info("'Add' feature button clicked in the features tab.");
 				FeatureWizard fw = new FeatureWizard(main);
 				fw.setVisible(true);
 			}
@@ -270,7 +271,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Edit' feature button clicked in the features tab.");
+				LOG.info("'Edit' feature button clicked in the features tab.");
 				if (main.featuresJList.getSelectedIndex() == -1) {
 					JOptionPane.showMessageDialog(main, "You must select a feature to edit.", "Edit Feature Error",
 							JOptionPane.ERROR_MESSAGE);
@@ -287,7 +288,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Remove' feature button clicked in the features tab.");
+				LOG.info("'Remove' feature button clicked in the features tab.");
 				int selected[] = main.featuresJList.getSelectedIndices();
 				
 				if (selected[0] == -1) {
@@ -324,7 +325,7 @@ public class FeaturesTabDriver {
 
 				// unselected
 				else if (selected == -1) {
-					Logger.logln("Canonicizer unselected in features tab.");
+					LOG.info("Canonicizer unselected in features tab.");
 					main.featuresCanonConfigJScrollPane.setViewportView(null);
 				}
 
@@ -332,7 +333,7 @@ public class FeaturesTabDriver {
 				else {
 					Canonicizer c = main.cfd.featureDriverAt(main.featuresJList.getSelectedIndex()).canonicizerAt(
 							selected);
-					Logger.logln("Canonicizer '" + c.displayName() + "' selected in features tab.");
+					LOG.info("Canonicizer '" + c.displayName() + "' selected in features tab.");
 					main.featuresCanonConfigJScrollPane.setViewportView(GUIUpdateInterface.getParamPanel(c));
 				}
 
@@ -354,14 +355,14 @@ public class FeaturesTabDriver {
 
 				// unselected
 				else if (selected == -1) {
-					Logger.logln("Culler unselected in features tab.");
+					LOG.info("Culler unselected in features tab.");
 					main.featuresCullConfigJScrollPane.setViewportView(null);
 				}
 
 				// selected
 				else {
 					EventCuller ec = main.cfd.featureDriverAt(main.featuresJList.getSelectedIndex()).cullerAt(selected);
-					Logger.logln("Culler '" + ec.displayName() + "' selected in features tab.");
+					LOG.info("Culler '" + ec.displayName() + "' selected in features tab.");
 					main.featuresCullConfigJScrollPane.setViewportView(GUIUpdateInterface.getParamPanel(ec));
 				}
 
@@ -385,7 +386,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Back' button clicked in the features tab.");
+				LOG.info("'Back' button clicked in the features tab.");
 				main.mainJTabbedPane.setSelectedIndex(0);
 			}
 		});
@@ -395,7 +396,7 @@ public class FeaturesTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Next' button clicked in the features tab.");
+				LOG.info("'Next' button clicked in the features tab.");
 
 				if (isCFDEmpty(main.cfd)) {
 					JOptionPane.showMessageDialog(null, "You must set a feature set before continuing.",
@@ -443,7 +444,7 @@ public class FeaturesTabDriver {
 				main.presetCFDs.add(new CumulativeFeatureDriver(path));
 			}
 		} catch (Exception e) {
-			Logger.logln("Failed to read feature set files.", LogOut.STDERR);
+			LOG.error("Failed to read feature set files.", e);
 			e.printStackTrace();
 		}
 

@@ -7,7 +7,6 @@ import javax.swing.tree.DefaultTreeModel;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver;
-import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver.ParamTag;
 
@@ -16,12 +15,17 @@ import com.jgaap.generics.*;
 import java.awt.GridLayout;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GUIUpdateInterface {
 
 	// about dialog
 	// ============
 	
 	protected static String version = "1.2";
+	
+    private static final Logger LOG = LoggerFactory.getLogger(GUIUpdateInterface.class);
 	
 	protected static void showAbout(GUIMain main) {
 		ImageIcon logo = new ImageIcon(Thread.currentThread().getClass().getResource(JSANConstants.JSAN_GRAPHICS_PREFIX+"logo.png"), "JStylo Logo");
@@ -52,7 +56,7 @@ public class GUIUpdateInterface {
 	 * Updates the documents tab view with the current problem set.
 	 */
 	protected static void updateProblemSet(GUIMain main) {
-		Logger.logln("GUI Update: update documents tab with current problem set started");
+		LOG.info("GUI Update: update documents tab with current problem set started");
 		
 		// update test documents table
 		updateTestDocTree(main);

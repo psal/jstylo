@@ -18,10 +18,14 @@ import java.util.Collections;
 import com.jgaap.generics.*;
 
 import edu.drexel.psal.jstylo.featureProcessing.StringDocument;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProblemSet implements Serializable {
 	
+    private static final Logger LOG = LoggerFactory.getLogger(ProblemSet.class);
+    
 	/* ======
 	 * fields
 	 * ======
@@ -873,16 +877,16 @@ public class ProblemSet implements Serializable {
 			try { 
 				parse(ldc);
 			} catch (ParserConfigurationException pce){
-				Logger.logln("Encountered a Parser Configuration problem in the XMLParser constructor.",LogOut.STDERR);
+				LOG.error("Encountered a Parser Configuration problem in the XMLParser constructor.",pce);
 				pce.printStackTrace();
 			} catch (IOException ioe) {
-				Logger.logln("Encountered an IO exception in the XMLParser constructor.",LogOut.STDERR);
+				LOG.error("Encountered an IO exception in the XMLParser constructor.",ioe);
 				ioe.printStackTrace();
 			} catch (SAXException se) {
-				Logger.logln("Encountered a SAX exception in the XMLParser constructor.",LogOut.STDERR);
+				LOG.error("Encountered a SAX exception in the XMLParser constructor.", se);
 				se.printStackTrace();
 			} catch (Exception e) {
-				Logger.logln("Problem creating a document. Exception thrown by JGAAP Document.", LogOut.STDERR);
+				LOG.error("Problem creating a document. Exception thrown by JGAAP Document.", e);
 				e.printStackTrace();
 			}
 		}
@@ -943,7 +947,7 @@ public class ProblemSet implements Serializable {
 					problemSet.addTestDoc(parent.getAttribute("name"),testDoc);
 					
 				} else {
-					Logger.logln("Error loading document file. Incorrectly formatted XML: "+current.getNodeValue());
+					LOG.info("Error loading document file. Incorrectly formatted XML: "+current.getNodeValue());
 				}
 			}	
 		}

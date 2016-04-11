@@ -11,7 +11,6 @@ import java.util.*;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
-import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
@@ -39,7 +38,8 @@ import javax.swing.tree.*;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class GUIMain extends javax.swing.JFrame {
-
+    
+    
 	/**
 	 * 
 	 */
@@ -244,7 +244,6 @@ public class GUIMain extends javax.swing.JFrame {
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() { 
-				Logger.initLogFile();
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 				} catch (Exception e) {

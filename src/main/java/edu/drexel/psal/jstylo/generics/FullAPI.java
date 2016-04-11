@@ -1,9 +1,11 @@
 package edu.drexel.psal.jstylo.generics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
@@ -22,6 +24,8 @@ import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 public class FullAPI {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FullAPI.class);
+    
 	/**
 	 * Builder for the fullAPI class. <br>
 	 *
@@ -172,7 +176,7 @@ public class FullAPI {
 			try {
 				ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(b.cfdXMLPath));
 			} catch (Exception e) {
-				Logger.logln("Failed to build cfd from xml path: "+b.cfdXMLPath,LogOut.STDERR);
+				LOG.error("Failed to build cfd from xml path: "+b.cfdXMLPath,e);
 				e.printStackTrace();
 			}
 		}
@@ -218,8 +222,7 @@ public class FullAPI {
 		try {
 			ib.calculateInfoGain(); //delegate to underlying Instances Builder
 		} catch (Exception e) {
-			Logger.logln("Failed to calculate infoGain",LogOut.STDERR);
-			e.printStackTrace();
+			LOG.error("Failed to calculate infoGain",e);
 		} 
 	}
 	
@@ -262,8 +265,7 @@ public class FullAPI {
 				DataMap test = ib.getTestDataMap();
 				experimentResults = analysisDriver.getTrainTestEval(train,test);
 			} catch (Exception e) {
-				Logger.logln("Failed to build trainTest Evaluation");
-				e.printStackTrace();
+				LOG.error("Failed to build trainTest Evaluation",e);
 			}
 			break;
 		
@@ -446,9 +448,10 @@ public class FullAPI {
         resultsString += eval.getStatisticsString() + "\n";
         resultsString += eval.getAllDocumentResults() + "\n";
         resultsString += eval.getConfusionMatrix() + "\n";
+        resultsString += eval.getAllDocumentResultsVerbose();
         return resultsString;
 	}
-	
+    
 	/**
 	 * @return The accuracy of the given test in percentage format
 	 */
@@ -494,7 +497,7 @@ public class FullAPI {
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
                     .psPath("./jsan_resources/problem_sets/drexel_1_train_test.xml")
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
+                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();

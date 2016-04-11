@@ -52,10 +52,10 @@ public class ExperimentResults {
     //TODO switch on/off actual column based on if actual is known
     //TODO add some sort of quickly visible "correct!" mark or column
     public String getAllDocumentResults(){
-        String results = String.format("%-14s | %-14s | %-14s | %-14s |\n","Document Title","Suspect","Actual","Probability");
+        String results = String.format("%-14s | %-14s | %-14s | %-14s |\n","Document Title","Actual","Suspect","Probability");
         for (DocResult result : experimentContents){
             results+=String.format("%-14s | %-14s | %-14s | %-14s |\n", 
-                    result.getTitle(),result.getSuspectedAuthor(),result.getActualAuthor(),
+                    result.getTitle(),result.getActualAuthor(),result.getSuspectedAuthor(),
                         String.format("%.2f", result.getProbabilities().get(result.getSuspectedAuthor())));
         }
         return results;
@@ -66,7 +66,7 @@ public class ExperimentResults {
         
         //first column has all of the author names
         for (String author : experimentContents.get(0).getProbabilities().keySet()){
-            results+=String.format(" %-14s |", author);
+            results+=String.format(" %-10s |", author);
         }
         
         results+="\n";
@@ -86,9 +86,9 @@ public class ExperimentResults {
             
             for (String author : result.getProbabilities().keySet()){
                 if (topAuthor.equals(author)){
-                    results+=String.format(" >>%.2f<< |", result.getProbabilities().get(author));
+                    results+=String.format("  >>%.2f<<  |", result.getProbabilities().get(author));
                 } else {
-                    results+=String.format("   %.2f   |", result.getProbabilities().get(author));
+                    results+=String.format("    %.2f    |", result.getProbabilities().get(author));
                 }
             }
             results+="\n";

@@ -2,9 +2,7 @@ package edu.drexel.psal.jstylo.GUI;
 
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.FeatureDriver;
-import edu.drexel.psal.jstylo.generics.Logger;
 import edu.drexel.psal.jstylo.featureProcessing.NormBaselineEnum;
-import edu.drexel.psal.jstylo.generics.Logger.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -17,6 +15,9 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgaap.generics.*;
 
 /**
@@ -28,6 +29,8 @@ import com.jgaap.generics.*;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class FeatureWizardDriver {
 	
+    private static final Logger LOG = LoggerFactory.getLogger(FeatureWizardDriver.class);
+    
 	/* =======================
 	 * FeatureWizard listeners
 	 * =======================
@@ -42,7 +45,7 @@ public class FeatureWizardDriver {
 		ActionListener goBack = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Back' button clicked in the feature wizard.");
+				LOG.info("'Back' button clicked in the feature wizard.");
 				fw.mainJTabbedPane.setSelectedIndex(fw.mainJTabbedPane.getSelectedIndex()-1);
 			}
 		};
@@ -50,25 +53,25 @@ public class FeatureWizardDriver {
 		ActionListener cancel = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Cancel' button clicked in the feature wizard.");
+				LOG.info("'Cancel' button clicked in the feature wizard.");
 				int answer = JOptionPane.showConfirmDialog(null,
 						"Abort feature configuration?",
 						"Cancel Feature Configuration",
 						JOptionPane.OK_CANCEL_OPTION);
 				if (answer == JOptionPane.OK_OPTION) {
-					Logger.logln("feature configuration aborted.");
+					LOG.info("feature configuration aborted.");
 					// reset and hide
 					resetFeatureWizard(fw);
 					fw.dispose();
 				}
-				Logger.logln("feature configuration continued.");
+				LOG.info("feature configuration continued.");
 			}
 		};
 		
 		ActionListener goNext = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Next' button clicked in the feature wizard.");
+				LOG.info("'Next' button clicked in the feature wizard.");
 				fw.mainJTabbedPane.setSelectedIndex(fw.mainJTabbedPane.getSelectedIndex()+1);				
 			}
 		};
@@ -94,10 +97,10 @@ public class FeatureWizardDriver {
 				if (lastSelectedIndex == fw.avCanonJList.getSelectedIndex())
 					return;
 				if (fw.avCanonJList.isSelectionEmpty()) {
-					Logger.logln("Available text pre-processing tool list unselected");
+					LOG.info("Available text pre-processing tool list unselected");
 					fw.canonDescContentJLabel.setText("");
 				} else {
-					Logger.logln("Available text pre-processing tool selected at index "+fw.avCanonJList.getSelectedIndex());
+					LOG.info("Available text pre-processing tool selected at index "+fw.avCanonJList.getSelectedIndex());
 					fw.canonDescContentJLabel.setText("<html><p>" +
 							getCanonicizer((String)fw.avCanonJList.getSelectedValue()).longDescription() +
 							"</p></html>");
@@ -110,7 +113,7 @@ public class FeatureWizardDriver {
 		fw.avCanonAddJButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Add' button clicked under the text pre-processing tab.");
+				LOG.info("'Add' button clicked under the text pre-processing tab.");
 				
 				if (fw.avCanonJList.isSelectionEmpty()) {
 					JOptionPane.showMessageDialog(null,
@@ -120,7 +123,7 @@ public class FeatureWizardDriver {
 				} else {
 					fw.selCanonJListModel.addElement(fw.avCanonJList.getSelectedValue());
 					fw.canonParamList.add(getConfigPanel(fw,1,canonMap.get(fw.avCanonJList.getSelectedValue())));
-					Logger.logln("Added '"+fw.avCanonJList.getSelectedValue()+"' to selected text pre-processing tool list.");
+					LOG.info("Added '"+fw.avCanonJList.getSelectedValue()+"' to selected text pre-processing tool list.");
 				}
 			}
 		});
@@ -133,11 +136,11 @@ public class FeatureWizardDriver {
 				if (lastSelectedIndex == fw.selCanonJList.getSelectedIndex())
 					return;
 				if (fw.selCanonJList.isSelectionEmpty()) {
-					Logger.logln("Selected text pre-processing tool list unselected");
+					LOG.info("Selected text pre-processing tool list unselected");
 					fw.canonConfigJScrollPane.setViewportView(null);
 					fw.canonDescContentJLabel.setText("");
 				} else {
-					Logger.logln("Selected text pre-processing tool selected at index "+fw.selCanonJList.getSelectedIndex());
+					LOG.info("Selected text pre-processing tool selected at index "+fw.selCanonJList.getSelectedIndex());
 					fw.canonConfigJScrollPane.setViewportView(fw.canonParamList.get(fw.selCanonJList.getSelectedIndex()));
 					fw.canonDescContentJLabel.setText("<html><p>" +
 							getCanonicizer((String)fw.selCanonJList.getSelectedValue()).longDescription() +
@@ -151,7 +154,7 @@ public class FeatureWizardDriver {
 		fw.selCanonRemoveJButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Remove' button clicked under the text pre-processing tab.");
+				LOG.info("'Remove' button clicked under the text pre-processing tab.");
 				
 				if (fw.selCanonJList.isSelectionEmpty()) {
 					JOptionPane.showMessageDialog(null,
@@ -162,7 +165,7 @@ public class FeatureWizardDriver {
 					String toRemove = (String)fw.selCanonJList.getSelectedValue();
 					fw.canonParamList.remove(fw.selCanonJList.getSelectedIndex());
 					fw.selCanonJListModel.removeElementAt(fw.selCanonJList.getSelectedIndex());
-					Logger.logln("Removed '"+toRemove+"' from selected text pre-processing tool list.");
+					LOG.info("Removed '"+toRemove+"' from selected text pre-processing tool list.");
 				}
 			}
 		});
@@ -215,10 +218,10 @@ public class FeatureWizardDriver {
 				if (lastSelectedIndex == fw.avCullJList.getSelectedIndex())
 					return;
 				if (fw.avCullJList.isSelectionEmpty()) {
-					Logger.logln("Available feature post-processing tool list unselected");
+					LOG.info("Available feature post-processing tool list unselected");
 					fw.cullDescContentJLabel.setText("");
 				} else {
-					Logger.logln("Available feature post-processing tool selected at index "+fw.avCullJList.getSelectedIndex());
+					LOG.info("Available feature post-processing tool selected at index "+fw.avCullJList.getSelectedIndex());
 					fw.cullDescContentJLabel.setText("<html><p>" +
 							getCuller((String)fw.avCullJList.getSelectedValue()).longDescription() +
 							"</p></html>");
@@ -231,7 +234,7 @@ public class FeatureWizardDriver {
 		fw.avCullAddJButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Add' button clicked under the feature post-processing tab.");
+				LOG.info("'Add' button clicked under the feature post-processing tab.");
 
 				if (fw.avCullJList.isSelectionEmpty()) {
 					JOptionPane.showMessageDialog(null,
@@ -241,7 +244,7 @@ public class FeatureWizardDriver {
 				} else {
 					fw.selCullJListModel.addElement(fw.avCullJList.getSelectedValue());
 					fw.cullParamList.add(getConfigPanel(fw,3,cullersMap.get(fw.avCullJList.getSelectedValue())));
-					Logger.logln("Added '"+fw.avCullJList.getSelectedValue()+"' to selected feature post-processing tool list.");
+					LOG.info("Added '"+fw.avCullJList.getSelectedValue()+"' to selected feature post-processing tool list.");
 				}
 			}
 		});
@@ -254,11 +257,11 @@ public class FeatureWizardDriver {
 				if (lastSelectedIndex == fw.selCullJList.getSelectedIndex())
 					return;
 				if (fw.selCullJList.isSelectionEmpty()) {
-					Logger.logln("Feature post-processing tool list unselected");
+					LOG.info("Feature post-processing tool list unselected");
 					fw.cullConfigJScrollPane.setViewportView(null);
 					fw.cullDescContentJLabel.setText("");
 				} else {
-					Logger.logln("Feature post-processing tool selected at index "+fw.selCullJList.getSelectedIndex());
+					LOG.info("Feature post-processing tool selected at index "+fw.selCullJList.getSelectedIndex());
 					fw.cullConfigJScrollPane.setViewportView(fw.cullParamList.get(fw.selCullJList.getSelectedIndex()));
 					fw.cullDescContentJLabel.setText("<html><p>" +
 							getCuller((String)fw.selCullJList.getSelectedValue()).longDescription() +
@@ -272,7 +275,7 @@ public class FeatureWizardDriver {
 		fw.selCullRemoveJButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Remove' button clicked under the feature post-processing tab.");
+				LOG.info("'Remove' button clicked under the feature post-processing tab.");
 
 				if (fw.selCullJList.isSelectionEmpty()) {
 					JOptionPane.showMessageDialog(null,
@@ -283,7 +286,7 @@ public class FeatureWizardDriver {
 					String toRemove = (String)fw.selCullJList.getSelectedValue();
 					fw.cullParamList.remove(fw.selCullJList.getSelectedIndex());
 					fw.selCullJListModel.removeElementAt(fw.selCullJList.getSelectedIndex());
-					Logger.logln("Removed '"+toRemove+"' from selected feature post-processing tool list.");
+					LOG.info("Removed '"+toRemove+"' from selected feature post-processing tool list.");
 				}
 			}
 		});
@@ -351,7 +354,7 @@ public class FeatureWizardDriver {
 		fw.normAddFeatureJButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Add Feature' button clicked in the normalization tab");
+				LOG.info("'Add Feature' button clicked in the normalization tab");
 				
 				// create a new feature driver
 				fw.fd = new FeatureDriver();
@@ -363,7 +366,7 @@ public class FeatureWizardDriver {
 							"Feature name must be non-empty.",
 							"Feature Name Error",
 							JOptionPane.ERROR_MESSAGE);
-					Logger.logln("Add feature error: given empty feature name.",LogOut.STDERR);
+					LOG.error("Add feature error: given empty feature name.");
 					return;
 				}
 				CumulativeFeatureDriver cfd = fw.parent.cfd;
@@ -376,30 +379,30 @@ public class FeatureWizardDriver {
 									"Feature with name \""+name+"\" already exists.",
 									"Feature Name Error",
 									JOptionPane.ERROR_MESSAGE);
-							Logger.logln("Add feature error: feature name already in use.",LogOut.STDERR);
+							LOG.error("Add feature error: feature name already in use.");
 							return;
 						}
 					}
 				}
 				fw.fd.setName(name);
-				Logger.logln("feature name: "+name);
+				LOG.info("feature name: "+name);
 				
 				// set description
 				fw.fd.setDescription(fw.descJTextPane.getText());
-				Logger.logln("feature description: "+fw.descJTextPane.getText());
+				LOG.info("feature description: "+fw.descJTextPane.getText());
 				
 				// set canonicizers
-				Logger.logln("canonicizers:");
+				LOG.info("canonicizers:");
 				for (int i=0; i<fw.selCanonJListModel.getSize(); i++) {
 					// create canonicizer
 					String canonName = (String) fw.selCanonJListModel.getElementAt(i);
 					Canonicizer c = getCanonicizer(canonName);
-					Logger.logln("- "+canonName);
+					LOG.info("- "+canonName);
 					
 					// set parameters
 					JPanel canonParams = fw.canonParamList.get(i);
 					if (canonParams != null) {
-						Logger.logln("  parameters:");
+						LOG.info("  parameters:");
 						for (Component paramComp: canonParams.getComponents()) {
 							JPanel canonParam = (JPanel) paramComp;
 							String paramName = ((JLabel) canonParam.getComponent(0)).getText();
@@ -411,7 +414,7 @@ public class FeatureWizardDriver {
 								paramVal = (String)((JComboBox) canonParam.getComponent(1)).getSelectedItem();
 							}
 							c.setParameter(paramName, paramVal);
-							Logger.logln("  - "+paramName+": "+paramVal);
+							LOG.info("  - "+paramName+": "+paramVal);
 						}
 					}
 					fw.fd.addCanonicizer(c);
@@ -423,21 +426,21 @@ public class FeatureWizardDriver {
 							"No feature extractor selected.",
 							"Feature Error",
 							JOptionPane.ERROR_MESSAGE);
-					Logger.logln("Add feature error: No feature extractor selected.",LogOut.STDERR);
+					LOG.error("Add feature error: No feature extractor selected.");
 					return;
 				} else {
 					// set event driver
 					String edString = ((DefaultMutableTreeNode)fw.featuresJTree.getSelectionPath().getPath()[2]).toString();
 					EventDriver ed = getEventDriver(edString);
-					Logger.logln("event driver: "+ed.displayName());
+					LOG.info("event driver: "+ed.displayName());
 					
 					// set isCalcHist
 					fw.fd.setCalcHist(getIsCalcHist(ed.getClass().getName()));
-					Logger.logln("calculate histogram: "+fw.fd.isCalcHist());
+					LOG.info("calculate histogram: "+fw.fd.isCalcHist());
 					
 					// set parameters
 					if (fw.edParamList != null) {
-						Logger.logln("  parameters:");
+						LOG.info("  parameters:");
 						for (Component paramComp: fw.edParamList.getComponents()) {
 							JPanel cullParam = (JPanel) paramComp;
 							String paramName = ((JLabel) cullParam.getComponent(0)).getText();
@@ -449,7 +452,7 @@ public class FeatureWizardDriver {
 								paramVal = (String)((JComboBox) cullParam.getComponent(1)).getSelectedItem();
 							}
 							ed.setParameter(paramName, paramVal);
-							Logger.logln("  - "+paramName+": "+paramVal);
+							LOG.info("  - "+paramName+": "+paramVal);
 						}
 					}
 					
@@ -457,17 +460,17 @@ public class FeatureWizardDriver {
 				}
 				
 				// set cullers
-				Logger.logln("cullers:");
+				LOG.info("cullers:");
 				for (int i=0; i<fw.selCullJListModel.getSize(); i++) {
 					// create culler
 					String cullName = (String) fw.selCullJListModel.getElementAt(i);
 					EventCuller ec = getCuller(cullName);
-					Logger.logln("- "+cullName);
+					LOG.info("- "+cullName);
 					
 					// set parameters
 					JPanel cullParams = fw.cullParamList.get(i);
 					if (cullParams != null) {
-						Logger.logln("  parameters:");
+						LOG.info("  parameters:");
 						for (Component paramComp: cullParams.getComponents()) {
 							JPanel cullParam = (JPanel) paramComp;
 							String paramName = ((JLabel) cullParam.getComponent(0)).getText();
@@ -479,7 +482,7 @@ public class FeatureWizardDriver {
 								paramVal = (String)((JComboBox) cullParam.getComponent(1)).getSelectedItem();
 							}
 							ec.setParameter(paramName, paramVal);
-							Logger.logln("  - "+paramName+": "+paramVal);
+							LOG.info("  - "+paramName+": "+paramVal);
 						}
 					}
 					fw.fd.addEventCuller(ec);
@@ -488,8 +491,8 @@ public class FeatureWizardDriver {
 				// normalization and factoring
 				fw.fd.setNormBaseline(NormBaselineEnum.getNormBaselineFromTitle((String)fw.normChooserJComboBox.getSelectedItem()));
 				fw.fd.setNormFactor(Double.valueOf(fw.normFactorJTextField.getText()));
-				Logger.logln("normalization baseline: "+fw.fd.getNormBaseline());
-				Logger.logln("normalization factor: "+fw.fd.getNormFactor());
+				LOG.info("normalization baseline: "+fw.fd.getNormBaseline());
+				LOG.info("normalization factor: "+fw.fd.getNormFactor());
 				
 				// --------------------------------------------------------------
 				
@@ -497,11 +500,11 @@ public class FeatureWizardDriver {
 				if (fw.editMode == false) {
 					// add new feature
 					fw.parent.cfd.addFeatureDriver(fw.fd);
-					Logger.logln("Added feature driver '"+fw.fd.getName()+"' to main feature set. Total feature drivers: "+fw.parent.cfd.numOfFeatureDrivers());
+					LOG.info("Added feature driver '"+fw.fd.getName()+"' to main feature set. Total feature drivers: "+fw.parent.cfd.numOfFeatureDrivers());
 				} else {
 					// update old feature
 					fw.parent.cfd.replaceFeatureDriverAt(fw.originalIndex,fw.fd);
-					Logger.logln("Updated feature driver '"+fw.fd.getName()+"' in the main feature set.");
+					LOG.info("Updated feature driver '"+fw.fd.getName()+"' in the main feature set.");
 				}
 				
 				// update GUIMain gui and dispose
@@ -627,7 +630,7 @@ public class FeatureWizardDriver {
 		browse.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Browse' button clicked for parameter value.");
+				LOG.info("'Browse' button clicked for parameter value.");
 				
 				int answer = 0;	
 				JFileChooser load = new JFileChooser(new File("."));
@@ -637,13 +640,13 @@ public class FeatureWizardDriver {
 					try {
 						value.setText(load.getSelectedFile().getCanonicalPath());
 					} catch (Exception e) {
-						Logger.logln("Error reading filepath for chosen file.",LogOut.STDERR);
+						LOG.error("Error reading filepath for chosen file.",e);
 						e.printStackTrace();
 					}
 					
 					
 				} else {
-					Logger.logln("Browse operation canceled.");
+					LOG.info("Browse operation canceled.");
 				}
 			}
 		});
@@ -1014,7 +1017,7 @@ public class FeatureWizardDriver {
 	 * Populates all canonicizers
 	 */
 	public static void populateCanonicizers() {
-		Logger.logln("Populating canonicizers...");
+		LOG.info("Populating canonicizers...");
 		canonMap = new HashMap<String,String>(canonClasses.length);
 		
 		// map all canonicizers from description to class name
@@ -1024,18 +1027,18 @@ public class FeatureWizardDriver {
 				c = (Canonicizer) Class.forName(className).getConstructor().newInstance();
 				canonMap.put(c.displayName(), className);
 			} catch (Exception e) {
-				Logger.logln("- could not add: "+className);
+				LOG.info("- could not add: "+className);
 			}
 		}
 		
-		Logger.logln("done!");
+		LOG.info("done!");
 	}
 	
 	/**
 	 * Populates all event drivers
 	 */
 	public static void populateEventDrivers() {
-		Logger.logln("Populating event drivers...");
+		LOG.info("Populating event drivers...");
 		edMap = new HashMap<String,Map<String,String>>(edClasses.length);
 		
 		// map all event drivers from description to class name
@@ -1047,27 +1050,27 @@ public class FeatureWizardDriver {
 		for (i=0; i<edClasses.length; i++) {
 			set = edClasses[i];
 			map = new HashMap<String,String>(set.length);
-			Logger.logln("adding event drivers under "+set[0]);
+			LOG.info("adding event drivers under "+set[0]);
 			for (j=1; j<set.length; j++) {
 				className = set[j];
 				try {
 					ed = (EventDriver) Class.forName(className).getConstructor().newInstance();
 					map.put(ed.displayName(), className);
 				} catch (Exception e) {
-					Logger.logln("- could not add: "+className);
+					LOG.info("- could not add: "+className);
 				}
 			}
 			edMap.put(set[0],map);
 		}
 		
-		Logger.logln("done!");
+		LOG.info("done!");
 	}
 	
 	/**
 	 * Populates all event cullers
 	 */
 	public static void populateCullers() {
-		Logger.logln("Populating event cullers...");
+		LOG.info("Populating event cullers...");
 		cullersMap = new HashMap<String,String>(cullerClasses.length);
 		
 		// map all canonicizers from description to class name
@@ -1077,11 +1080,11 @@ public class FeatureWizardDriver {
 				c = (EventCuller) Class.forName(className).getConstructor().newInstance();
 				cullersMap.put(c.displayName(), className);
 			} catch (Exception e) {
-				Logger.logln("- could not add: "+className);
+				LOG.info("- could not add: "+className);
 			}
 		}
 		
-		Logger.logln("done!");
+		LOG.info("done!");
 	}
 	
 	

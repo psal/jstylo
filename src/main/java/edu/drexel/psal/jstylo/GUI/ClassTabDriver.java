@@ -1,7 +1,5 @@
 package edu.drexel.psal.jstylo.GUI;
 
-import edu.drexel.psal.jstylo.generics.Logger;
-import edu.drexel.psal.jstylo.generics.Logger.LogOut;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
@@ -15,6 +13,9 @@ import java.net.URL;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -32,6 +33,8 @@ public class ClassTabDriver {
 	 * ========================= Classifiers tab listeners =========================
 	 */
 
+    private static final Logger LOG = LoggerFactory.getLogger(ClassTabDriver.class);
+    
 	protected static Analyzer tmpAnalyzer;
 	protected static Object tmpObject;
 	protected static String loadedClassifiers;
@@ -51,7 +54,7 @@ public class ClassTabDriver {
 			public void valueChanged(TreeSelectionEvent arg0) {
 				// if unselected
 				if (main.classJTree.getSelectionCount() == 0) {
-					Logger.logln("Classifier tree unselected in the classifiers tab.");
+					LOG.info("Classifier tree unselected in the classifiers tab.");
 					resetAvClassSelection(main);
 					return;
 				}
@@ -64,7 +67,7 @@ public class ClassTabDriver {
 
 				// if selected a classifier
 				if (selectedNode.isLeaf()) {
-					Logger.logln("Classifier selected in the available classifiers tree in the classifiers tab: "
+					LOG.info("Classifier selected in the available classifiers tree in the classifiers tab: "
 							+ selectedNode.toString());
 					System.out.println("Path:"+path);
 					// get classifier
@@ -78,18 +81,18 @@ public class ClassTabDriver {
 							tmpAnalyzer = new WekaAnalyzer(Class.forName(className).newInstance());
 							main.analysisCalcInfoGainJCheckBox.setSelected(true);
 						} else {
-							Logger.logln("Tried to add an Analyzer we do not yet support");
+							LOG.info("Tried to add an Analyzer we do not yet support");
 						}
 
 					} catch (Exception e) {
-						Logger.logln("Could not create classifier out of class: " + className);
+						LOG.info("Could not create classifier out of class: " + className);
 						JOptionPane.showMessageDialog(main, "Could not generate classifier for selected class:\n"
 								+ className, "Classifier Selection Error", JOptionPane.ERROR_MESSAGE);
 						e.printStackTrace();
 						return;
 					}
-					Logger.logln("looking at analyzer class " + tmpAnalyzer.getClass());
-					Logger.logln("with a classifier of: " + tmpAnalyzer.getName());
+					LOG.info("looking at analyzer class " + tmpAnalyzer.getClass());
+					LOG.info("with a classifier of: " + tmpAnalyzer.getName());
 
 					main.classAvClassArgsJTextField.setText(getOptionsStr(tmpAnalyzer.getOptions()));
 
@@ -108,13 +111,13 @@ public class ClassTabDriver {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				if (tmpAnalyzer != null) {
-					Logger.logln("clicked in textfield with a classifier selected!");
+					LOG.info("clicked in textfield with a classifier selected!");
 
 					cw = new ClassWizard(main, tmpAnalyzer);
 					cw.setVisible(true);
 
 				} else {
-					Logger.logln("clicked in textfield without a classifier selected!");
+					LOG.info("clicked in textfield without a classifier selected!");
 				}
 			}
 
@@ -144,7 +147,7 @@ public class ClassTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.logln("'Add' button clicked in the analysis tab.");
+				LOG.info("'Add' button clicked in the analysis tab.");
 
 				// check if classifier is selected
 				if (tmpAnalyzer == null) {
@@ -157,7 +160,7 @@ public class ClassTabDriver {
 					try {
 						tmpAnalyzer.setOptions(main.classAvClassArgsJTextField.getText().split(" "));
 					} catch (Exception e) {
-						Logger.logln("Invalid options given for classifier.", LogOut.STDERR);
+						LOG.error("Invalid options given for classifier.");
 						JOptionPane.showMessageDialog(main, "The classifier arguments entered are invalid.\n"
 								+ "Restoring original options.", "Classifier Options Error", JOptionPane.ERROR_MESSAGE);
 
@@ -167,9 +170,9 @@ public class ClassTabDriver {
 					// ensure that the classifier hasn't already been added.
 					boolean add = true;
 					for (int i = 0; i < main.classJList.getModel().getSize(); i++) {
-						Logger.logln("Checking for duplicates...");
+						LOG.info("Checking for duplicates...");
 						if (main.analyzers.get(i).getName().toString().equals((tmpAnalyzer.getName().toString()))) { // same classifier
-							Logger.logln("already added: " + main.analyzers.get(i).getName().toString()
+							LOG.info("already added: " + main.analyzers.get(i).getName().toString()
 									+ " attempting to add: " + tmpAnalyzer.getName().toString());
 							if (Arrays.equals(main.analyzers.get(i).getOptions(), (tmpAnalyzer.getOptions()))) { // same arguments
 								add = false; // so don't add
@@ -178,7 +181,7 @@ public class ClassTabDriver {
 					}
 					// add classifier
 					if (add) {
-						Logger.logln("Adding classifier...");
+						LOG.info("Adding classifier...");
 
 						main.analyzers.add(tmpAnalyzer);
 
@@ -186,7 +189,7 @@ public class ClassTabDriver {
 						resetAvClassSelection(main);
 						main.classJTree.clearSelection();
 					} else {
-						Logger.logln("Duplicate classifier entered.", LogOut.STDERR);
+						LOG.error("Duplicate classifier entered.");
 						JOptionPane.showMessageDialog(main,
 								"The classifier has already been entered with these arguments.\n"
 										+ "Use a different classifier or change the args.", "Classifier Options Error",
@@ -211,7 +214,7 @@ public class ClassTabDriver {
 
 				// if unselected
 				if (selected == -1) {
-					Logger.logln("Classifier list unselected in the classifiers tab.");
+					LOG.info("Classifier list unselected in the classifiers tab.");
 					resetSelClassSelection(main);
 					return;
 				}
@@ -220,7 +223,7 @@ public class ClassTabDriver {
 				main.classJTree.clearSelection();
 
 				String className = main.classJList.getSelectedValue().toString();// .substring(5);
-				Logger.logln("Classifier selected in the selected classifiers list in the classifiers tab: "
+				LOG.info("Classifier selected in the selected classifiers list in the classifiers tab: "
 						+ className);
 
 				// show options and description
@@ -235,7 +238,7 @@ public class ClassTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Logger.log("'Remove' button clicked in the classifiers tab.");
+				LOG.error("'Remove' button clicked in the classifiers tab.");
 				int selected = main.classJList.getSelectedIndex();
 
 				// check if selected
@@ -269,7 +272,7 @@ public class ClassTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Back' button clicked in the classifiers tab");
+				LOG.info("'Back' button clicked in the classifiers tab");
 				main.mainJTabbedPane.setSelectedIndex(1);
 			}
 		});
@@ -281,7 +284,7 @@ public class ClassTabDriver {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Logger.logln("'Next' button clicked in the classifiers tab");
+				LOG.info("'Next' button clicked in the classifiers tab");
 
 				if (main.analyzers.isEmpty()) {
 					JOptionPane.showMessageDialog(main, "You must add at least one classifier.", "Error",
@@ -564,7 +567,7 @@ public class ClassTabDriver {
 						filesToIgnore.add(components[i + 1]);
 						i++;
 					} else {
-						Logger.log("Invalid arguments in classifier loader source string!", LogOut.STDERR);
+						LOG.error("Invalid arguments in classifier loader source string!");
 						break;
 					}
 				}
@@ -576,7 +579,7 @@ public class ClassTabDriver {
 
 		for (Node current : modules) {
 			populateNode(current, packagesToIgnore, filesToIgnore); // populates each node and all its subnodes
-			// Logger.logln("\nClassifier Tree for "+current.toString()); // use this to see each tree ---I think it's pretty useful
+			// LOG.info("\nClassifier Tree for "+current.toString()); // use this to see each tree ---I think it's pretty useful
 		}
 
 		return modules;
@@ -597,7 +600,7 @@ public class ClassTabDriver {
 	 */
 	protected static Node populateNode(Node current, ArrayList<String> packagesToIgnore, ArrayList<String> filesToIgnore) {
 
-		// Logger.logln("node to populate: "+current.getName());
+		// LOG.info("node to populate: "+current.getName());
 		// non-leaf
 		if (current.getName().lastIndexOf(".") == -1
 				|| !current.getName().substring(current.getName().lastIndexOf(".")).equals(".class")) { // if it is not a .class, it is a directory
@@ -731,7 +734,7 @@ public class ClassTabDriver {
 					}
 					source.close();
 				} catch (Exception e) { // if we're unsuccessful for some reason
-					Logger.logln("could not load node " + current.getName());
+					LOG.info("could not load node " + current.getName());
 					e.printStackTrace();
 				}
 				return null;
@@ -746,7 +749,7 @@ public class ClassTabDriver {
 
 		// should be unreachable, but is here just in case.
 		else {
-			Logger.logln("Welp that wasn't supposed to happen");
+			LOG.info("Welp that wasn't supposed to happen");
 			return null;
 		}
 	}

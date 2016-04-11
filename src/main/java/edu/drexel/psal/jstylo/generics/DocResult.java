@@ -2,6 +2,8 @@ package edu.drexel.psal.jstylo.generics;
 
 import java.util.Map;
 
+import com.google.gson.JsonObject;
+
 /**
  * This class contains the results of processing for a single document.
  * If a document has an unknown author, its actual author field would be 'unknown' 
@@ -81,9 +83,13 @@ public class DocResult {
         return probabilityMap;
     }
     
+    public JsonObject toJson(){
+        //TODO
+        return null;
+    }
+    
     @Override
     public String toString(){
-        System.out.println("SuspectedAuthor: "+suspectedAuthor);
         return String.format("For document %s, the true author is %s. After analysis, our top suspect is %s with a %.2f likelihood\n",
                 title,
                 actualAuthor,
