@@ -83,15 +83,24 @@ public class DocResult {
         return probabilityMap;
     }
     
-    public JsonObject toJson(){
-        //TODO
-        // Make a json object which includes:
-        // document title
-        // actual author
-        //      array of:
-        //          suspect author              probabilityMap.keySet() <- any entry in that
-        //          probability for that suspect probabilityMap.get(<some key>)
-        return null;
+        public JsonObject toJson(){
+    	
+    	JsonObject docResultJson = new JsonObject();
+    	docResultJson.addProperty("title", title);
+    	docResultJson.addProperty("actualAuthor", actualAuthor);
+    	
+    	JsonArray probabilityMapJsonArray = new JsonArray();
+    	
+    	
+    	for(String key : probabilityMap.keySet()){
+    		JsonObject tempJsonObject = new JsonObject();
+    		tempJsonObject.addProperty(key, probabilityMap.get(key));
+    		probabilityMapJsonArray.add(tempJsonObject);
+    	}
+  
+    	docResultJson.add("probabilityMap", probabilityMapJsonArray);
+    	
+    	return docResultJson;
     }
     
     @Override
