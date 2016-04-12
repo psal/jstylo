@@ -16,7 +16,7 @@ public class DocResult {
     private String actualAuthor;
     private String suspectedAuthor;
     private Map<String,Double> probabilityMap;
-    private final String defaultUnknown = "_Unknown_";
+    public static final String defaultUnknown = "_Unknown_";
     
     public DocResult(String title, String actual){
         this.title = title;

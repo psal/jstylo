@@ -46,27 +46,47 @@ public class ExperimentResults {
         return correct/(correct+incorrect);
     }
     
+    public int getCorrectDocCount(){
+        int correct = 0;
+        for (DocResult result : experimentContents){
+            if (result.getActualAuthor().equalsIgnoreCase(result.getSuspectedAuthor()))
+                correct += 1.0;
+        }
+        return correct;
+    }
+    
     //expand this as we add more relevant stats to the processing
     public String getStatisticsString(){
         String statString = "";
-        statString+=String.format("Correctly classified %.2f percent of all documents\n",getTruePositiveRate()*100);
+        statString+=String.format("Correctly Identified %d out of %d documents\n", getCorrectDocCount(),experimentContents.size());
+        statString+="\n((Calculated Statistics))\n";
+        statString+=String.format("True Positive Percentage: %.2f\n",getTruePositiveRate()*100);
         return statString;
     }
     
-    //TODO switch on/off actual column based on if actual is known
-    //TODO add some sort of quickly visible "correct!" mark or column
-    public String getAllDocumentResults(){
-        String results = String.format("%-14s | %-14s | %-14s | %-14s |\n","Document Title","Actual","Suspect","Probability");
+    public String getAllDocumentResults(boolean known){
+        String results = "((Individual Document Results))\n";
+        results += String.format("%-14s | %-14s | %-14s | %-14s |\n","Document Title","Actual","Top Suspect","Probability");
         for (DocResult result : experimentContents){
-            results+=String.format("%-14s | %-14s | %-14s | %-14s |\n", 
-                    result.getTitle(),result.getActualAuthor(),result.getSuspectedAuthor(),
-                        String.format("%.2f", result.getProbabilities().get(result.getSuspectedAuthor())));
+            String probString = String.format("%.2f", result.getProbabilities().get(result.getSuspectedAuthor()));
+
+            
+            results+=String.format("%-14s | %-14s | %-14s | %-14s |", 
+                    result.getTitle(),result.getActualAuthor(),result.getSuspectedAuthor(),probString);
+            
+            if (result.getActualAuthor().equals(result.getSuspectedAuthor()))
+                results += " Correct!\n";
+            else if (known)
+                results +=" Incorrect...\n";
+            else if (!known)
+                results+="\n";
         }
         return results;
     }
     
     public String getAllDocumentResultsVerbose(){
-        String results = "Document Title |";
+        String results = "((Verbose Document Results))\n";
+        results += "Document Title |";
         
         //first column has all of the author names
         for (String author : experimentContents.get(0).getProbabilities().keySet()){

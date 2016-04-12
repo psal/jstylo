@@ -445,11 +445,24 @@ public class FullAPI {
     public String getStatString() {
         ExperimentResults eval = getResults();
         String resultsString = "";
+        //change the experiment header
+        if (selected.equals(analysisType.CROSS_VALIDATION))
+            resultsString+="[[Showing results for Cross Validation Experiment]]\n";
+        else if (selected.equals(analysisType.TRAIN_TEST_KNOWN)) {
+            resultsString+="[[Showing results for a Train-Test with Known Authors Experiment]]\n";
+        } else if (selected.equals(analysisType.TRAIN_TEST_UNKNOWN)){
+            resultsString+="[[Showing results for a Train-Test with Unknown Authors Experiment]]\n";
+            resultsString+=eval.getAllDocumentResults(false);
+            return resultsString; //return this one early as we don't want to add the stat string to it since it'd be misleading
+        } else {
+            resultsString+="[[Showing results for an unidentifiable experiment... how did you get here?]]\n";
+        }
+            
         resultsString += eval.getStatisticsString() + "\n";
         if (selected.equals(analysisType.CROSS_VALIDATION))
             resultsString += eval.getConfusionMatrixString();
         else
-            resultsString += eval.getAllDocumentResults() + "\n";
+            resultsString += eval.getAllDocumentResults(true) + "\n";
         return resultsString;
 	}
 
@@ -490,9 +503,9 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
+                    .psPath("./jsan_resources/problem_sets/drexel_1_train_test.xml")
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
+                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
                     .loadDocContents(true)
                     .build();
         } catch (Exception e) {
@@ -506,7 +519,7 @@ public class FullAPI {
 		//test.applyInfoGain(5);
 		test.run();
 		System.out.println(test.getStatString());
-		System.out.println(test.getReadableInfoGain(false));
+		//System.out.println(test.getReadableInfoGain(false));
 		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
 	}

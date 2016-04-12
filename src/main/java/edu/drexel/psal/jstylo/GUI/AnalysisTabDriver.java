@@ -1125,7 +1125,7 @@ public class AnalysisTabDriver {
 
 						//print results
 						try {
-							content += results.getStatisticsString() + "\n" + results.getAllDocumentResults() + "\n"
+							content += results.getStatisticsString() + "\n" + results.getAllDocumentResults(true) + "\n"
 									+ results.getConfusionMatrix() + "\n";
 						} catch (Exception e) {
 							LOG.error("Failed to build the statistics string!", e);
