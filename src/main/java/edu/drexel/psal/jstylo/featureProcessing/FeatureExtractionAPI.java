@@ -105,14 +105,14 @@ public class FeatureExtractionAPI {
 			doc = document;
 			Event tempEvent = null;
 
-			if (!loadDocContents)
-				try {
-					doc.load();
-					tempEvent = new Event("" + (int) counter.getValue(doc));
-				} catch (Exception e) {
-					LOG.error("Failed to extract num sentences from document",e);
-					throw e;
-				}
+            try {
+                if (!loadDocContents)
+                    doc.load();
+                tempEvent = new Event("" + (int) counter.getValue(doc));
+            } catch (Exception e) {
+                LOG.error("Failed to extract num sentences from document", e);
+                throw e;
+            }
 
 			documentInfo.addEvent(tempEvent);
 		}

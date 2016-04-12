@@ -223,6 +223,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		if (div % threadsToUse != 0)
 			div++;
 		
+		LOG.info("Beginning Feature Extraction");
+		
 		//Parallelized feature extraction
 		featThreads = new FeatureExtractionThread[threadsToUse];
 		for (int thread = 0; thread < threadsToUse; thread++) //create the threads
@@ -241,6 +243,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		
 		//cull the List<List<EventSet>> before returning
 		List<List<EventSet>> temp = cull(eventList, cfd);
+		
+		LOG.info("Feature Extraction complete");
 		
 		//return it now
 		eventList = temp;
