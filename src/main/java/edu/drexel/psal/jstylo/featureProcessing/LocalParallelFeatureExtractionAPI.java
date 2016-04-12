@@ -646,7 +646,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					
 					//build the doc data
 	                String author = events.get(events.size()-1).eventAt(0).getEvent();
-	                String title = events.get(events.size()-1).eventAt(1).getEvent(); //FIXME for testing data, this is throwing an exception
+	                String title = events.get(events.size()-1).eventAt(1).getEvent();
 	                ConcurrentHashMap<Integer,Double> docdata = createDocMap(features, relevantEvents, cfd, events);
 
 					//normalize it
