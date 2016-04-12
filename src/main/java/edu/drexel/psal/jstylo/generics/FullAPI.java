@@ -446,11 +446,13 @@ public class FullAPI {
         ExperimentResults eval = getResults();
         String resultsString = "";
         resultsString += eval.getStatisticsString() + "\n";
-        resultsString += eval.getAllDocumentResults() + "\n";
-        resultsString += eval.getConfusionMatrix() + "\n";
-        resultsString += eval.getAllDocumentResultsVerbose();
+        if (selected.equals(analysisType.CROSS_VALIDATION))
+            resultsString += eval.getConfusionMatrixString();
+        else
+            resultsString += eval.getAllDocumentResults() + "\n";
         return resultsString;
 	}
+
     
 	/**
 	 * @return The accuracy of the given test in percentage format
@@ -488,9 +490,9 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("./jsan_resources/problem_sets/drexel_1_train_test.xml")
+                    .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
+                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
                     .loadDocContents(true)
                     .build();
         } catch (Exception e) {

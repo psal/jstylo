@@ -1,6 +1,7 @@
 package edu.drexel.psal.jstylo.generics;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.gson.JsonObject;
@@ -17,6 +18,7 @@ import com.google.gson.JsonObject;
 public class ExperimentResults {
     
     private List<DocResult> experimentContents;
+    private List<String> authorList; //for use with confusion matrix
     
     public ExperimentResults(){
         experimentContents = new ArrayList<DocResult>();
@@ -104,10 +106,54 @@ public class ExperimentResults {
         return null;
     }
     
-    //TODO
-    public String getConfusionMatrix(){
-        String confusionMatrix = "";
+    //x axis is who we labeled the author as
+    //y axis is who the author actually is
+    public int[][] getConfusionMatrix(){
         
+        authorList = new ArrayList<String>();
+        for (String author : experimentContents.get(0).getProbabilities().keySet()){
+            authorList.add(author);
+        }
+        Collections.sort(authorList);
+        
+        //initialize the matrix
+        int[][] matrix = new int[authorList.size()][authorList.size()];
+        for (int i = 0; i < matrix.length; i++){
+            for (int j=0; j<matrix[i].length; j++){
+                matrix[i][j] = 0;
+            }
+        }
+        
+        //increment all values
+        for (DocResult dr : experimentContents){
+            matrix[authorList.indexOf(dr.getActualAuthor())][authorList.indexOf(dr.getSuspectedAuthor())]+=1;
+        }
+        
+        return matrix;
+    }
+    
+    public String getConfusionMatrixString(){
+        int space = 16*experimentContents.get(0).getProbabilities().keySet().size()+2;
+        String confusionMatrix = String.format("%-"+space+"s|", "Suspected Authors");
+        confusionMatrix+=String.format("|||| %14s|\n","Actual Authors");
+        //add each author to the top
+        for (String author : experimentContents.get(0).getProbabilities().keySet()){
+            confusionMatrix+=String.format(" %-14s |",author);
+        }
+        confusionMatrix+="||||\n";
+        for (int i =0; i<space+20; i++){
+            confusionMatrix+="_";
+        }
+        confusionMatrix+="\n";
+        
+        int[][] matrix = getConfusionMatrix();
+        
+        for (int i = 0; i < matrix.length; i++){
+            for (int j=0; j<matrix[i].length; j++){
+                confusionMatrix+=String.format(" %-14d |", matrix[i][j]);
+            }
+            confusionMatrix+=String.format("|||| %14s|\n",authorList.get(i));
+        }
         
         return confusionMatrix;
     }
