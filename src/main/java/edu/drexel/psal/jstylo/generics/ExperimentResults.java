@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
@@ -121,9 +122,17 @@ public class ExperimentResults {
     }
     
     public JsonObject toJson(){
-        //TODO
-        //Make a JSON object which is an array of DocResult JSON objects
-        return null;
+        
+        JsonObject experimentContentsJson = new JsonObject();
+        
+        JsonArray experimentContentsJsonArray = new JsonArray();
+        
+        for(DocResult docResult : experimentContents){
+            experimentContentsJsonArray.add(docResult.toJson());
+        }
+        experimentContentsJson.add("experimentContents", experimentContentsJsonArray);
+
+        return experimentContentsJson;
     }
     
     //x axis is who we labeled the author as

@@ -1,11 +1,18 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgaap.generics.Document;
 
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
+import edu.drexel.psal.jstylo.featureProcessing.StringDocument;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
@@ -500,12 +507,31 @@ public class FullAPI {
 	    
 	    FullAPI test = null;
 	    
+	    ProblemSet ps = new ProblemSet();
+	    File parent = new File("/Users/tdutko200/git/jstylo/jsan_resources/corpora/drexel_1");
+        try {
+            for (File author : parent.listFiles()) {
+                if (!author.getName().equalsIgnoreCase(".DS_Store")) {
+                    for (File document : author.listFiles()) {
+                        if (!document.getName().equalsIgnoreCase(".DS_Store")) {
+                            Document doc = new StringDocument(toDeleteGetStringFromFile(document), author.getName(),document.getName());
+                            doc.load();
+                            ps.addTrainDoc(author.getName(), doc);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Womp womp.",e);
+            System.exit(1);
+        }
+	    
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("./jsan_resources/problem_sets/drexel_1_train_test.xml")
+                    .ps(ps)
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
+                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
                     .loadDocContents(true)
                     .build();
         } catch (Exception e) {
@@ -519,8 +545,18 @@ public class FullAPI {
 		//test.applyInfoGain(5);
 		test.run();
 		System.out.println(test.getStatString());
-		//System.out.println(test.getReadableInfoGain(false));
+		System.out.println(test.getReadableInfoGain(false));
+		System.out.println(test.getResults().toJson().toString());
 		//System.out.println(test.getClassificationAccuracy());
 		//System.out.println(test.getStatString());
+	}
+	
+	private static String toDeleteGetStringFromFile(File f) throws Exception{
+	    BufferedReader br = new BufferedReader(new FileReader(f));
+	    String results = "";
+	    while (br.ready())
+	        results+=br.readLine()+"\n";
+	    br.close();
+	    return results;
 	}
 }
