@@ -94,7 +94,8 @@ public class DocResult {
 
         for (String key : probabilityMap.keySet()) {
             JsonObject tempJsonObject = new JsonObject();
-            tempJsonObject.addProperty(key, probabilityMap.get(key));
+            tempJsonObject.addProperty("Author", key);
+            tempJsonObject.addProperty("Probability", probabilityMap.get(key));
             probabilityMapJsonArray.add(tempJsonObject);
         }
 
