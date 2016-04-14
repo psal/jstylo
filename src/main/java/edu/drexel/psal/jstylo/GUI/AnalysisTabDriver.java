@@ -1020,7 +1020,7 @@ public class AnalysisTabDriver {
 
 						//perform the actual analysis
 						ExperimentResults results = 
-						        main.analysisDriver.classify(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap(), main.ps.getAllTestDocs());
+						        main.analysisDriver.classifyWithUnknownAuthors(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap(), main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";
 						LOG.info("Done!");
@@ -1109,7 +1109,7 @@ public class AnalysisTabDriver {
 						//create the evaluation
 						ExperimentResults results = null;
 						try {
-							results = main.analysisDriver.getTrainTestEval(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap());
+							results = main.analysisDriver.classifyWithKnownAuthors(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap());
 						} catch (Exception e) {
 							LOG.error("Failed to build train test eval with known authors!", e);
 							content += "Failed to build train test eval with known authors!";

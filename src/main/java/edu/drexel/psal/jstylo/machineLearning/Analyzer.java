@@ -72,7 +72,7 @@ public abstract class Analyzer{
 	 * 		Each result in the list is a mapping from the author to its corresponding
 	 * 		classification probability.
 	 */
-	public abstract ExperimentResults classify(
+	public abstract ExperimentResults classifyWithUnknownAuthors(
 			DataMap trainingSet, DataMap testSet, List<Document> unknownDocs);
 	
 	/**
@@ -121,7 +121,7 @@ public abstract class Analyzer{
 	 * @return
 	 * @throws Exception
 	 */
-	public abstract ExperimentResults getTrainTestEval(DataMap train, DataMap test) throws Exception ;
+	public abstract ExperimentResults classifyWithKnownAuthors(DataMap train, DataMap test) throws Exception ;
 	
 	/**
 	 * Returns the last training DataMap that was used for classification.

@@ -1,21 +1,14 @@
 package edu.drexel.psal.jstylo.generics;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.jgaap.generics.Document;
 
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
-import edu.drexel.psal.jstylo.featureProcessing.StringDocument;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
-import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
+import edu.drexel.psal.jstylo.machineLearning.spark.SparkAnalyzer;
 
 /**
  * 
@@ -261,7 +254,7 @@ public class FullAPI {
 
 		// do a train/test
 		case TRAIN_TEST_UNKNOWN:
-		    experimentResults = analysisDriver.classify(ib.getTrainingDataMap(), ib.getTestDataMap(), ib.getProblemSet().getAllTestDocs());
+		    experimentResults = analysisDriver.classifyWithUnknownAuthors(ib.getTrainingDataMap(), ib.getTestDataMap(), ib.getProblemSet().getAllTestDocs());
 			break;
 
 		//do a train/test where we know the answer and just want statistics
@@ -270,7 +263,7 @@ public class FullAPI {
 			try {
 				DataMap train = ib.getTrainingDataMap();
 				DataMap test = ib.getTestDataMap();
-				experimentResults = analysisDriver.getTrainTestEval(train,test);
+				experimentResults = analysisDriver.classifyWithKnownAuthors(train,test);
 			} catch (Exception e) {
 				LOG.error("Failed to build trainTest Evaluation",e);
 			}
@@ -507,31 +500,12 @@ public class FullAPI {
 	    
 	    FullAPI test = null;
 	    
-	    ProblemSet ps = new ProblemSet();
-	    File parent = new File("/Users/tdutko200/git/jstylo/jsan_resources/corpora/drexel_1");
-        try {
-            for (File author : parent.listFiles()) {
-                if (!author.getName().equalsIgnoreCase(".DS_Store")) {
-                    for (File document : author.listFiles()) {
-                        if (!document.getName().equalsIgnoreCase(".DS_Store")) {
-                            Document doc = new StringDocument(toDeleteGetStringFromFile(document), author.getName(),document.getName());
-                            doc.load();
-                            ps.addTrainDoc(author.getName(), doc);
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOG.error("Womp womp.",e);
-            System.exit(1);
-        }
-	    
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .ps(ps)
-                    .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(1).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
+                    .psPath("jsan_resources/problem_sets/drexel_1_train_test.xml")
+                    .setAnalyzer(new SparkAnalyzer())
+                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
                     .loadDocContents(true)
                     .build();
         } catch (Exception e) {
@@ -551,12 +525,4 @@ public class FullAPI {
 		//System.out.println(test.getStatString());
 	}
 	
-	private static String toDeleteGetStringFromFile(File f) throws Exception{
-	    BufferedReader br = new BufferedReader(new FileReader(f));
-	    String results = "";
-	    while (br.ready())
-	        results+=br.readLine()+"\n";
-	    br.close();
-	    return results;
-	}
 }
