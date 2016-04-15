@@ -222,6 +222,16 @@ public class DataMap {
         return titles;
     }
     
+    public Map<String,String> getTitlesToAuthor(){
+        Map<String,String> titleToAuthor = new HashMap<String,String>();
+        for (String author : datamap.keySet()){
+            for (String doctitle : datamap.get(author).keySet()){
+                titleToAuthor.put(doctitle, author);
+            }
+        }
+        return titleToAuthor;
+    }
+    
     /**
      * Loads a DataMap from a CSV file. Note that the CSV file must be dense.
      * The first row should consist solely of the datamap name

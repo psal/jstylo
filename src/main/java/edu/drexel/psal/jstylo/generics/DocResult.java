@@ -1,5 +1,8 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonArray;
@@ -11,12 +14,14 @@ import com.google.gson.JsonObject;
  * 
  * @author Travis Dutko
  */
-public class DocResult {
+public class DocResult implements Serializable{
     
+    private static final long serialVersionUID = 1L;
     private String title;
     private String actualAuthor;
     private String suspectedAuthor;
     private Map<String,Double> probabilityMap;
+    private List<String> potentialAuthors;
     public static final String defaultUnknown = "_Unknown_";
     
     public DocResult(String title, String actual){
@@ -45,10 +50,14 @@ public class DocResult {
      * Use this OR assignProbabilitiesAndDesignateSuspect
      * @param suspect
      */
-    public void designateSuspect(String suspect){
+    public void designateSuspect(String suspect, List<String> suspectSet){
         suspectedAuthor = suspect;
-        probabilityMap.clear();
-        probabilityMap = null;
+        if (probabilityMap != null){
+            probabilityMap.clear();
+            probabilityMap = null;
+        }
+        potentialAuthors = suspectSet;
+        
     }
     
     /**
@@ -81,7 +90,18 @@ public class DocResult {
     }
     
     public Map<String,Double> getProbabilities(){
-        return probabilityMap;
+        if (probabilityMap != null)
+            return probabilityMap;
+        else {
+            Map<String,Double> probs = new HashMap<String,Double>();
+            for (String suspect : potentialAuthors){
+                if (suspect.equals(suspectedAuthor))
+                    probs.put(suspect, 1.0);
+                else
+                    probs.put(suspect, 0.0);
+            }
+            return probs;
+        }
     }
     
     public JsonObject toJson() {
@@ -92,11 +112,15 @@ public class DocResult {
 
         JsonArray probabilityMapJsonArray = new JsonArray();
 
-        for (String key : probabilityMap.keySet()) {
-            JsonObject tempJsonObject = new JsonObject();
-            tempJsonObject.addProperty("Author", key);
-            tempJsonObject.addProperty("Probability", probabilityMap.get(key));
-            probabilityMapJsonArray.add(tempJsonObject);
+        if (probabilityMap != null) {
+            for (String key : probabilityMap.keySet()) {
+                JsonObject tempJsonObject = new JsonObject();
+                tempJsonObject.addProperty("Author", key);
+                tempJsonObject.addProperty("Probability", probabilityMap.get(key));
+                probabilityMapJsonArray.add(tempJsonObject);
+            }
+        } else {
+            docResultJson.addProperty("suspectedAuthor", suspectedAuthor);
         }
 
         docResultJson.add("probabilityMap", probabilityMapJsonArray);

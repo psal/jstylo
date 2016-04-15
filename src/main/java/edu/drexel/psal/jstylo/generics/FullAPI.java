@@ -452,7 +452,7 @@ public class FullAPI {
             resultsString+="[[Showing results for a Train-Test with Known Authors Experiment]]\n";
         } else if (selected.equals(analysisType.TRAIN_TEST_UNKNOWN)){
             resultsString+="[[Showing results for a Train-Test with Unknown Authors Experiment]]\n";
-            resultsString+=eval.getAllDocumentResults(false);
+            resultsString+=eval.getSimpleResults();
             return resultsString; //return this one early as we don't want to add the stat string to it since it'd be misleading
         } else {
             resultsString+="[[Showing results for an unidentifiable experiment... how did you get here?]]\n";
@@ -482,20 +482,6 @@ public class FullAPI {
 		return ib.getCFD();
 	}
 	
-	///////////////////////////////// Main method for testing purposes
-	//FIXME
-	/*
-	 * So right now there's 1 mild bug
-	 * 
-	 * 1: Crossvalidation--weka seems to shuffle instances when cross-validating. 
-	 *     This causes document titles to be improperly tracked throughout the whole process.
-	 *     
-	 *     Fix idea--do cross validation "manually"--randomly determine which docs to use as testing ourselves,
-	 *     keeping track of it as we go. Use the source instances to break apart and create new train test and accumulate
-	 *     results manually.
-	 *     Note: this is purely incorrect in terms of labels. The overall statistics produced is correct, just the wrong doc titles are being assigned.
-	 * 
-	 */
 	public static void main(String[] args){
 	    
 	    FullAPI test = null;
@@ -505,7 +491,7 @@ public class FullAPI {
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
                     .psPath("jsan_resources/problem_sets/drexel_1_train_test.xml")
                     .setAnalyzer(new SparkAnalyzer())
-                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
+                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
                     .loadDocContents(true)
                     .build();
         } catch (Exception e) {

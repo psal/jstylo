@@ -1,5 +1,6 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,8 +17,9 @@ import com.google.gson.JsonObject;
  * 
  * @author Travis Dutko
  */
-public class ExperimentResults {
+public class ExperimentResults implements Serializable{
     
+    private static final long serialVersionUID = 1L;
     private List<DocResult> experimentContents;
     private List<String> authorList; //for use with confusion matrix
     
@@ -65,17 +67,29 @@ public class ExperimentResults {
         return statString;
     }
     
+    public String getSimpleResults(){
+        String results = "((Simple Document Results))\n";
+        results += String.format("%-14s | %-14s |\n","Document Title","Top Suspect");
+        for (DocResult result : experimentContents){
+            
+            results+=String.format("%-14s | %-14s |\n", 
+                    result.getTitle(),result.getSuspectedAuthor());
+            
+        }
+        return results;
+    }
+    
     public String getAllDocumentResults(boolean known){
+        
         String results = "((Individual Document Results))\n";
         results += String.format("%-14s | %-14s | %-14s | %-14s |\n","Document Title","Actual","Top Suspect","Probability");
         for (DocResult result : experimentContents){
             String probString = String.format("%.2f", result.getProbabilities().get(result.getSuspectedAuthor()));
-
             
             results+=String.format("%-14s | %-14s | %-14s | %-14s |", 
                     result.getTitle(),result.getActualAuthor(),result.getSuspectedAuthor(),probString);
             
-            if (result.getActualAuthor().equals(result.getSuspectedAuthor()))
+            if (result.getActualAuthor().equals(result.getSuspectedAuthor()) && known)
                 results += " Correct!\n";
             else if (known)
                 results +=" Incorrect...\n";
@@ -85,7 +99,9 @@ public class ExperimentResults {
         return results;
     }
     
+    
     public String getAllDocumentResultsVerbose(){
+        
         String results = "((Verbose Document Results))\n";
         results += "Document Title |";
         

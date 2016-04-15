@@ -10,6 +10,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.regression.LabeledPoint;
+import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 
@@ -27,8 +28,12 @@ public class SparkUtils {
      * @param labels
      * @return
      */
-    public static JavaRDD<LabeledPoint> DataMapToLabeledPointRDD(SQLContext sql, DataMap map,Map<String,Double> labels){
-        return sql.createDataFrame(transformDataMap(map,labels), LabeledPoint.class).javaRDD().map(new LabeledFromRow());
+    public static JavaRDD<LabeledPoint> DataFrameToLabeledPointRDD(DataFrame df){
+        return df.javaRDD().map(new LabeledFromRow());
+    }
+    
+    public static DataFrame DataMapToDataFrame(SQLContext sql,DataMap map,Map<String,Double> labels){
+        return sql.createDataFrame(transformDataMap(map,labels), LabeledPoint.class);
     }
     
     /**
