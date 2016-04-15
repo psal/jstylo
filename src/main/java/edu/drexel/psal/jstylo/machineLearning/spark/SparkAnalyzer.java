@@ -35,6 +35,7 @@ public class SparkAnalyzer extends Analyzer implements Serializable{
     
     //eventually have this initialize the default classifier, then add a constructor which allows for alternative classifiers
     //just an empty constructor is fine for now, though
+    //TODO
     public SparkAnalyzer (){}
 
     @Override
@@ -119,9 +120,12 @@ public class SparkAnalyzer extends Analyzer implements Serializable{
         JavaRDD<LabeledPoint> testingRDD = SparkUtils.DataFrameToLabeledPointRDD(test);
         
         //train classifier
+        //eventually, replace this with a classifier determined dynamically
+        //TODO
         LogisticRegressionWithLBFGS model = new LogisticRegressionWithLBFGS();
         model.setNumClasses(Integer.parseInt(""+labels.keySet().size()));
         LogisticRegressionModel classifier = model.run(trainingRDD.rdd());
+        //probably still need a "classifier = model.run(trainingRDD.rdd());
 
         //ugly way of determining the true authors for this set of docs
         List<String> actualAuthors = new ArrayList<String>();
