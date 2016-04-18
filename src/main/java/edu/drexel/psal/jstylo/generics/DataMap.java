@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
+
 /**
  * This class is a generic class designed to hold all of the information extracted from documents prior to classification.
  * It consists of a few key data structures:
@@ -36,8 +38,7 @@ public class DataMap {
      */
     private ConcurrentHashMap<String, //outer layer is indexed on author identities
         ConcurrentHashMap<String, //middle layer is indexed on document titles
-            ConcurrentHashMap<Integer, //inner layer is indexed on feature index
-                Double>>> //data value is the double value for a given doc for a given author for that index feature
+            DocumentData>> //data value is the double value for a given doc for a given author for that index feature
                     datamap;
     
     /**
@@ -54,7 +55,7 @@ public class DataMap {
     public DataMap(String name, List<String> featureNames){
         datasetName = name;
         setFeatures(featureNames);
-        datamap = new ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>>();
+        datamap = new ConcurrentHashMap<String,ConcurrentHashMap<String,DocumentData>>();
     }
     
     /**
@@ -62,7 +63,7 @@ public class DataMap {
      * @param author
      */
     public void initAuthor(String author){
-        ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>> newAuthorMap = new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>();
+        ConcurrentHashMap<String,DocumentData> newAuthorMap = new ConcurrentHashMap<String,DocumentData>();
         datamap.put(author, newAuthorMap);
     }
 
@@ -72,15 +73,15 @@ public class DataMap {
      * @param documentTitle title of the document
      * @param map map of indices to values
      */
-    public void addDocumentData(String author, String documentTitle, ConcurrentHashMap<Integer, Double> map) {
-        datamap.get(author).put(documentTitle, map);
+    public void addDocumentData(String author, String documentTitle, DocumentData docdata) {
+        datamap.get(author).put(documentTitle, docdata);
     }
     
     /**
      * 
      * @return the internal datamap
      */
-    public ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>>> getDataMap(){
+    public ConcurrentHashMap<String,ConcurrentHashMap<String,DocumentData>> getDataMap(){
         return datamap;
     }
 
@@ -133,13 +134,13 @@ public class DataMap {
             
             for (String author : datamap.keySet()){ //for all authors
                 for (String document: datamap.get(author).keySet()){ //for all of their documents
-                    ConcurrentHashMap<Integer,Double> docData = datamap.get(author).get(document);
+                    ConcurrentHashMap<Integer,FeatureData> docData = datamap.get(author).get(document).getDataValues();
                     //remove the index/feature if it is present
                     if (docData.containsKey(indexToRemove)){
                         docData.remove(indexToRemove);
                     }
                     //regardless, bump down the index of ALL other features
-                    ConcurrentHashMap<Integer,Double> newDocData = new ConcurrentHashMap<Integer,Double>();
+                    ConcurrentHashMap<Integer,FeatureData> newDocData = new ConcurrentHashMap<Integer,FeatureData>();
                     for (Integer key : docData.keySet()){
                         if (key < indexToRemove){ //if the index is under i, add as normal
                             newDocData.put(key, docData.get(key));
@@ -147,7 +148,7 @@ public class DataMap {
                             newDocData.put(key-1, docData.get(key));
                         }
                     }
-                    datamap.get(author).put(document, newDocData);
+                    datamap.get(author).get(document).replaceFeatureValues(newDocData);
                 }
             }
                 
@@ -192,10 +193,10 @@ public class DataMap {
             for (String author: datamap.keySet()){
                 for (String document : datamap.get(author).keySet()){
                     nextline =author+","+document+",";
-                    ConcurrentHashMap<Integer,Double> docdata = datamap.get(author).get(document);
+                    ConcurrentHashMap<Integer,FeatureData> docdata = datamap.get(author).get(document).getDataValues();
                     for (int i = 0; i <features.size(); i++){
                         if (docdata.containsKey(i))
-                            nextline+=docdata.get(i)+",";
+                            nextline+=docdata.get(i).getValue()+",";
                         else
                             nextline+="0,";
                     }
@@ -258,17 +259,21 @@ public class DataMap {
             map = new DataMap(name,features);
             
             while (br.ready()){
+                /* TODO this logic (and the write to CSV logic) needs to be completely redone. 
                 String line = br.readLine();
                 String[] parts = line.split(",");
-                ConcurrentHashMap<Integer,Double> docfeatures = new ConcurrentHashMap<Integer,Double>();
+                ConcurrentHashMap<Integer,FeatureData> docfeatures = new ConcurrentHashMap<Integer,FeatureData>();
                 for (int i = 2; i<parts.length; i++){
-                    docfeatures.put(i-2, Double.parseDouble(parts[i]));
+                    
+                    //docfeatures.put(i-2, Double.parseDouble(parts[i]));
                 }
                 
                 if (!map.getDataMap().containsKey(parts[0]))
                     map.initAuthor(parts[0]);
                     
-                map.addDocumentData(parts[0], parts[1], docfeatures);
+                Map<String,Integer> norms = new HashMap<String,Integer>();
+                map.addDocumentData(parts[0], parts[1], norms, docfeatures);
+                */
             }
             
             br.close();

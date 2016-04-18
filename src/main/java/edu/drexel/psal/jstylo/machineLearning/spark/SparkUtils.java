@@ -17,6 +17,7 @@ import org.apache.spark.sql.SQLContext;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 
+import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
 import edu.drexel.psal.jstylo.generics.DataMap;
 
 public class SparkUtils {
@@ -73,7 +74,7 @@ public class SparkUtils {
         for (String author : map.getDataMap().keySet()){
             for (String document : map.getDataMap().get(author).keySet()){
                 points.add(new LabeledPoint(labels.get(author),
-                        getVector(map.getDataMap().get(author).get(document),map.getFeatures().keySet().size())));
+                        getVector(map.getDataMap().get(author).get(document).getDataValues(),map.getFeatures().keySet().size())));
             }
         }
         return points;
@@ -85,12 +86,12 @@ public class SparkUtils {
      * @param numfeatures
      * @return
      */
-    private static Vector getVector(Map<Integer,Double> docdata, int numfeatures) {
+    private static Vector getVector(Map<Integer,FeatureData> docdata, int numfeatures) {
         List<Integer> keys = new ArrayList<Integer>(docdata.keySet().size());
         List<Double> values = new ArrayList<Double>(docdata.keySet().size());
         for (Integer i : docdata.keySet()){
             keys.add(i);
-            values.add(docdata.get(i));
+            values.add(docdata.get(i).getValue());
         }
         
         return Vectors.sparse(numfeatures, Ints.toArray(keys), Doubles.toArray(values));

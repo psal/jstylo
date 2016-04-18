@@ -9,7 +9,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ import com.jgaap.generics.EventSet;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.DataMap;
+import edu.drexel.psal.jstylo.generics.DocumentData;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
@@ -48,8 +51,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	
 	//ThreadArrays so that we can stop them if the user cancels something mid process
 	FeatureExtractionThread[] featThreads;
-	CreateTrainInstancesThread[] trainThreads;
-	CreateTestInstancesThread[] testThreads;
+	CreateTrainDataMapThread[] trainThreads;
+	CreateTestDataMapThread[] testThreads;
 	
 	// Relevant data to spit out at the end
 	private DataMap trainingDataMap; //training doc Instances
@@ -297,9 +300,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		}
 		
 		//Parallelized magic
-		trainThreads = new CreateTrainInstancesThread[threadsToUse];
+		trainThreads = new CreateTrainDataMapThread[threadsToUse];
 		for (int thread = 0; thread < threadsToUse; thread++)
-			trainThreads[thread] = new CreateTrainInstancesThread(div,thread,numInstances,new CumulativeFeatureDriver(cfd));
+			trainThreads[thread] = new CreateTrainDataMapThread(div,thread,numInstances,new CumulativeFeatureDriver(cfd));
 		for (int thread = 0; thread < threadsToUse; thread++)
 			trainThreads[thread].start();
 		for (int thread = 0; thread < threadsToUse; thread++)
@@ -344,9 +347,9 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 				div++;
 
 			//Perform some parallelization magic
-			testThreads = new CreateTestInstancesThread[threadsToUse];
+			testThreads = new CreateTestDataMapThread[threadsToUse];
 			for (int thread = 0; thread < threadsToUse; thread++)
-				testThreads[thread] = new CreateTestInstancesThread(div,thread,numInstances, new CumulativeFeatureDriver(cfd));
+				testThreads[thread] = new CreateTestDataMapThread(div,thread,numInstances, new CumulativeFeatureDriver(cfd));
 			for (int thread = 0; thread < threadsToUse; thread++)
 				testThreads[thread].start();
 			for (int thread = 0; thread < threadsToUse; thread++)
@@ -615,7 +618,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @param cd A copy of the cfd to assess features with
 	 * @author Travis Dutko
 	 */
-	public class CreateTestInstancesThread extends Thread {
+	public class CreateTestDataMapThread extends Thread {
 		
 		int div; //the number of instances to be created per thread
 		int threadId; //the div this thread is dealing with
@@ -623,7 +626,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		CumulativeFeatureDriver cfd; //the cfd used to assess features
 		
 		//Constructor
-		public CreateTestInstancesThread(int d, int t, int n, CumulativeFeatureDriver cd){
+		public CreateTestDataMapThread(int d, int t, int n, CumulativeFeatureDriver cd){
 			cfd=cd;
 			div = d;
 			threadId = t;
@@ -638,22 +641,23 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					* (threadId + 1)); i++)
 				try {
 					//grab the document
-					Document doc = ps.getAllTestDocs().get(i);
+					Document document = ps.getAllTestDocs().get(i);
 					//extract its event sets
-					List<EventSet> events = extractEventSets(doc, cfd,loadingDocContents(),isCacheValid);
+					List<EventSet> events = extractEventSets(document, cfd,loadingDocContents(),isCacheValid);
 					//cull the events/eventSets with respect to training events/sets
 					events = cullWithRespectToTraining(relevantEvents, events, cfd);
 					
 					//build the doc data
 	                String author = events.get(events.size()-1).eventAt(0).getEvent();
 	                String title = events.get(events.size()-1).eventAt(1).getEvent();
-	                ConcurrentHashMap<Integer,Double> docdata = createDocMap(features, relevantEvents, cfd, events);
+	                ConcurrentHashMap<Integer,FeatureData> docdata = createDocMap(features, relevantEvents, cfd, events);
 
+	                DocumentData doc = new DocumentData(getNormalizations(events.get(events.size()-1)), docdata);
 					//normalize it
-					normDocData(cfd, docdata, events, features);
+					normDocData(doc);
 					
 					//add it to datamap
-					testingDataMap.addDocumentData(author, title, docdata);
+					testingDataMap.addDocumentData(author, title, doc);
 				} catch (Exception e) {
 				    LOG.error("Error creating Test Document data for "+
 				            ps.getAllTestDocs().get(i).getFilePath()+" author: "+ps.getAllTestDocs().get(i).getAuthor(),e);
@@ -670,7 +674,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	 * @param cd A copy of the cfd to assess features with
 	 * @author Travis Dutko
 	 */
-	public class CreateTrainInstancesThread extends Thread {
+	public class CreateTrainDataMapThread extends Thread {
 		
 		int div; //the number of instances to be created per thread
 		int threadId; //the div for this thread
@@ -678,7 +682,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		CumulativeFeatureDriver cfd; //the cfd used to identify features/attributes
 		
 		//Constructor
-		public CreateTrainInstancesThread(int d, int t, int n,CumulativeFeatureDriver cd){
+		public CreateTrainDataMapThread(int d, int t, int n,CumulativeFeatureDriver cd){
 			div = d;
 			threadId = t;
 			numdocs = n;
@@ -696,17 +700,37 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 				    //Logger.logln("[THREAD-" + threadId + "] Processing document " + i);
 					String author = eventList.get(i).get(eventList.get(i).size()-1).eventAt(0).getEvent();
 				    String title = eventList.get(i).get(eventList.get(i).size()-1).eventAt(1).getEvent();
-				    ConcurrentHashMap<Integer,Double> docdata = createDocMap(features, relevantEvents, cfd, eventList.get(i));
+				    ConcurrentHashMap<Integer,FeatureData> docdata = createDocMap(features, relevantEvents, cfd, eventList.get(i));
 					//normalize it
-					normDocData(cfd, docdata, eventList.get(i), features);
+				    DocumentData doc = new DocumentData(getNormalizations(eventList.get(i).get(eventList.get(i).size()-1)),docdata);
+					normDocData(doc);
 					//add it to this div's list of completed instances
-					trainingDataMap.addDocumentData(author, title, docdata);
+					trainingDataMap.addDocumentData(author, title, doc);
 					
 				} catch (Exception e) {
 				    LOG.error("[THREAD-" + threadId + "] Error creating datamap " + i + " for document "+ps.getAllTrainDocs().get(i).getFilePath(),e);
 				}
 		}
 		
+	}
+	/*
+    * 2 : Sentences in document 
+    * 3 : Words in document 
+    * 4 : Characters in document 
+    * 5 : Letters in document
+    */
+	/**
+	 * A utility method for the conversion to datamap threads. This needs to be genericized at some point in the future
+	 * @param es
+	 * @return
+	 */
+	private static Map<String,Integer> getNormalizations(EventSet es){
+	    Map<String,Integer> norms = new HashMap<String,Integer>();
+	    norms.put(NormBaselineEnum.SENTENCES_IN_DOC.getTitle(), Integer.parseInt(es.eventAt(2).getEvent()));
+	    norms.put(NormBaselineEnum.WORDS_IN_DOC.getTitle(), Integer.parseInt(es.eventAt(3).getEvent()));
+	    norms.put(NormBaselineEnum.CHARS_IN_DOC.getTitle(), Integer.parseInt(es.eventAt(2).getEvent()));
+	    norms.put(NormBaselineEnum.LETTERS_IN_DOC.getTitle(), Integer.parseInt(es.eventAt(3).getEvent()));
+	    return norms;
 	}
 	
 	/**

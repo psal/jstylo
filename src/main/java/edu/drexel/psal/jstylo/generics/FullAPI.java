@@ -8,7 +8,7 @@ import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
-import edu.drexel.psal.jstylo.machineLearning.spark.SparkAnalyzer;
+import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 /**
  * 
@@ -489,9 +489,9 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("jsan_resources/problem_sets/drexel_1_train_test.xml")
-                    .setAnalyzer(new SparkAnalyzer())
-                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
+                    .psPath("jsan_resources/problem_sets/drexel_1_small.xml")
+                    .setAnalyzer(new WekaAnalyzer())
+                    .numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
                     .loadDocContents(true)
                     .build();
         } catch (Exception e) {

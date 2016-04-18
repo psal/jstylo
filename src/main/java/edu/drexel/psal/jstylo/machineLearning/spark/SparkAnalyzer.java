@@ -185,7 +185,6 @@ public class SparkAnalyzer extends Analyzer implements Serializable{
                 }
             }
 
-            LOG.info("Labeling document with author: "+dr.getActualAuthor()+" and suspect "+dr.getSuspectedAuthor());
             er.addDocResult(dr);
             index++;
         }

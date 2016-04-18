@@ -24,6 +24,7 @@ import edu.drexel.psal.jstylo.eventDrivers.LetterCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SingleNumericEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
+import edu.drexel.psal.jstylo.generics.DocumentData;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,8 +87,13 @@ public class FeatureExtractionAPI {
 		/*
 		 * Metadata Event format:
 		 * 
-		 * EventSetID: "<DOCUMENT METADATA>" Event at Index: 0 : author 1 : title 2 : Sentences in document 3 : Words in document 4 : Characters in
-		 * document 5 : Letters in document
+		 * EventSetID: "<DOCUMENT METADATA>" Event at Index: 
+		 * 0 : author 
+		 * 1 : title 
+		 * 2 : Sentences in document 
+		 * 3 : Words in document 
+		 * 4 : Characters in document 
+		 * 5 : Letters in document
 		 */
 
 		// Extract document title and author
@@ -421,13 +427,13 @@ public class FeatureExtractionAPI {
 	 * @param documentData
 	 * @return
 	 */
-	public ConcurrentHashMap<Integer,Double> createDocMap(List<String> features,
+	public ConcurrentHashMap<Integer,FeatureData> createDocMap(List<String> features,
 	        List<EventSet> relevantEvents,
             CumulativeFeatureDriver cumulativeFeatureDriver,
             List<EventSet> documentData){
 	    
         // generate training instances
-        ConcurrentHashMap<Integer,Double> documentMap = new ConcurrentHashMap<Integer,Double>();
+        ConcurrentHashMap<Integer,FeatureData> documentMap = new ConcurrentHashMap<Integer,FeatureData>();
         
         //remove metadata event
         EventSet metadata = documentData.remove(documentData.size()-1);
@@ -507,7 +513,10 @@ public class FeatureExtractionAPI {
                     //calculate/add the histograms
                     int index = 0;
                     for (Integer i: indices){
-                        documentMap.put(i, 0.0+currHistogram.getAbsoluteFrequency(events.get(index)));
+                        documentMap.put(i, new FeatureData(
+                                cumulativeFeatureDriver.featureDriverAt(documentData.indexOf(es)).getName(),
+                                cumulativeFeatureDriver.featureDriverAt(documentData.indexOf(es)).getNormBaseline().getTitle(),
+                                currHistogram.getAbsoluteFrequency(events.get(index))));
                         index++;
                     }
                     
@@ -532,7 +541,7 @@ public class FeatureExtractionAPI {
                         nonHistIndex++;
                     }
                     
-                    //if ther's no inner feature, incrememnt by one; we just passed a non-histogram
+                    //if ther's no inner feature, increment by one; we just passed a non-histogram
                     if (!hasInner)
                         nonHistIndex++;
                 }
@@ -543,8 +552,11 @@ public class FeatureExtractionAPI {
                 int endIndex = eventString.indexOf("}");
                 eventString = eventString.substring(startIndex+1,endIndex);
 
-                double value = Double.parseDouble(eventString);
-                documentMap.put(nonHistIndex, value);
+                FeatureData fd = new FeatureData(
+                        cumulativeFeatureDriver.featureDriverAt(documentData.indexOf(es)).getName(),
+                        cumulativeFeatureDriver.featureDriverAt(documentData.indexOf(es)).getNormBaseline().getTitle(),
+                        Math.round((float)Double.parseDouble(eventString)));
+                documentMap.put(nonHistIndex, fd);
             }
         }
         //add metadata back. Not sure if necessary
@@ -560,81 +572,16 @@ public class FeatureExtractionAPI {
 	 * @param documentData
 	 * @param features
 	 */
-	public void normDocData(CumulativeFeatureDriver cfd, ConcurrentHashMap<Integer,Double> docmap, List<EventSet> documentData, List<String> features){
-
-        int i;
-        int numOfFeatureClasses = cfd.numOfFeatureDrivers();
-
-        int sentencesPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(2).getEvent());
-        int wordsPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(3).getEvent());
-        int charsPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(4).getEvent());
-        int lettersPerDoc = Integer.parseInt(documentData.get(documentData.size()-1).eventAt(5).getEvent());
-        int[] featureClassAttrsFirstIndex = new int[numOfFeatureClasses + 1];
-        
-        // initialize vector size (including authorName and title if required)
-        // and first indices of feature classes array
-        int vectorSize = 0;
-        for (i = 0; i < numOfFeatureClasses; i++) {
-            
-            String featureDriverName = cfd.featureDriverAt(i).displayName()
-                    .replace(" ", "-");
-            
-            String nextFeature = features.get(vectorSize).replace(" ", "-");
-            
-            featureClassAttrsFirstIndex[i] = vectorSize;
-            while (nextFeature.contains(featureDriverName)) {
-                vectorSize++;
-                if (vectorSize == numOfFeatureClasses)
-                    break;
-                nextFeature = features.get(vectorSize);
-            }
-        }
-        
-        //add the end index
-        featureClassAttrsFirstIndex[featureClassAttrsFirstIndex.length-1] = features.size();
-        
-        // normalizes features
-        for (i = 0; i < numOfFeatureClasses; i++) {
-
-            NormBaselineEnum norm = cfd.featureDriverAt(i).getNormBaseline();
-            double factor = cfd.featureDriverAt(i).getNormFactor();
-            int start = featureClassAttrsFirstIndex[i], end = featureClassAttrsFirstIndex[i + 1], k;
-            if (norm == NormBaselineEnum.SENTENCES_IN_DOC) {
-                // use sentencesInDoc
-                if (!cfd.featureDriverAt(i).isCalcHist()) {
-                    docmap.put(start, docmap.get(start) * factor / ((double) sentencesPerDoc));
-                } else {
-                    for (k = start; k < end; k++)
-                        docmap.put(k, docmap.get(k) * factor / ((double) sentencesPerDoc));
-                }
-            } else if (norm == NormBaselineEnum.WORDS_IN_DOC) {
-                // use wordsInDoc
-                if (!cfd.featureDriverAt(i).isCalcHist()) {
-                    docmap.put(start, docmap.get(start) * factor / ((double) wordsPerDoc));
-                } else {
-                    for (k = start; k < end; k++){
-                        docmap.put(k, docmap.get(k) * factor / ((double) wordsPerDoc));
-                    }
-                }
-
-            } else if (norm == NormBaselineEnum.CHARS_IN_DOC) {
-                // use charsInDoc
-                if (!cfd.featureDriverAt(i).isCalcHist()) {
-                    docmap.put(start, docmap.get(start) * factor / ((double) charsPerDoc));
-                } else {
-                    for (k = start; k < end; k++)
-                        docmap.put(k, docmap.get(k) * factor / ((double) charsPerDoc));
-                }
-            } else if (norm == NormBaselineEnum.LETTERS_IN_DOC) {
-                // use charsInDoc
-                if (!cfd.featureDriverAt(i).isCalcHist()) {
-                    docmap.put(start, docmap.get(start) * factor / ((double) lettersPerDoc));
-                } else {
-                    for (k = start; k < end; k++)
-                        docmap.put(k, docmap.get(k) * factor / ((double) lettersPerDoc));
-                }
-            }
-        }
+	public void normDocData(DocumentData docdata){
+	    for (Integer index : docdata.getDataValues().keySet()){
+	        if (!docdata.getDataValues().get(index).getNormalizationType().equals(NormBaselineEnum.NONE.getTitle())) {
+	            docdata.getDataValues().get(index).setValue(0.0+
+	                docdata.getDataValues().get(index).getCount()
+	                *docdata.getNormalizationValues().get(docdata.getDataValues().get(index).getNormalizationType()));
+	        } else {
+	            docdata.getDataValues().get(index).setValue(0.0+docdata.getDataValues().get(index).getCount());
+	        }
+	    }
 	}
 	
 	/**

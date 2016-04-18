@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.DocResult;
+import edu.drexel.psal.jstylo.generics.DocumentData;
 import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import weka.classifiers.Evaluation;
 import weka.classifiers.evaluation.NominalPrediction;
@@ -35,18 +37,18 @@ public class WekaUtils {
         instances = new Instances("Instances",attributes,datamap.numDocuments());
         //for each author...
         for (String author : datamap.getDataMap().keySet()){
-            ConcurrentHashMap<String,ConcurrentHashMap<Integer,Double>> authormap 
+            ConcurrentHashMap<String,DocumentData> authormap 
                 = datamap.getDataMap().get(author);
             
             //for each document...
             for (String doctitle : authormap.keySet()){
                 
                 Instance instance = new SparseInstance(numfeatures);
-                ConcurrentHashMap<Integer,Double> documentData = authormap.get(doctitle);
+                ConcurrentHashMap<Integer,FeatureData> documentData = authormap.get(doctitle).getDataValues();
                 
                 //for each index we have a value for 
                 for (Integer index : documentData.keySet()){
-                    instance.setValue((Attribute)attributes.elementAt(index), documentData.get(index));
+                    instance.setValue((Attribute)attributes.elementAt(index), documentData.get(index).getValue());
                 }
                 instance.setValue((Attribute)attributes.elementAt(attributes.size()-1), author);
                 instances.add(instance);
@@ -84,16 +86,18 @@ public class WekaUtils {
         FastVector predictions = eval.predictions();
         String[] authors  = getAuthorsFromAttributeString(authorCSV);
         
+        //for each document
         for (int i = 0; i<predictions.size(); i++){
             NominalPrediction prediction = (NominalPrediction)predictions.elementAt(i);
             String actual = authors[(int)prediction.actual()];
             double[] probabilities = prediction.distribution();
             
             Map<String,Double> probMap = new HashMap<String,Double>();
+            
+            //for each potential author...
             for (int j = 0; j< probabilities.length; j++){
                 probMap.put(authors[j], probabilities[j]);
             }
-            
             results.addDocResult(new DocResult(documentTitles.get(i),actual,probMap));
         }
         
