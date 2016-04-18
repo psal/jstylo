@@ -5,7 +5,7 @@
 	<groupId>edu.drexel.psal</groupId>
 	<artifactId>jstylo</artifactId>
 	<name>${artifactId}</name>
-	<version>2.3.0-SNAPSHOT</version>
+	<version>2.9.0</version>
 	<packaging>jar</packaging>
 	<description>A feature-extraction and authorship-attribution tool.</description>
 	<url>https://psal.cs.drexel.edu/</url>
@@ -25,21 +25,30 @@
 		<url>http://github.com/psal/jstylo.git</url>
 	</scm>
 
+	<properties>
+		<spark-version>1.6.1</spark-version>
+		<log4j-version>1.7.21</log4j-version>
+		<weka-version>3.6.6</weka-version>
+		<tt4j-version>1.2.1</tt4j-version>
+		<gson-version>2.6.2</gson-version>
+		<junit-version>4.12</junit-version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
 			<artifactId>weka-stable</artifactId>
-			<version>3.6.6</version>
+			<version>${weka-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.annolab.tt4j</groupId>
 			<artifactId>org.annolab.tt4j</artifactId>
-			<version>1.2.1</version>
+			<version>${tt4j-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>jgaap-5.2.0-lite</groupId>
@@ -51,27 +60,27 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.21</version>
+			<version>${log4j-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.6.2</version>
+			<version>${gson-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_2.10</artifactId>
-			<version>1.6.1</version>
+			<version>${spark-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-mllib_2.10</artifactId>
-			<version>1.6.1</version>
+			<version>${spark-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-sql_2.10</artifactId>
-			<version>1.6.1</version>
+			<version>${spark-version}</version>
 		</dependency>
 	</dependencies>
 
