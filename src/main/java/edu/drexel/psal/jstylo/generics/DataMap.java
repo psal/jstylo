@@ -213,6 +213,16 @@ public class DataMap {
         }
     }
     
+    public Integer getFeatureIndex(String featureName){
+        if (!features.containsValue(featureName))
+            return -1;
+        for (Integer index : features.keySet()){
+            if (features.get(index).equals(featureName))
+                return index;
+        }
+        return -1;
+    }
+    
     public List<String> getDocumentTitles(){
         List<String> titles = new ArrayList<String>();
         for (String author : datamap.keySet()){
