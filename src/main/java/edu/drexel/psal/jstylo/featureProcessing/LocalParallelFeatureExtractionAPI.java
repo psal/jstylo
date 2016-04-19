@@ -210,14 +210,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		
 		featThreads = null;
 		
-		//cull the List<List<EventSet>> before returning
-		List<List<EventSet>> temp = cull(eventList, cfd);
-		
-		LOG.info("Feature Extraction complete");
-		
 		//return it now
-		eventList = temp;
-		return eventList;
+		return cull(eventList,cfd);
 	}
 
 	/**

@@ -14,6 +14,7 @@ import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
 import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
+import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
 
 /**
  * JStylo fullAPI Version 1.0<br>
@@ -308,25 +309,16 @@ public class FullAPI {
 	 * right now both verifiers only need a single double arg, so this parameter works out.
 	 * Might need to adjust this to add more verifiers, however.
 	 */
-	//TODO this'll need to be redone to not use Weka classes
-	/*
 	public void verify(double arg){
-		if (verifierName.equalsIgnoreCase("ThresholdVerifier")){
-			List<String> authors = new ArrayList<String>();
-			for (String s : ib.getProblemSet().getAuthors()){
-				authors.add(s);
-			}
-			Instances tests = WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap());
-			for (int i = 0; i < tests.numInstances(); i++){
-				Instance inst = tests.instance(i);
-				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
-			}
-		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
-			verifier = new DistractorlessVerifier(WekaAnalyzer.instancesFromDataMap(ib.getTrainingDataMap()),WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap()),true,arg);
+		if (verifierName.equalsIgnoreCase("Distractorless")) {
+			verifier = new DistractorlessVerifier(training,testing,true,arg);
+		} else {
+		    LOG.error("Specified Verifier "+verifierName+" is not yet supported. Skipping verification...");
+		    return;
 		}
 		verifier.verify();
 	}
-	*/
+	
 	
 	///////////////////////////////// Setters/Getters
 	
@@ -517,9 +509,9 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("jsan_resources/problem_sets/drexel_1_small.xml")
+                    .psPath("jsan_resources/problem_sets/drexel_1_train_test.xml")
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(4).analysisType(analysisType.CROSS_VALIDATION).useCache(false).chunkDocs(false)
+                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
                     .loadDocContents(true)
                     .build();
         } catch (Exception e) {

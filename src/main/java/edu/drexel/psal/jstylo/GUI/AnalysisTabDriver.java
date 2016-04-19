@@ -717,7 +717,8 @@ public class AnalysisTabDriver {
 				main.lpfeAPI = tempBuilder;
 				main.lpfeAPI.setProblemSet(main.ps);
 				main.lpfeAPI.setLoadDocContents(false);
-
+				
+				
 				// Extract the training information
 				content += getTimestamp() + " Extracting features from training corpus using sparse representation)...\n";
 				updateResultsView();
@@ -1022,7 +1023,7 @@ public class AnalysisTabDriver {
 						//print results
 						try {
 							content += results.getStatisticsString() + "\n" + results.getAllDocumentResults(true) + "\n"
-									+ results.getConfusionMatrix() + "\n";
+									+ results.getConfusionMatrixString() + "\n";
 						} catch (Exception e) {
 							LOG.error("Failed to build the statistics string!", e);
 							content += "Failed to build the statistics string!";
