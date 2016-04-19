@@ -1,17 +1,21 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
+import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 /**
- * 
  * JStylo fullAPI Version 1.0<br>
  * 
  * A simple API for the inner JStylo functionality.<br>
@@ -53,6 +57,8 @@ public class FullAPI {
 		private Preferences p = null;
 		private boolean useCache = false;
 		private boolean chunkDocs = false;
+		private boolean applyInfoGain = false;
+		private int featuresToKeep = 500;
 		
 		public Builder(){
 			
@@ -66,6 +72,16 @@ public class FullAPI {
 		public Builder psPath(String psXML){
 			psXMLPath = psXML;
 			return this;
+		}
+		
+		public Builder setApplyInfoGain(boolean apply){
+		    applyInfoGain = apply;
+		    return this;
+		}
+		
+		public Builder setFeaturesToKeep(int numFeatures){
+		    featuresToKeep = numFeatures;
+		    return this;
 		}
 		
 		public Builder cfdPath(String cfdXML){
@@ -145,7 +161,12 @@ public class FullAPI {
 	int numFolds; //folds for cross val (defaults to 10)
 	String verifierName; //verifier to use (can't create it right away as most need parameters
 	Verifier verifier; //the verifier object
-	
+	CumulativeFeatureDriver cfd;
+	double[][] featureWeights;
+	int numFeaturesToKeep;
+	boolean applyInfoGain;
+	DataMap training;
+	DataMap testing;
 	
 	//Result Data
 	ExperimentResults experimentResults;
@@ -170,16 +191,15 @@ public class FullAPI {
 			ib.setProblemSet(new ProblemSet(b.psXMLPath,
 					b.loadDocContents));
 		
-		if (b.cfdXMLPath==null)
-			ib.setCumulativeFeatureDriver(b.cfd);
-		else {
-			try {
-				ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(b.cfdXMLPath));
-			} catch (Exception e) {
-				LOG.error("Failed to build cfd from xml path: "+b.cfdXMLPath,e);
-				e.printStackTrace();
-			}
-		}
+		if (b.cfdXMLPath==null) {
+		    cfd = b.cfd;
+        } else {
+            try {
+                cfd = new CumulativeFeatureDriver(b.cfdXMLPath);
+            } catch (Exception e) {
+                LOG.error("Failed to build cfd", e);
+            }
+        }
 		
 		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
@@ -188,6 +208,8 @@ public class FullAPI {
 		selected = b.type;
 		numFolds = b.numFolds;
 		analysisDriver = b.analyzer;
+		numFeaturesToKeep = b.featuresToKeep;
+		applyInfoGain = b.applyInfoGain;
 	}
 	
 	///////////////////////////////// Methods
@@ -199,14 +221,19 @@ public class FullAPI {
 
 		try {
 			if (ib.isUsingCache())
-				ib.validateCFDCache();
+				ib.validateCFDCache(cfd);
 			if (ib.isChunkingDocs())
 			    Chunker.chunkAllTrainDocs(ib.getProblemSet());
-			ib.extractEventsThreaded(); //extracts events from documents
-			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
-			ib.initializeFeatureSet(); //creates the attribute list to base the Instances on
-			ib.createTrainingDataMapThreaded(); //creates train Instances
-			ib.createTestingDataMapThreaded(); //creates test Instances (if present)
+			List<List<EventSet>> eventList = ib.extractEventsThreaded(cfd); //extracts events from documents
+			List<EventSet> relevantEvents = ib.getRelevantEvents(eventList,cfd); //creates the List<EventSet> to pay attention to
+			List<String> features = ib.getFeatureList(eventList,relevantEvents, cfd); //creates the attribute list to base the Instances on
+			training = ib.createTrainingDataMapThreaded(eventList,relevantEvents,features,cfd); //creates train Instances
+			testing = ib.createTestingDataMapThreaded(eventList,relevantEvents,features,cfd); //creates test Instances (if present)
+			if (applyInfoGain){
+			    applyInfoGain(training);
+			    applyInfoGain(testing);
+			}
+			    
 			ib.killThreads();
 		} catch (Exception e) {
 			LOG.info("Failed to prepare instances");
@@ -220,7 +247,7 @@ public class FullAPI {
 	 */
 	public void calcInfoGain(){
 		try {
-			ib.calculateInfoGain(); //delegate to underlying Instances Builder
+			featureWeights = InfoGain.calcInfoGain(training); //delegate to underlying Instances Builder
 		} catch (Exception e) {
 			LOG.error("Failed to calculate infoGain",e);
 		} 
@@ -230,9 +257,11 @@ public class FullAPI {
 	 * Applies infoGain to the training and testing instances
 	 * @param n the number of features/attributes to keep
 	 */
-	public void applyInfoGain(int n){
+	private void applyInfoGain(DataMap data){
+	    if (featureWeights == null)
+	        calcInfoGain();
 		try {
-			ib.applyInfoGain(n);
+			InfoGain.applyInfoGain(featureWeights,data,numFeaturesToKeep);
 		} catch (Exception e) {
 			LOG.info("Failed to apply infoGain");
 			e.printStackTrace();
@@ -249,21 +278,19 @@ public class FullAPI {
 	
 		//do a cross val
 		case CROSS_VALIDATION:
-			experimentResults = analysisDriver.runCrossValidation(ib.getTrainingDataMap(), numFolds, 0);
+			experimentResults = analysisDriver.runCrossValidation(training, numFolds, 0);
 			break;
 
 		// do a train/test
 		case TRAIN_TEST_UNKNOWN:
-		    experimentResults = analysisDriver.classifyWithUnknownAuthors(ib.getTrainingDataMap(), ib.getTestDataMap(), ib.getProblemSet().getAllTestDocs());
+		    experimentResults = analysisDriver.classifyWithUnknownAuthors(training, testing, ib.getProblemSet().getAllTestDocs());
 			break;
 
 		//do a train/test where we know the answer and just want statistics
 		case TRAIN_TEST_KNOWN:
 			ib.getProblemSet().removeAuthor("_Unknown_");
 			try {
-				DataMap train = ib.getTrainingDataMap();
-				DataMap test = ib.getTestDataMap();
-				experimentResults = analysisDriver.classifyWithKnownAuthors(train,test);
+				experimentResults = analysisDriver.classifyWithKnownAuthors(training,testing);
 			} catch (Exception e) {
 				LOG.error("Failed to build trainTest Evaluation",e);
 			}
@@ -328,7 +355,7 @@ public class FullAPI {
 	 * @param insts the Instances object to use as training data
 	 */
 	public void setTrainingDataMap(DataMap train){
-		ib.setTrainingDataMap(train);
+		training = train;
 	}
 	
 	/**
@@ -336,7 +363,7 @@ public class FullAPI {
 	 * @param insts the Instances object to use as testing data
 	 */
 	public void setTestingDataMap(DataMap test){
-		ib.setTestingDataMap(test);
+		testing = test;
 	}
 	
 	/**
@@ -375,21 +402,22 @@ public class FullAPI {
 	 * @return the Instances object describing the training documents
 	 */
 	public DataMap getTrainingDataMap(){
-		return ib.getTrainingDataMap();
+		return training;
 	}
 	
 	/**
 	 * @return the Instances object describing the test documents
 	 */
 	public DataMap getTestingDataMap(){
-		return ib.getTestDataMap();
+		return testing;
 	}
 	
 	/**
 	 * @return the infoGain data (not in human readable form lists indices and usefulness)
+	 * @throws Exception 
 	 */
-	public double[][] getInfoGain(){
-		return ib.getInfoGain();
+	public double[][] getInfoGain(DataMap data) throws Exception{
+		return InfoGain.calcInfoGain(data);
 	}
 	
 	/**
@@ -415,8 +443,8 @@ public class FullAPI {
 		
 		//initialize the string and infoGain
 		String infoString = ">-----InfoGain information: \n\n";
-		DataMap trainingDataMap = ib.getTrainingDataMap();
-		double[][] infoGain = ib.getInfoGain();
+		DataMap trainingDataMap = training;
+		double[][] infoGain = featureWeights;
 		
 		for (int i = 0; i<infoGain.length; i++){
 			if (!showZeroes && (infoGain[i][0]==0))
@@ -479,7 +507,7 @@ public class FullAPI {
 	}
 	
 	public CumulativeFeatureDriver getCFD(){
-		return ib.getCFD();
+		return cfd;
 	}
 	
 	public static void main(String[] args){
@@ -504,7 +532,7 @@ public class FullAPI {
 		//test.applyInfoGain(5);
 		test.run();
 		LOG.info(test.getStatString());
-		//LOG.info(test.getReadableInfoGain(false));
+		LOG.info(test.getReadableInfoGain(false));
 		//LOG.info(test.getResults().toJson().toString());
 		//LOG.info("Count for "+test.getTestingDataMap().getFeatures().get(0)+
 		//        " is "+test.getTestingDataMap().getDataMap().get("a").get("a_07.txt").getFeatureCountAtIndex(0));
