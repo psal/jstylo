@@ -19,6 +19,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
 * This code was edited or generated using CloudGarden's Jigloo
 * SWT/Swing GUI Builder, which is free for non-commercial
@@ -39,10 +42,7 @@ import javax.swing.tree.*;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class GUIMain extends javax.swing.JFrame {
     
-    
-	/**
-	 * 
-	 */
+    private static final Logger LOG = LoggerFactory.getLogger(GUIMain.class);
 	private static final long serialVersionUID = 1L;
 
 	// main instance
@@ -247,7 +247,7 @@ public class GUIMain extends javax.swing.JFrame {
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 				} catch (Exception e) {
-					System.err.println("Look-and-Feel error!");
+					LOG.error("Look-and-Feel error!");
 				}
 				inst = new GUIMain();
 				inst.setDefaultCloseOperation(EXIT_ON_CLOSE);

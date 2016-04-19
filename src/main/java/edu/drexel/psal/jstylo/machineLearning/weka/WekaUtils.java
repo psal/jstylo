@@ -29,7 +29,7 @@ import weka.core.SparseInstance;
  */
 public class WekaUtils {
     
-    protected static Instances instancesFromDataMap(DataMap datamap){
+    public static Instances instancesFromDataMap(DataMap datamap){
         Instances instances = null;
         FastVector attributes = createFastVector(datamap.getFeatures(),datamap.getDataMap().keySet());
         

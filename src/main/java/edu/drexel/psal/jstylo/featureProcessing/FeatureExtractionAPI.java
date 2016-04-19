@@ -183,7 +183,7 @@ public class FeatureExtractionAPI {
 
 	/**
 	 * Determines which EventSets to use for the given documents based on the chosen cullers.<br>
-	 * @param eventSets A List which contains Lists of EventSets (represents a list of documents' EventSets0
+	 * @param eventSets A List which contains Lists of EventSets (represents a list of documents' EventSets
 	 * @param cumulativeFeatureDriver the driver with the culling functionality
 	 * @return The culled List of Lists of EventSets created from eventSets
 	 * @throws Exception

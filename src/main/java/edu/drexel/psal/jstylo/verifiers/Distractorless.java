@@ -5,6 +5,9 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Scanner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 
 import weka.classifiers.Evaluation;
@@ -14,6 +17,8 @@ import weka.core.Instances;
 
 public class Distractorless implements Serializable{
 
+    private static final Logger LOG = LoggerFactory.getLogger(Distractorless.class);
+    
     private static final long serialVersionUID = 1L;
     /*
 	 * These values are used to create a "fake" weka evaluation for statistical purposes.
@@ -54,7 +59,7 @@ public class Distractorless implements Serializable{
 		try {
 			insts = new Instances(new StringReader(instsStr));
 		} catch (IOException e) {
-			System.err.println("Error initializing evaluation stubs!!!");
+			LOG.error("Error initializing evaluation stubs!!!",e);
 		}
 		insts.setClassIndex(1);
 		AUTHOR_GOOD = insts.instance(0);
@@ -67,7 +72,7 @@ public class Distractorless implements Serializable{
 		try {
 			SMO.buildClassifier(insts);
 		} catch (Exception e) {
-			System.err.println("Error training classifier!!!");
+			LOG.error("Error training classifier!!!",e);
 		}
 	}
 	

@@ -100,8 +100,7 @@ public class MaxentPOSNGramsEventDriverGeneric extends EventDriver implements St
 					taggerPath = currentTaggerPath;
 				
 			}
-			System.out.println(taggerPath);
-				t = new MaxentTagger(taggerPath);
+			t = new MaxentTagger(taggerPath);
 			
 		} catch (Exception e) {
 			e.printStackTrace();

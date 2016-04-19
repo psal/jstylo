@@ -209,7 +209,7 @@ public class FullAPI {
 			ib.createTestingDataMapThreaded(); //creates test Instances (if present)
 			ib.killThreads();
 		} catch (Exception e) {
-			System.out.println("Failed to prepare instances");
+			LOG.info("Failed to prepare instances");
 			e.printStackTrace();
 		}
 
@@ -234,7 +234,7 @@ public class FullAPI {
 		try {
 			ib.applyInfoGain(n);
 		} catch (Exception e) {
-			System.out.println("Failed to apply infoGain");
+			LOG.info("Failed to apply infoGain");
 			e.printStackTrace();
 		}
 	}
@@ -271,7 +271,7 @@ public class FullAPI {
 		
 		//should not occur
 		default:
-			System.out.println("Unreachable. Something went wrong somewhere.");
+			LOG.info("Unreachable. Something went wrong somewhere.");
 			break;
 		}
 	}
@@ -496,19 +496,20 @@ public class FullAPI {
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Failed to intialize API, exiting...");
-            System.exit(1);
+            LOG.error("Failed to intialize API, exiting...",e);
         }
 
 		test.prepareInstances();
 		test.calcInfoGain();
 		//test.applyInfoGain(5);
 		test.run();
-		System.out.println(test.getStatString());
-		System.out.println(test.getReadableInfoGain(false));
-		System.out.println(test.getResults().toJson().toString());
-		//System.out.println(test.getClassificationAccuracy());
-		//System.out.println(test.getStatString());
+		LOG.info(test.getStatString());
+		//LOG.info(test.getReadableInfoGain(false));
+		//LOG.info(test.getResults().toJson().toString());
+		//LOG.info("Count for "+test.getTestingDataMap().getFeatures().get(0)+
+		//        " is "+test.getTestingDataMap().getDataMap().get("a").get("a_07.txt").getFeatureCountAtIndex(0));
+		//LOG.info(test.getClassificationAccuracy());
+		//LOG.info(test.getStatString());
 	}
 	
 }

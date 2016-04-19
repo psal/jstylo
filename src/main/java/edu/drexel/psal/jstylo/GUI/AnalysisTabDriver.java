@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import com.jgaap.generics.Document;
 
-import weka.classifiers.Evaluation;
-
 public class AnalysisTabDriver {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnalysisTabDriver.class);
@@ -733,7 +731,7 @@ public class AnalysisTabDriver {
 
 						// and save the cumulative accuracy for each run
 						cumulativeAccuracy += Double.parseDouble(jstylo.getClassificationAccuracy());
-						System.out.println("Cumulative acurracy after " + j + " is " + cumulativeAccuracy);
+						LOG.info("Cumulative acurracy after " + j + " is " + cumulativeAccuracy);
 					} catch (NumberFormatException e) {
 						
 					} catch (Exception e) {
@@ -743,7 +741,7 @@ public class AnalysisTabDriver {
 
 				// get the overall accuracy by dividing the cumulative by the #of folds
 				cumulativeAccuracy = cumulativeAccuracy / numFolds;
-				System.out.println(String.format("\nOverall Accuracy: %.4f \n", cumulativeAccuracy));
+				LOG.info(String.format("\nOverall Accuracy: %.4f \n", cumulativeAccuracy));
 				content += String.format("\nOverall Accuracy: %.4f \n", cumulativeAccuracy);
 				updateResultsView();
 
@@ -828,7 +826,8 @@ public class AnalysisTabDriver {
 				
 				if (main.lpfeAPI.isUsingCache())
 					main.lpfeAPI.validateCFDCache();
-				Chunker.chunkAllTrainDocs(main.lpfeAPI.getProblemSet());
+				if (main.lpfeAPI.isChunkingDocs())
+				    Chunker.chunkAllTrainDocs(main.lpfeAPI.getProblemSet());
 				
 				try {
 					main.lpfeAPI.extractEventsThreaded();
@@ -1058,7 +1057,7 @@ public class AnalysisTabDriver {
 						LOG.info("Starting cross validation...");
 						updateResultsView();
 						// run the experiment
-						Object results = main.analysisDriver.runCrossValidation(main.lpfeAPI.getTrainingDataMap(),
+						ExperimentResults results = main.analysisDriver.runCrossValidation(main.lpfeAPI.getTrainingDataMap(),
 								Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
 						main.setPreference("kFolds", main.analysisKFoldJTextField.getText());
 
@@ -1072,13 +1071,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						// print out results
-						Evaluation eval = (Evaluation) results;
-						content += eval.toSummaryString(false) + "\n";
-						try {
-							content += eval.toClassDetailsString() + "\n" + eval.toMatrixString() + "\n";
-						} catch (Exception e) {
-							
-						}
+						content += results.getStatisticsString()+results.getConfusionMatrixString() + "\n";
 
 						updateResultsView();
 					}

@@ -269,7 +269,7 @@ public class ProblemSet implements Serializable {
 			return true;
 		} else {
 			// currently does not support adding random set of training documents to an author with pre-existing training docs
-			System.out.println("Cannot add random set of training documents to pre-existing author document set.");
+			LOG.error("Cannot add random set of training documents to pre-existing author document set.");
 			return false;
 		}	
 	}

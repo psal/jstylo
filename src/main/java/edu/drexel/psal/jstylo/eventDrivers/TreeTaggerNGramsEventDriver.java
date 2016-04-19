@@ -10,6 +10,8 @@ import java.util.List;
 import org.annolab.tt4j.TokenHandler;
 import org.annolab.tt4j.TreeTaggerException;
 import org.annolab.tt4j.TreeTaggerWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jgaap.generics.Document;
 import com.jgaap.generics.Event;
@@ -25,7 +27,7 @@ import com.jgaap.generics.EventSet;
  */
 public class TreeTaggerNGramsEventDriver  extends EventDriver {
 	private static final long serialVersionUID = 1L;
-	
+	private static final Logger LOG = LoggerFactory.getLogger(TreeTaggerNGramsEventDriver.class);
 	@Override
 	public String displayName() {
 		return "TreeTagger (a language independent POS tagger) POS N-Grams";
@@ -66,7 +68,6 @@ public class TreeTaggerNGramsEventDriver  extends EventDriver {
 			tagger.setModel(taggerPath);
 			tagger.setHandler(new TokenHandler<String>() {
 				public void token(String token, String pos, String lemma) {
-					// System.out.println(token + "\t" + pos + "\t" + lemma);
 					if (!pos.equals("SENT"))
 						tagged.add(pos);
 				}
@@ -111,7 +112,7 @@ public class TreeTaggerNGramsEventDriver  extends EventDriver {
 				// in the "bin" subdirectory - in this example at "/opt/treetagger/bin/tree-tagger"
 		taggerHome = getParameter("taggerHome");
 		taggerPath = getParameter("taggerPath");
-		System.out.println("taggerHome->"+taggerHome);
+		LOG.info("taggerHome->"+taggerHome);
 				System.setProperty("treetagger.home", taggerHome);
 				tagger = new TreeTaggerWrapper<String>();
 				return tagger;

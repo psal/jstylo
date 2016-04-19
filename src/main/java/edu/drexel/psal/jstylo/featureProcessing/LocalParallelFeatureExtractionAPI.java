@@ -156,8 +156,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			try {
 				cfd = new CumulativeFeatureDriver(b.cfdPath);
 			} catch (Exception e) {
-				System.out.println("Failed to build cfd");
-				e.printStackTrace();
+				LOG.error("Failed to build cfd",e);
 			}
 		}
 		

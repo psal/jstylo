@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
 
 /**
@@ -30,6 +33,8 @@ import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
  */
 public class DataMap {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DataMap.class);
+    
     /**
      * A three-layered map containing all of the documents' feature information.
      * The Outer Map is a map of author names to document maps
@@ -208,8 +213,7 @@ public class DataMap {
             
             bw.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Failed to write out to CSV file.");
+            LOG.error("Failed to write out to CSV file.",e);
         }
     }
     
@@ -288,8 +292,7 @@ public class DataMap {
             
             br.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Failed to read in CSV file");
+            LOG.error("Failed to read in CSV file",e);
         }
         return map;
     }
