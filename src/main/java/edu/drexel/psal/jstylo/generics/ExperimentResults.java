@@ -138,19 +138,6 @@ public class ExperimentResults implements Serializable{
     }
     
     public JsonObject toJson(){
-<<<<<<< HEAD
-    	
-    	JsonObject experimentContentsJson = new JsonObject();
-    	
-    	JsonArray experimentContentsJsonArray = new JsonArray();
-    	
-    	for(DocResult docResult : experimentContents){
-    		experimentContentsJsonArray.add(docResult.toJson());
-    	}
-    	experimentContentsJson.add("experimentContents", experimentContentsJsonArray);
-
-        return experimentContentsJson;
-=======
         
         JsonObject experimentContentsJson = new JsonObject();
         
@@ -188,7 +175,6 @@ public class ExperimentResults implements Serializable{
         }
         
         return matrix;
->>>>>>> refs/remotes/tdutko/master
     }
     
     public String getConfusionMatrixString(){

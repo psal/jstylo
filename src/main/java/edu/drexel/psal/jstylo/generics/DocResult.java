@@ -104,26 +104,7 @@ public class DocResult implements Serializable{
         }
     }
     
-<<<<<<< HEAD
-        public JsonObject toJson(){
-    	
-    	JsonObject docResultJson = new JsonObject();
-    	docResultJson.addProperty("title", title);
-    	docResultJson.addProperty("actualAuthor", actualAuthor);
-    	
-    	JsonArray probabilityMapJsonArray = new JsonArray();
-    	
-    	
-    	for(String key : probabilityMap.keySet()){
-    		JsonObject tempJsonObject = new JsonObject();
-    		tempJsonObject.addProperty(key, probabilityMap.get(key));
-    		probabilityMapJsonArray.add(tempJsonObject);
-    	}
-  
-    	docResultJson.add("probabilityMap", probabilityMapJsonArray);
-    	
-    	return docResultJson;
-=======
+
     public JsonObject toJson() {
 
         JsonObject docResultJson = new JsonObject();
@@ -145,7 +126,6 @@ public class DocResult implements Serializable{
 
         docResultJson.add("probabilityMap", probabilityMapJsonArray);
         return docResultJson;
->>>>>>> refs/remotes/tdutko/master
     }
 
     @Override
