@@ -3,7 +3,9 @@ package edu.drexel.psal.jstylo.test;
 
 
 import com.jgaap.generics.Document;
-import edu.drexel.psal.jstylo.generics.ProblemSet;
+
+import edu.drexel.psal.jstylo.featureProcessing.ProblemSet;
+
 import java.io.*;
 import java.text.*;
 import java.util.*;

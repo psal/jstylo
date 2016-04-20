@@ -17,8 +17,8 @@ import org.apache.spark.sql.SQLContext;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 
-import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
 import edu.drexel.psal.jstylo.generics.DataMap;
+import edu.drexel.psal.jstylo.generics.FeatureData;
 
 public class SparkUtils {
 

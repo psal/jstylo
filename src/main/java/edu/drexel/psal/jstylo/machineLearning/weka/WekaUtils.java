@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.DocResult;
 import edu.drexel.psal.jstylo.generics.DocumentData;
 import edu.drexel.psal.jstylo.generics.ExperimentResults;
+import edu.drexel.psal.jstylo.generics.FeatureData;
 import weka.classifiers.Evaluation;
 import weka.classifiers.evaluation.NominalPrediction;
 import weka.core.Attribute;

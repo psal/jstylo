@@ -8,8 +8,7 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.drexel.psal.jstylo.generics.ProblemSet;
-
+import edu.drexel.psal.jstylo.featureProcessing.ProblemSet;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
 import weka.core.Instance;

@@ -22,7 +22,6 @@ import java.util.Map;
 import com.jgaap.generics.Document;
 
 import edu.drexel.psal.JSANConstants;
-import edu.drexel.psal.jstylo.generics.ProblemSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

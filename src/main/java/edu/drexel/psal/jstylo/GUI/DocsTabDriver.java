@@ -14,7 +14,7 @@ import javax.swing.tree.TreePath;
 
 import com.jgaap.generics.Document;
 
-import edu.drexel.psal.jstylo.generics.ProblemSet;
+import edu.drexel.psal.jstylo.featureProcessing.ProblemSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

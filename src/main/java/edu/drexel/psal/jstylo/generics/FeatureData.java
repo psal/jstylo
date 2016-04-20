@@ -1,4 +1,4 @@
-package edu.drexel.psal.jstylo.featureProcessing;
+package edu.drexel.psal.jstylo.generics;
 
 public class FeatureData {
 
