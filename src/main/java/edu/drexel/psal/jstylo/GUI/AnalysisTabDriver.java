@@ -7,6 +7,8 @@ import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAP
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.generics.ProblemSet;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
+import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
+import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.FullAPI.analysisType;
@@ -38,13 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jgaap.generics.Document;
-
-import weka.classifiers.Evaluation;
+import com.jgaap.generics.EventSet;
 
 public class AnalysisTabDriver {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnalysisTabDriver.class);
-    
+    private DataMap training;
+    private DataMap testing;
 	/*
 	 * ====================== Analysis tab listeners ======================
 	 */
@@ -52,7 +54,7 @@ public class AnalysisTabDriver {
 	/**
 	 * Initializes all listeners for the analysis tab.
 	 */
-	protected static void initListeners(final GUIMain main) {
+	protected void initListeners(final GUIMain main) {
 
 		// calculate InfoGain checkbox
 		// ===========================
@@ -127,55 +129,6 @@ public class AnalysisTabDriver {
 			}
 		});
 
-		// export training to ARFF button
-		// ==============================
-
-		main.analysisExportTrainToARFFJButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				LOG.info("'Training to ARFF...' button clicked on the analysis tab.");
-
-				// check if not null
-				if (main.lpfeAPI.getTrainingDataMap() == null) {
-					JOptionPane.showMessageDialog(main, "No analysis completed yet.", "Export Training Features Error",
-							JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-
-				// write to ARFF
-				JFileChooser save = new JFileChooser(main.defaultLoadSaveDir);
-				save.addChoosableFileFilter(new ExtFilter("Attribute-Relation File Format (*.arff)", "arff"));
-				int answer = save.showSaveDialog(main);
-
-				if (answer == JFileChooser.APPROVE_OPTION) {
-					File f = save.getSelectedFile();
-					String path = f.getAbsolutePath();
-					if (!path.toLowerCase().endsWith(".arff"))
-						path += ".arff";
-                    // TODO fix this--writing to ARFF no longer supported.
-                    // Remove button / print something out!
-                    boolean succeeded = true;
-                    try {
-                        main.lpfeAPI.getTrainingDataMap().saveDataMapToCSV(path);
-                    } catch (Exception e) {
-                        LOG.error("Failed opening " + path + " for writing", e);
-                        succeeded = false;
-                    }
-					if (succeeded) {
-						LOG.info("Saved training features to arff: " + path);
-						main.defaultLoadSaveDir = (new File(path)).getParent();
-					} else {
-						
-						JOptionPane.showMessageDialog(null, "Failed saving training features into:\n" + path,
-								"Export Training Features Failure", JOptionPane.ERROR_MESSAGE);
-					}
-				} else {
-					LOG.info("Export training features to ARFF canceled");
-				}
-			}
-		});
-
 		// export training to CSV button
 		// =============================
 
@@ -186,7 +139,7 @@ public class AnalysisTabDriver {
 				LOG.info("'Training to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.lpfeAPI.getTrainingDataMap() == null) {
+				if (training == null) {
 					JOptionPane.showMessageDialog(main, "No analysis completed yet.", "Export Training Features Error",
 							JOptionPane.ERROR_MESSAGE);
 					return;
@@ -205,7 +158,7 @@ public class AnalysisTabDriver {
 					
                     boolean succeeded = true;
                     try {
-                        main.lpfeAPI.getTrainingDataMap().saveDataMapToCSV(path);
+                        training.saveDataMapToCSV(path);
                     } catch (Exception e) {
                         LOG.error("Failed opening " + path + " for writing", e);
                         succeeded = false;
@@ -224,55 +177,6 @@ public class AnalysisTabDriver {
 			}
 		});
 
-		// export test to ARFF button
-		// ==========================
-
-		main.analysisExportTestToARFFJButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				LOG.info("'Test to ARFF...' button clicked on the analysis tab.");
-
-				// check if not null
-				if (main.lpfeAPI.getTestDataMap() == null) {
-					JOptionPane.showMessageDialog(main, "No analysis with test documents completed yet.",
-							"Export Test Features Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-
-				// write to ARFF
-				JFileChooser save = new JFileChooser(main.defaultLoadSaveDir);
-				save.addChoosableFileFilter(new ExtFilter("Attribute-Relation File Format (*.arff)", "arff"));
-				int answer = save.showSaveDialog(main);
-
-				if (answer == JFileChooser.APPROVE_OPTION) {
-					File f = save.getSelectedFile();
-					String path = f.getAbsolutePath();
-					if (!path.toLowerCase().endsWith(".arff"))
-						path += ".arff";
-
-                    // TODO fix this--writing to ARFF no longer supported.
-                    // Remove button / print something out!
-                    boolean succeeded = true;
-                    try {
-                        main.lpfeAPI.getTestDataMap().saveDataMapToCSV(path);
-                    } catch (Exception e) {
-                        LOG.error("Failed opening " + path + " for writing", e);
-                        succeeded = false;
-                    }
-                    if (succeeded) {
-						LOG.info("Saved test features to arff: " + path);
-						main.defaultLoadSaveDir = (new File(path)).getParent();
-					} else {
-						JOptionPane.showMessageDialog(null, "Failed saving test features into:\n" + path,
-								"Export Test Features Failure", JOptionPane.ERROR_MESSAGE);
-					}
-				} else {
-					LOG.info("Export training features to ARFF canceled");
-				}
-			}
-		});
-
 		// export test to CSV button
 		// =========================
 
@@ -283,7 +187,7 @@ public class AnalysisTabDriver {
 				LOG.info("'Test to CSV...' button clicked on the analysis tab.");
 
 				// check if not null
-				if (main.lpfeAPI.getTestDataMap() == null) {
+				if (testing == null) {
 					JOptionPane.showMessageDialog(main, "No analysis with test documents completed yet.",
 							"Export Test Features Error", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -302,7 +206,7 @@ public class AnalysisTabDriver {
 					
 					boolean succeeded = true;
 					try {
-					    main.lpfeAPI.getTestDataMap().saveDataMapToCSV(path);
+					    testing.saveDataMapToCSV(path);
 					} catch (Exception e){
 					    LOG.error("Failed opening " + path + " for writing", e);
 					    succeeded = false;
@@ -608,8 +512,6 @@ public class AnalysisTabDriver {
 		main.analysisNThreadJLabel.setEnabled(!lock);
 		main.analysisNThreadJTextField.setEnabled(!lock);
 
-		main.analysisExportTrainToARFFJButton.setEnabled(!lock);
-		main.analysisExportTestToARFFJButton.setEnabled(!lock);
 		main.analysisExportTrainToCSVJButton.setEnabled(!lock);
 		main.analysisExportTestToCSVJButton.setEnabled(!lock);
 
@@ -733,7 +635,7 @@ public class AnalysisTabDriver {
 
 						// and save the cumulative accuracy for each run
 						cumulativeAccuracy += Double.parseDouble(jstylo.getClassificationAccuracy());
-						System.out.println("Cumulative acurracy after " + j + " is " + cumulativeAccuracy);
+						LOG.info("Cumulative acurracy after " + j + " is " + cumulativeAccuracy);
 					} catch (NumberFormatException e) {
 						
 					} catch (Exception e) {
@@ -743,7 +645,7 @@ public class AnalysisTabDriver {
 
 				// get the overall accuracy by dividing the cumulative by the #of folds
 				cumulativeAccuracy = cumulativeAccuracy / numFolds;
-				System.out.println(String.format("\nOverall Accuracy: %.4f \n", cumulativeAccuracy));
+				LOG.info(String.format("\nOverall Accuracy: %.4f \n", cumulativeAccuracy));
 				content += String.format("\nOverall Accuracy: %.4f \n", cumulativeAccuracy);
 				updateResultsView();
 
@@ -815,23 +717,20 @@ public class AnalysisTabDriver {
 				main.lpfeAPI = tempBuilder;
 				main.lpfeAPI.setProblemSet(main.ps);
 				main.lpfeAPI.setLoadDocContents(false);
-
-				try {
-					main.lpfeAPI.setCumulativeFeatureDriver(new CumulativeFeatureDriver(main.cfd));
-				} catch (Exception e2) {
-					e2.printStackTrace();
-				}
-
+				
+				
 				// Extract the training information
 				content += getTimestamp() + " Extracting features from training corpus using sparse representation)...\n";
 				updateResultsView();
 				
 				if (main.lpfeAPI.isUsingCache())
-					main.lpfeAPI.validateCFDCache();
-				Chunker.chunkAllTrainDocs(main.lpfeAPI.getProblemSet());
+					main.lpfeAPI.validateCFDCache(main.cfd);
+				if (main.lpfeAPI.isChunkingDocs())
+				    Chunker.chunkAllTrainDocs(main.lpfeAPI.getProblemSet());
 				
+				List<List<EventSet>> eventList = null;
 				try {
-					main.lpfeAPI.extractEventsThreaded();
+					eventList = main.lpfeAPI.extractEventsThreaded(main.cfd);
 				} catch (Exception e) {
 					LOG.error("Could not extract features from training corpus!", e);
 					
@@ -848,8 +747,9 @@ public class AnalysisTabDriver {
 				updateResultsView();
 
 				// Cull the events
+				List<EventSet> relevantEvents = null;
 				try {
-					main.lpfeAPI.initializeRelevantEvents();
+					relevantEvents = main.lpfeAPI.getRelevantEvents(eventList,main.cfd);
 				} catch (Exception e1) {
 					LOG.error("Could not extract relevant events from training corpus!", e1);
 					e1.printStackTrace();
@@ -866,8 +766,9 @@ public class AnalysisTabDriver {
 				updateResultsView();
 
 				// build an attributes list from the events
+				List<String> features = null;
 				try {
-					main.lpfeAPI.initializeFeatureSet();
+					features = main.lpfeAPI.getFeatureList(eventList,relevantEvents,main.cfd);
 				} catch (Exception e1) {
 					LOG.error("Could not create attributes from training corpus!", e1);
 
@@ -883,8 +784,9 @@ public class AnalysisTabDriver {
 				updateResultsView();
 
 				// build the instances from the attributes
+				DataMap training = null;
 				try {
-					main.lpfeAPI.createTrainingDataMapThreaded();
+					training = main.lpfeAPI.createTrainingDataMapThreaded(eventList,relevantEvents,features,main.cfd);
 				} catch (Exception e) {
 					LOG.error("Could not create instances from training corpus!", e);
 					
@@ -900,11 +802,12 @@ public class AnalysisTabDriver {
 
 				// if we're to print out the feature vectors, do so
 				if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
-					content += "Training corpus features (ARFF):\n" + "================================\n"
-							+ main.lpfeAPI.getTrainingDataMap().toString() + "\n\n";
+					content += "Training corpus features:\n" + "================================\n"
+							+ training.toString() + "\n\n";
 					updateResultsView();
 				}
 
+				DataMap testing = null;
 				// if we're to extract testing data, do so
 				if (classifyTestDocs) {
 					LOG.info("Extracting features from test documents...");
@@ -919,7 +822,7 @@ public class AnalysisTabDriver {
 					
 					//create the instances
 					try {
-						main.lpfeAPI.createTestingDataMapThreaded();
+						testing = main.lpfeAPI.createTestingDataMapThreaded(eventList,relevantEvents,features,main.cfd);
 					} catch (Exception e) {
 						LOG.error("Could not create instances from test documents!", e);
 
@@ -934,8 +837,8 @@ public class AnalysisTabDriver {
 					content += getTimestamp() + " done!\n\n";
 					updateResultsView();
 					if (main.analysisOutputFeatureVectorJCheckBox.isSelected()) {
-						content += "Test documents features (ARFF):\n" + "===============================\n"
-								+ main.lpfeAPI.getTestDataMap().toString() + "\n\n";
+						content += "Test documents features:\n" + "===============================\n"
+								+ testing.toString() + "\n\n";
 						updateResultsView();
 					}
 				}
@@ -959,23 +862,23 @@ public class AnalysisTabDriver {
 					
 					try {
 						boolean apply = main.analysisApplyInfoGainJCheckBox.isSelected();
-						double[][] infoGain = main.lpfeAPI.calculateInfoGain();
+						double[][] infoGain = InfoGain.calcInfoGain(training);
 						
 						//if we're applying infoGain to cull the features, do so here
 						if (apply) {
-							main.lpfeAPI.applyInfoGain(igValue);
-							infoGain = main.lpfeAPI.calculateInfoGain();
+							InfoGain.applyInfoGain(infoGain,training,igValue);
+							infoGain = InfoGain.calcInfoGain(training);
 						}
 						
 						//print out the remaining features and their infoGain values.
-						Map<Integer,String> features = main.lpfeAPI.getTrainingDataMap().getFeatures();
+						Map<Integer,String> infoGainFeatures = training.getFeatures();
 						for (int i = 0; i < infoGain.length; i++) {
 							
 							//once we hit a "0" infogain value, stop printing the data.
 							if (infoGain[i][0]==0){ break; }
 							
 							int index = (int) Math.round(infoGain[i][1]);
-							content += String.format("> %-50s   %f\n", features.get(index),
+							content += String.format("> %-50s   %f\n", infoGainFeatures.get(index),
 									infoGain[i][0]);
 						}
 						updateResultsView();
@@ -1020,7 +923,7 @@ public class AnalysisTabDriver {
 
 						//perform the actual analysis
 						ExperimentResults results = 
-						        main.analysisDriver.classify(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap(), main.ps.getAllTestDocs());
+						        main.analysisDriver.classifyWithUnknownAuthors(training, testing, main.ps.getAllTestDocs());
 
 						content += getTimestamp() + " done!\n\n";
 						LOG.info("Done!");
@@ -1058,7 +961,7 @@ public class AnalysisTabDriver {
 						LOG.info("Starting cross validation...");
 						updateResultsView();
 						// run the experiment
-						Object results = main.analysisDriver.runCrossValidation(main.lpfeAPI.getTrainingDataMap(),
+						ExperimentResults results = main.analysisDriver.runCrossValidation(training,
 								Integer.parseInt(main.analysisKFoldJTextField.getText()), 0, 0);
 						main.setPreference("kFolds", main.analysisKFoldJTextField.getText());
 
@@ -1072,13 +975,7 @@ public class AnalysisTabDriver {
 						updateResultsView();
 
 						// print out results
-						Evaluation eval = (Evaluation) results;
-						content += eval.toSummaryString(false) + "\n";
-						try {
-							content += eval.toClassDetailsString() + "\n" + eval.toMatrixString() + "\n";
-						} catch (Exception e) {
-							
-						}
+						content += results.getStatisticsString()+results.getConfusionMatrixString() + "\n";
 
 						updateResultsView();
 					}
@@ -1109,7 +1006,7 @@ public class AnalysisTabDriver {
 						//create the evaluation
 						ExperimentResults results = null;
 						try {
-							results = main.analysisDriver.getTrainTestEval(main.lpfeAPI.getTrainingDataMap(), main.lpfeAPI.getTestDataMap());
+							results = main.analysisDriver.classifyWithKnownAuthors(training, testing);
 						} catch (Exception e) {
 							LOG.error("Failed to build train test eval with known authors!", e);
 							content += "Failed to build train test eval with known authors!";
@@ -1125,8 +1022,8 @@ public class AnalysisTabDriver {
 
 						//print results
 						try {
-							content += results.getStatisticsString() + "\n" + results.getAllDocumentResults() + "\n"
-									+ results.getConfusionMatrix() + "\n";
+							content += results.getStatisticsString() + "\n" + results.getAllDocumentResults(true) + "\n"
+									+ results.getConfusionMatrixString() + "\n";
 						} catch (Exception e) {
 							LOG.error("Failed to build the statistics string!", e);
 							content += "Failed to build the statistics string!";

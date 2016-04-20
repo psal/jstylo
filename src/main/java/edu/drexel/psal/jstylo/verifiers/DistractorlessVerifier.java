@@ -5,7 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
+import edu.drexel.psal.jstylo.machineLearning.weka.WekaUtils;
 import weka.classifiers.Evaluation;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -23,6 +28,8 @@ import weka.core.Instances;
  */
 public class DistractorlessVerifier extends Verifier{
 
+    private static final Logger LOG = LoggerFactory.getLogger(DistractorlessVerifier.class);
+    
     private static final long serialVersionUID = 1L;
     private String trainAuthor; //the author whose training data we are using to perform verification
 	private String analysisString; //string of data to be analyzed
@@ -42,17 +49,17 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param tri
 	 * @param tei
 	 */
-	public DistractorlessVerifier(Instances tri, Instances tei, boolean meta){
+	public DistractorlessVerifier(DataMap train, DataMap test, boolean meta){
 		//grab the instances
-		trainingInstances = tri;
-		testingInstances = tei;
+        trainingInstances = WekaUtils.instancesFromDataMap(train);
+        testingInstances = WekaUtils.instancesFromDataMap(test);
 		//and set class indicies
 		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
 		if (testingInstances != null){
 			testingInstances.setClassIndex(testingInstances.numAttributes()-1);
 		}
 		trainAuthor = trainingInstances.instance(0).attribute(trainingInstances.instance(0).classIndex()).value((int) trainingInstances.instance(0).classValue());
-		System.out.println("TrainAuthor: "+trainAuthor);
+		LOG.info("TrainAuthor: "+trainAuthor);
 		//initialize data structures
 		analysisString = "";
 		evaluations = new ArrayList<DistractorlessEvaluation>();
@@ -67,10 +74,10 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param meta
 	 * @param rate
 	 */
-	public DistractorlessVerifier(Instances tri, Instances tei, boolean meta, double rate){
+	public DistractorlessVerifier(DataMap train, DataMap test, boolean meta, double rate){
 		//grab the instances
-		trainingInstances = tri;
-		testingInstances = tei;
+        trainingInstances = WekaUtils.instancesFromDataMap(train);
+        testingInstances = WekaUtils.instancesFromDataMap(test);
 		//and set class indicies
 		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
 		if (testingInstances != null){
@@ -97,11 +104,11 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param tei
 	 * @param modifier
 	 */
-/*	public DistractorlessVerifier(Instances tri, Instances tei, double modifier, boolean meta) {
+	public DistractorlessVerifier(DataMap train, DataMap test, double modifier, boolean meta) {
 		
 		//grab the instances
-		trainingInstances = tri;
-		testingInstances = tei;
+		trainingInstances = WekaUtils.instancesFromDataMap(train);
+		testingInstances = WekaUtils.instancesFromDataMap(test);
 		//and set class indicies
 		trainingInstances.setClassIndex(trainingInstances.numAttributes()-1);
 		if (testingInstances != null){
@@ -117,7 +124,7 @@ public class DistractorlessVerifier extends Verifier{
 		//grab threshold modifier
 		thresholdModifier = modifier;
 		TPThresholdRate = Double.MIN_VALUE;
-	} */
+	} 
 	
 	public void setTestInstances(Instances tei){
 		testingInstances = tei;
@@ -139,15 +146,15 @@ public class DistractorlessVerifier extends Verifier{
 		Double thresh = 0.0;
 		// Create a list of evaluations--one for each testing instance
 		if (TPThresholdRate == Double.MIN_VALUE){
-			//System.out.println("Generating threshold based on average times a multiplier");
+			//LOG.info("Generating threshold based on average times a multiplier");
 			thresh = calculateDesiredThreshold(0.0); // grab the threshold from the analysis string
 			thresh = thresh + thresh * thresholdModifier; // apply the modifier
 		} else {
-			//System.out.println("Generating threshold bassed on desired true positive rate on known data");
+			//LOG.info("Generating threshold bassed on desired true positive rate on known data");
 			thresh = calculateDesiredThreshold(TPThresholdRate);
 		}
 		
-		//System.out.println("Thresh: "+thresh);
+		//LOG.info("Thresh: "+thresh);
 		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
@@ -161,7 +168,7 @@ public class DistractorlessVerifier extends Verifier{
 					.value((int) trainingInstances.instance(0).classValue())
 					+ "," + inst.attribute(inst.classIndex()).value((int) inst.classValue()) + "," + (distance);
 			docString+=",testDoc";
-			//System.out.println("Distance for test doc "+i+" = "+total/count);
+			//LOG.info("Distance for test doc "+i+" = "+total/count);
 			try {
 				// and create the evaluation with it via evalCSV
 				de.setResultEval(Distractorless.evalCSV(analysisString + docString, thresh, metaVerification));
@@ -205,7 +212,6 @@ public class DistractorlessVerifier extends Verifier{
 					s+="false negative\n\n";
 					fn++;
 				} else if (result == 3){
-					System.out.println();
 					s+="true negative\n\n";
 					tn++;
 				} else {
@@ -329,10 +335,10 @@ public class DistractorlessVerifier extends Verifier{
 			line = string.split(",");
 			double value = Double.parseDouble(line[line.length-1]);
 			/*if (value == Double.NaN){
-				System.out.println("NaN from: "+line);
+				LOG.info("NaN from: "+line);
 			} else {
-				System.out.println("In-process assessment: " + value);
-				System.out.println("Line: "+string);
+				LOG.info("In-process assessment: " + value);
+				LOG.info("Line: "+string);
 			}*/
 			if (value > max){
 				max = value;
@@ -366,8 +372,8 @@ public class DistractorlessVerifier extends Verifier{
 			} else {
 				Collections.sort(thresholds);
 				/*
-				System.out.println("To get at least a rate of: "+rate+" we need a threshold of: "+thresholds.get(goal));
-				System.out.println("For comparison, the average distance is: "+cumulative/count);
+				LOG.info("To get at least a rate of: "+rate+" we need a threshold of: "+thresholds.get(goal));
+				LOG.info("For comparison, the average distance is: "+cumulative/count);
 				*/
 				return thresholds.get(goal);
 			}
@@ -464,10 +470,10 @@ public class DistractorlessVerifier extends Verifier{
 					centroidIndex++;
 				} else {
 					/*if (Double.isNaN(b[i])){
-						System.out.println("b[i] is NaN at i: "+i);
+						LOG.info("b[i] is NaN at i: "+i);
 					}
 					if (Double.isNaN(a[centroidIndex])){
-						System.out.println("a[centroidIndex] is NaN at: "+centroidIndex);
+						LOG.info("a[centroidIndex] is NaN at: "+centroidIndex);
 					}*/
 					centroidIndex++;
 				}
@@ -491,8 +497,8 @@ public class DistractorlessVerifier extends Verifier{
 		Double normB = 0.0; //cumulative norm value for doc b
 		int n = a.length; //number of features
 		if (a.length != b.length){
-			//System.out.println("Vectors are of different length! This is going to get messy...");
-			//System.out.println("a length: "+a.length+" b length: "+b.length);
+			//LOG.info("Vectors are of different length! This is going to get messy...");
+			//LOG.info("a length: "+a.length+" b length: "+b.length);
 			//honestly, it might be better to just break it if this is wrong.
 			//this means that either one has more features or something of that ilk
 			if (b.length < a.length)

@@ -89,7 +89,7 @@ public class WekaAnalyzer extends Analyzer {
 	 * 		classification probability.
 	 */
 	@Override
-	public ExperimentResults classify(DataMap trainMap,	
+	public ExperimentResults classifyWithUnknownAuthors(DataMap trainMap,	
 			DataMap testMap, List<Document> unknownDocs) {
 	    documentTitles = testMap.getDocumentTitles();
 		trainingInstances = WekaUtils.instancesFromDataMap(trainMap);					
@@ -201,7 +201,7 @@ public class WekaAnalyzer extends Analyzer {
 	}
 	
 	@Override
-	public ExperimentResults getTrainTestEval(DataMap trainMap, DataMap testMap) throws Exception{
+	public ExperimentResults classifyWithKnownAuthors(DataMap trainMap, DataMap testMap) throws Exception{
 	    documentTitles = testMap.getDocumentTitles();
 	    Instances train = WekaUtils.instancesFromDataMap(trainMap);
 	    Instances test = WekaUtils.instancesFromDataMap(testMap);

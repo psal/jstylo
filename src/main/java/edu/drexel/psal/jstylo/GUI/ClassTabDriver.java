@@ -69,7 +69,6 @@ public class ClassTabDriver {
 				if (selectedNode.isLeaf()) {
 					LOG.info("Classifier selected in the available classifiers tree in the classifiers tab: "
 							+ selectedNode.toString());
-					System.out.println("Path:"+path);
 					// get classifier
 					String className = getClassNameFromPath(path).substring(5);
 					tmpAnalyzer = null;

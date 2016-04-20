@@ -1,17 +1,22 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver;
 import edu.drexel.psal.jstylo.featureProcessing.LocalParallelFeatureExtractionAPI;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
+import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
+import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
 
 /**
- * 
  * JStylo fullAPI Version 1.0<br>
  * 
  * A simple API for the inner JStylo functionality.<br>
@@ -53,6 +58,8 @@ public class FullAPI {
 		private Preferences p = null;
 		private boolean useCache = false;
 		private boolean chunkDocs = false;
+		private boolean applyInfoGain = false;
+		private int featuresToKeep = 500;
 		
 		public Builder(){
 			
@@ -66,6 +73,16 @@ public class FullAPI {
 		public Builder psPath(String psXML){
 			psXMLPath = psXML;
 			return this;
+		}
+		
+		public Builder setApplyInfoGain(boolean apply){
+		    applyInfoGain = apply;
+		    return this;
+		}
+		
+		public Builder setFeaturesToKeep(int numFeatures){
+		    featuresToKeep = numFeatures;
+		    return this;
 		}
 		
 		public Builder cfdPath(String cfdXML){
@@ -145,7 +162,12 @@ public class FullAPI {
 	int numFolds; //folds for cross val (defaults to 10)
 	String verifierName; //verifier to use (can't create it right away as most need parameters
 	Verifier verifier; //the verifier object
-	
+	CumulativeFeatureDriver cfd;
+	double[][] featureWeights;
+	int numFeaturesToKeep;
+	boolean applyInfoGain;
+	DataMap training;
+	DataMap testing;
 	
 	//Result Data
 	ExperimentResults experimentResults;
@@ -170,16 +192,15 @@ public class FullAPI {
 			ib.setProblemSet(new ProblemSet(b.psXMLPath,
 					b.loadDocContents));
 		
-		if (b.cfdXMLPath==null)
-			ib.setCumulativeFeatureDriver(b.cfd);
-		else {
-			try {
-				ib.setCumulativeFeatureDriver(new CumulativeFeatureDriver(b.cfdXMLPath));
-			} catch (Exception e) {
-				LOG.error("Failed to build cfd from xml path: "+b.cfdXMLPath,e);
-				e.printStackTrace();
-			}
-		}
+		if (b.cfdXMLPath==null) {
+		    cfd = b.cfd;
+        } else {
+            try {
+                cfd = new CumulativeFeatureDriver(b.cfdXMLPath);
+            } catch (Exception e) {
+                LOG.error("Failed to build cfd", e);
+            }
+        }
 		
 		ib.setUseCache(b.useCache);
 		ib.setLoadDocContents(b.loadDocContents);
@@ -188,6 +209,8 @@ public class FullAPI {
 		selected = b.type;
 		numFolds = b.numFolds;
 		analysisDriver = b.analyzer;
+		numFeaturesToKeep = b.featuresToKeep;
+		applyInfoGain = b.applyInfoGain;
 	}
 	
 	///////////////////////////////// Methods
@@ -199,17 +222,22 @@ public class FullAPI {
 
 		try {
 			if (ib.isUsingCache())
-				ib.validateCFDCache();
+				ib.validateCFDCache(cfd);
 			if (ib.isChunkingDocs())
 			    Chunker.chunkAllTrainDocs(ib.getProblemSet());
-			ib.extractEventsThreaded(); //extracts events from documents
-			ib.initializeRelevantEvents(); //creates the List<EventSet> to pay attention to
-			ib.initializeFeatureSet(); //creates the attribute list to base the Instances on
-			ib.createTrainingDataMapThreaded(); //creates train Instances
-			ib.createTestingDataMapThreaded(); //creates test Instances (if present)
+			List<List<EventSet>> eventList = ib.extractEventsThreaded(cfd); //extracts events from documents
+			List<EventSet> relevantEvents = ib.getRelevantEvents(eventList,cfd); //creates the List<EventSet> to pay attention to
+			List<String> features = ib.getFeatureList(eventList,relevantEvents, cfd); //creates the attribute list to base the Instances on
+			training = ib.createTrainingDataMapThreaded(eventList,relevantEvents,features,cfd); //creates train Instances
+			testing = ib.createTestingDataMapThreaded(eventList,relevantEvents,features,cfd); //creates test Instances (if present)
+			if (applyInfoGain){
+			    applyInfoGain(training);
+			    applyInfoGain(testing);
+			}
+			    
 			ib.killThreads();
 		} catch (Exception e) {
-			System.out.println("Failed to prepare instances");
+			LOG.info("Failed to prepare instances");
 			e.printStackTrace();
 		}
 
@@ -220,7 +248,7 @@ public class FullAPI {
 	 */
 	public void calcInfoGain(){
 		try {
-			ib.calculateInfoGain(); //delegate to underlying Instances Builder
+			featureWeights = InfoGain.calcInfoGain(training); //delegate to underlying Instances Builder
 		} catch (Exception e) {
 			LOG.error("Failed to calculate infoGain",e);
 		} 
@@ -230,11 +258,13 @@ public class FullAPI {
 	 * Applies infoGain to the training and testing instances
 	 * @param n the number of features/attributes to keep
 	 */
-	public void applyInfoGain(int n){
+	private void applyInfoGain(DataMap data){
+	    if (featureWeights == null)
+	        calcInfoGain();
 		try {
-			ib.applyInfoGain(n);
+			InfoGain.applyInfoGain(featureWeights,data,numFeaturesToKeep);
 		} catch (Exception e) {
-			System.out.println("Failed to apply infoGain");
+			LOG.info("Failed to apply infoGain");
 			e.printStackTrace();
 		}
 	}
@@ -249,21 +279,19 @@ public class FullAPI {
 	
 		//do a cross val
 		case CROSS_VALIDATION:
-			experimentResults = analysisDriver.runCrossValidation(ib.getTrainingDataMap(), numFolds, 0);
+			experimentResults = analysisDriver.runCrossValidation(training, numFolds, 0);
 			break;
 
 		// do a train/test
 		case TRAIN_TEST_UNKNOWN:
-		    experimentResults = analysisDriver.classify(ib.getTrainingDataMap(), ib.getTestDataMap(), ib.getProblemSet().getAllTestDocs());
+		    experimentResults = analysisDriver.classifyWithUnknownAuthors(training, testing, ib.getProblemSet().getAllTestDocs());
 			break;
 
 		//do a train/test where we know the answer and just want statistics
 		case TRAIN_TEST_KNOWN:
 			ib.getProblemSet().removeAuthor("_Unknown_");
 			try {
-				DataMap train = ib.getTrainingDataMap();
-				DataMap test = ib.getTestDataMap();
-				experimentResults = analysisDriver.getTrainTestEval(train,test);
+				experimentResults = analysisDriver.classifyWithKnownAuthors(training,testing);
 			} catch (Exception e) {
 				LOG.error("Failed to build trainTest Evaluation",e);
 			}
@@ -271,7 +299,7 @@ public class FullAPI {
 		
 		//should not occur
 		default:
-			System.out.println("Unreachable. Something went wrong somewhere.");
+			LOG.info("Unreachable. Something went wrong somewhere.");
 			break;
 		}
 	}
@@ -281,25 +309,16 @@ public class FullAPI {
 	 * right now both verifiers only need a single double arg, so this parameter works out.
 	 * Might need to adjust this to add more verifiers, however.
 	 */
-	//TODO this'll need to be redone to not use Weka classes
-	/*
 	public void verify(double arg){
-		if (verifierName.equalsIgnoreCase("ThresholdVerifier")){
-			List<String> authors = new ArrayList<String>();
-			for (String s : ib.getProblemSet().getAuthors()){
-				authors.add(s);
-			}
-			Instances tests = WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap());
-			for (int i = 0; i < tests.numInstances(); i++){
-				Instance inst = tests.instance(i);
-				verifier = new ThresholdVerifier(analysisDriver.getClassifier(),inst,arg,authors);
-			}
-		} else if (verifierName.equalsIgnoreCase("Distractorless")) {
-			verifier = new DistractorlessVerifier(WekaAnalyzer.instancesFromDataMap(ib.getTrainingDataMap()),WekaAnalyzer.instancesFromDataMap(ib.getTestDataMap()),true,arg);
+		if (verifierName.equalsIgnoreCase("Distractorless")) {
+			verifier = new DistractorlessVerifier(training,testing,true,arg);
+		} else {
+		    LOG.error("Specified Verifier "+verifierName+" is not yet supported. Skipping verification...");
+		    return;
 		}
 		verifier.verify();
 	}
-	*/
+	
 	
 	///////////////////////////////// Setters/Getters
 	
@@ -328,7 +347,7 @@ public class FullAPI {
 	 * @param insts the Instances object to use as training data
 	 */
 	public void setTrainingDataMap(DataMap train){
-		ib.setTrainingDataMap(train);
+		training = train;
 	}
 	
 	/**
@@ -336,7 +355,7 @@ public class FullAPI {
 	 * @param insts the Instances object to use as testing data
 	 */
 	public void setTestingDataMap(DataMap test){
-		ib.setTestingDataMap(test);
+		testing = test;
 	}
 	
 	/**
@@ -375,21 +394,22 @@ public class FullAPI {
 	 * @return the Instances object describing the training documents
 	 */
 	public DataMap getTrainingDataMap(){
-		return ib.getTrainingDataMap();
+		return training;
 	}
 	
 	/**
 	 * @return the Instances object describing the test documents
 	 */
 	public DataMap getTestingDataMap(){
-		return ib.getTestDataMap();
+		return testing;
 	}
 	
 	/**
 	 * @return the infoGain data (not in human readable form lists indices and usefulness)
+	 * @throws Exception 
 	 */
-	public double[][] getInfoGain(){
-		return ib.getInfoGain();
+	public double[][] getInfoGain(DataMap data) throws Exception{
+		return InfoGain.calcInfoGain(data);
 	}
 	
 	/**
@@ -415,8 +435,8 @@ public class FullAPI {
 		
 		//initialize the string and infoGain
 		String infoString = ">-----InfoGain information: \n\n";
-		DataMap trainingDataMap = ib.getTrainingDataMap();
-		double[][] infoGain = ib.getInfoGain();
+		DataMap trainingDataMap = training;
+		double[][] infoGain = featureWeights;
 		
 		for (int i = 0; i<infoGain.length; i++){
 			if (!showZeroes && (infoGain[i][0]==0))
@@ -445,12 +465,27 @@ public class FullAPI {
     public String getStatString() {
         ExperimentResults eval = getResults();
         String resultsString = "";
+        //change the experiment header
+        if (selected.equals(analysisType.CROSS_VALIDATION))
+            resultsString+="[[Showing results for Cross Validation Experiment]]\n";
+        else if (selected.equals(analysisType.TRAIN_TEST_KNOWN)) {
+            resultsString+="[[Showing results for a Train-Test with Known Authors Experiment]]\n";
+        } else if (selected.equals(analysisType.TRAIN_TEST_UNKNOWN)){
+            resultsString+="[[Showing results for a Train-Test with Unknown Authors Experiment]]\n";
+            resultsString+=eval.getSimpleResults();
+            return resultsString; //return this one early as we don't want to add the stat string to it since it'd be misleading
+        } else {
+            resultsString+="[[Showing results for an unidentifiable experiment... how did you get here?]]\n";
+        }
+            
         resultsString += eval.getStatisticsString() + "\n";
-        resultsString += eval.getAllDocumentResults() + "\n";
-        resultsString += eval.getConfusionMatrix() + "\n";
-        resultsString += eval.getAllDocumentResultsVerbose();
+        if (selected.equals(analysisType.CROSS_VALIDATION))
+            resultsString += eval.getConfusionMatrixString();
+        else
+            resultsString += eval.getAllDocumentResults(true) + "\n";
         return resultsString;
 	}
+
     
 	/**
 	 * @return The accuracy of the given test in percentage format
@@ -464,30 +499,9 @@ public class FullAPI {
 	}
 	
 	public CumulativeFeatureDriver getCFD(){
-		return ib.getCFD();
+		return cfd;
 	}
 	
-	///////////////////////////////// Main method for testing purposes
-	//FIXME
-	/*
-	 * So right now there's 2 major bugs--
-	 * 
-	 * 1: Crossvalidation--weka seems to shuffle instances when cross-validating. 
-	 *     This causes document titles to be improperly tracked throughout the whole process.
-	 *     
-	 *     Fix idea--do cross validation "manually"--randomly determine which docs to use as testing ourselves,
-	 *     keeping track of it as we go. Use the source instances to break apart and create new train test and accumulate
-	 *     results manually.
-	 *     Note: this is purely incorrect in terms of labels. The overall statistics produced is correct, just the wrong doc titles are being assigned.
-	 *     
-	 * 2: Testing
-	 *     Train/Test on known isn't working. More difficult to test due to replacing old classification. Seems to be present in old version.
-	 *     Basically results are incredibly bad. 
-	 *     It looks like testing author is being inaccurately assigned. As well as title.
-	 *     Fixed /A/ problem. Now get exceptions. Much better. 
-	 * 
-	 * 
-	 */
 	public static void main(String[] args){
 	    
 	    FullAPI test = null;
@@ -495,23 +509,27 @@ public class FullAPI {
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("./jsan_resources/problem_sets/drexel_1_train_test.xml")
+                    .psPath("jsan_resources/problem_sets/drexel_1_train_test.xml")
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(1).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
+                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
+                    .loadDocContents(true)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Failed to intialize API, exiting...");
-            System.exit(1);
+            LOG.error("Failed to intialize API, exiting...",e);
         }
 
 		test.prepareInstances();
-		//test.calcInfoGain();
+		test.calcInfoGain();
 		//test.applyInfoGain(5);
 		test.run();
-		System.out.println(test.getStatString());
-		//System.out.println(test.getReadableInfoGain(false));
-		//System.out.println(test.getClassificationAccuracy());
-		//System.out.println(test.getStatString());
+		LOG.info(test.getStatString());
+		LOG.info(test.getReadableInfoGain(false));
+		//LOG.info(test.getResults().toJson().toString());
+		//LOG.info("Count for "+test.getTestingDataMap().getFeatures().get(0)+
+		//        " is "+test.getTestingDataMap().getDataMap().get("a").get("a_07.txt").getFeatureCountAtIndex(0));
+		//LOG.info(test.getClassificationAccuracy());
+		//LOG.info(test.getStatString());
 	}
+	
 }

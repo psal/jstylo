@@ -3,6 +3,9 @@ package edu.drexel.psal.jstylo.eventDrivers;
 import java.io.*;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgaap.eventDrivers.NaiveWordEventDriver;
 import com.jgaap.generics.*;
 
@@ -43,6 +46,7 @@ import edu.drexel.psal.jstylo.eventCullers.FrequencyEventsExtended;
  */
 public class ListEventDriver extends EventDriver {
 	private static final long serialVersionUID = 1L;
+	private static final Logger LOG = LoggerFactory.getLogger(ListEventDriver.class);
 	@Override
 	public String displayName() {
 		return "List-based event driver";
@@ -142,7 +146,6 @@ public class ListEventDriver extends EventDriver {
 				try {
 					try {
 						// look in file system
-						//System.out.println(filename);
 						br = new BufferedReader(new FileReader(filename));
 					} catch (IOException e) {
 						// look in resources
@@ -155,9 +158,7 @@ public class ListEventDriver extends EventDriver {
 					}
 
 				} catch (IOException e) {
-					System.err.println("Error reading file "+filename);
-					e.printStackTrace();
-					
+					LOG.error("Error reading file "+filename,e);
 				} finally {
 					// if the file opened okay, make sure we close it
 					if (br != null) {

@@ -19,6 +19,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
 * This code was edited or generated using CloudGarden's Jigloo
 * SWT/Swing GUI Builder, which is free for non-commercial
@@ -39,10 +42,7 @@ import javax.swing.tree.*;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class GUIMain extends javax.swing.JFrame {
     
-    
-	/**
-	 * 
-	 */
+    private static final Logger LOG = LoggerFactory.getLogger(GUIMain.class);
 	private static final long serialVersionUID = 1L;
 
 	// main instance
@@ -181,7 +181,6 @@ public class GUIMain extends javax.swing.JFrame {
 	protected DefaultComboBoxModel classVerifListModel;
 	protected JTree verifJTree;
 	protected JList verifJList;
-	//TODO
 	
 	// Analysis tab
 	protected JLabel analysisTypeJLabel;
@@ -232,9 +231,7 @@ public class GUIMain extends javax.swing.JFrame {
 	protected JLabel analysisConfigJLabel;
 	
 	//Post-Analysis Actions
-	protected JButton analysisExportTestToARFFJButton;
 	protected JButton analysisExportTestToCSVJButton;
-	protected JButton analysisExportTrainToARFFJButton;
 	protected JButton analysisExportTrainToCSVJButton;
 	protected JLabel analysisPostAnalysisJLabel;
 	
@@ -247,7 +244,7 @@ public class GUIMain extends javax.swing.JFrame {
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 				} catch (Exception e) {
-					System.err.println("Look-and-Feel error!");
+					LOG.error("Look-and-Feel error!");
 				}
 				inst = new GUIMain();
 				inst.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -1394,7 +1391,7 @@ public class GUIMain extends javax.swing.JFrame {
 							analysisOutputFeatureVectorJCheckBox.setToolTipText("Display the data collected from each document for each feature.");
 							analysisOutputFeatureVectorJCheckBox.setSelected(getBoolPreference("printVectors"));
 							options.add(analysisOutputFeatureVectorJCheckBox);
-							analysisOutputFeatureVectorJCheckBox.setText("Output feature vectors (ARFF format)");
+							analysisOutputFeatureVectorJCheckBox.setText("Output feature vectors");
 						}
 						{	
 							analysisCalcInfoGainJCheckBox = new JCheckBox();
@@ -1494,13 +1491,8 @@ public class GUIMain extends javax.swing.JFrame {
 							options.add(trainButtons);
 							{
 								trainButtons.add(new JLabel("Training corpus features:"));
-								JPanel buttons = new JPanel(new GridLayout(1,2,cellPadding,cellPadding));
+								JPanel buttons = new JPanel(new GridLayout(1,1,cellPadding,cellPadding));
 								trainButtons.add(buttons);
-								{
-									analysisExportTrainToARFFJButton = new JButton();
-									buttons.add(analysisExportTrainToARFFJButton);
-									analysisExportTrainToARFFJButton.setText("Save to ARFF...");
-								}
 								{
 									analysisExportTrainToCSVJButton = new JButton();
 									buttons.add(analysisExportTrainToCSVJButton);
@@ -1511,13 +1503,8 @@ public class GUIMain extends javax.swing.JFrame {
 							options.add(testButtons);
 							{
 								testButtons.add(new JLabel("Test documents features:"));
-								JPanel buttons = new JPanel(new GridLayout(1,2,cellPadding,cellPadding));
+								JPanel buttons = new JPanel(new GridLayout(1,1,cellPadding,cellPadding));
 								testButtons.add(buttons);
-								{
-									analysisExportTestToARFFJButton = new JButton();
-									buttons.add(analysisExportTestToARFFJButton);
-									analysisExportTestToARFFJButton.setText("Save to ARFF...");
-								}
 								{
 									analysisExportTestToCSVJButton = new JButton();
 									buttons.add(analysisExportTestToCSVJButton);
@@ -1621,7 +1608,8 @@ public class GUIMain extends javax.swing.JFrame {
 			DocsTabDriver.initListeners(this);
 			FeaturesTabDriver.initListeners(this);
 			ClassTabDriver.initListeners(this);
-			AnalysisTabDriver.initListeners(this);
+			AnalysisTabDriver atd = new AnalysisTabDriver();
+			atd.initListeners(this);
 
 		} catch (Exception e) {
 			e.printStackTrace();

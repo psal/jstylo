@@ -1,7 +1,11 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
@@ -10,13 +14,15 @@ import com.google.gson.JsonObject;
  * 
  * @author Travis Dutko
  */
-public class DocResult {
+public class DocResult implements Serializable{
     
+    private static final long serialVersionUID = 1L;
     private String title;
     private String actualAuthor;
     private String suspectedAuthor;
     private Map<String,Double> probabilityMap;
-    private final String defaultUnknown = "_Unknown_";
+    private List<String> potentialAuthors;
+    public static final String defaultUnknown = "_Unknown_";
     
     public DocResult(String title, String actual){
         this.title = title;
@@ -44,10 +50,14 @@ public class DocResult {
      * Use this OR assignProbabilitiesAndDesignateSuspect
      * @param suspect
      */
-    public void designateSuspect(String suspect){
+    public void designateSuspect(String suspect, List<String> suspectSet){
         suspectedAuthor = suspect;
-        probabilityMap.clear();
-        probabilityMap = null;
+        if (probabilityMap != null){
+            probabilityMap.clear();
+            probabilityMap = null;
+        }
+        potentialAuthors = suspectSet;
+        
     }
     
     /**
@@ -80,9 +90,21 @@ public class DocResult {
     }
     
     public Map<String,Double> getProbabilities(){
-        return probabilityMap;
+        if (probabilityMap != null)
+            return probabilityMap;
+        else {
+            Map<String,Double> probs = new HashMap<String,Double>();
+            for (String suspect : potentialAuthors){
+                if (suspect.equals(suspectedAuthor))
+                    probs.put(suspect, 1.0);
+                else
+                    probs.put(suspect, 0.0);
+            }
+            return probs;
+        }
     }
     
+<<<<<<< HEAD
         public JsonObject toJson(){
     	
     	JsonObject docResultJson = new JsonObject();
@@ -101,8 +123,31 @@ public class DocResult {
     	docResultJson.add("probabilityMap", probabilityMapJsonArray);
     	
     	return docResultJson;
+=======
+    public JsonObject toJson() {
+
+        JsonObject docResultJson = new JsonObject();
+        docResultJson.addProperty("title", title);
+        docResultJson.addProperty("actualAuthor", actualAuthor);
+
+        JsonArray probabilityMapJsonArray = new JsonArray();
+
+        if (probabilityMap != null) {
+            for (String key : probabilityMap.keySet()) {
+                JsonObject tempJsonObject = new JsonObject();
+                tempJsonObject.addProperty("Author", key);
+                tempJsonObject.addProperty("Probability", probabilityMap.get(key));
+                probabilityMapJsonArray.add(tempJsonObject);
+            }
+        } else {
+            docResultJson.addProperty("suspectedAuthor", suspectedAuthor);
+        }
+
+        docResultJson.add("probabilityMap", probabilityMapJsonArray);
+        return docResultJson;
+>>>>>>> refs/remotes/tdutko/master
     }
-    
+
     @Override
     public String toString(){
         return String.format("For document %s, the true author is %s. After analysis, our top suspect is %s with a %.2f likelihood\n",

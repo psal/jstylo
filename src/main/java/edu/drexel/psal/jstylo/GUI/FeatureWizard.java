@@ -12,6 +12,9 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.tree.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgaap.generics.*;
 
 /**
@@ -28,6 +31,7 @@ import com.jgaap.generics.*;
 */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class FeatureWizard extends javax.swing.JFrame {
+    private static final Logger LOG = LoggerFactory.getLogger(FeatureWizard.class);
 	private static final long serialVersionUID = 1L;
 	protected Font defaultLabelFont = new Font("Verdana",0,14); 
 	protected static int cellPadding = 5;
@@ -130,7 +134,7 @@ public class FeatureWizard extends javax.swing.JFrame {
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 				} catch (Exception e) {
-					System.err.println("Look-and-Feel error!");
+					LOG.error("Look-and-Feel error!",e);
 				}
 				FeatureWizard inst = new FeatureWizard(new GUIMain());
 				inst.setLocationRelativeTo(null);

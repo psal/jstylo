@@ -69,7 +69,6 @@ public class TreeTaggerEventDriver  extends EventDriver {
 		char[] text = doc.getProcessedText();
 		String stringText = new String(text);
 		
-		//System.out.println(doc.getFilePath());
 		// initialize tagger and return empty event set if encountered a problem
 		
 		if (tagger == null) {
@@ -80,7 +79,6 @@ public class TreeTaggerEventDriver  extends EventDriver {
 			tagger.setModel(taggerPath);
 			tagger.setHandler(new TokenHandler<String>() {
 				public void token(String token, String pos, String lemma) {
-					// System.out.println(token + "\t" + pos + "\t" + lemma);
 					// if(!pos.equals("SENT"))
 					es.addEvent(new Event(pos));
 				}

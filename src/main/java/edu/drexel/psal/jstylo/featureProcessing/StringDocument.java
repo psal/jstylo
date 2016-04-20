@@ -58,6 +58,6 @@ public class StringDocument extends Document
 	/** Returns the full filepath of the current document **/
 	@Override
 	public String getFilePath() {
-		return "";
+		return "Loaded in Memory-No path";
 	}
 }

@@ -5,6 +5,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgaap.generics.*;
 
 import edu.drexel.psal.jstylo.eventCullers.FrequencyEventsExtended;
@@ -44,6 +47,7 @@ import edu.drexel.psal.jstylo.eventCullers.FrequencyEventsExtended;
  */
 public class ListRegexpEventDriver extends EventDriver {
 	private static final long serialVersionUID = 1L;
+	private static final Logger LOG = LoggerFactory.getLogger(ListRegexpEventDriver.class);
 	@Override
 	public String displayName() {
 		return "Regular Expression List-based event driver";
@@ -134,8 +138,7 @@ public class ListRegexpEventDriver extends EventDriver {
 					}
 
 				} catch (IOException e) {
-					System.err.println("Error reading file "+filename);
-					e.printStackTrace();
+					LOG.error("Error reading file "+filename,e);
 					
 				} finally {
 					// if the file opened okay, make sure we close it

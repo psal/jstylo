@@ -2,6 +2,9 @@ package edu.drexel.psal.jstylo.canonicizers;
 
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgaap.generics.Canonicizer;
 
 /** 
@@ -9,7 +12,7 @@ import com.jgaap.generics.Canonicizer;
  * Special keys are represented by unique Greek letters.
  */
 public class ApplySpecialKeys extends Canonicizer {
-
+    private static final Logger LOG = LoggerFactory.getLogger(ApplySpecialKeys.class);
 	private static final long serialVersionUID = 1L;
 	private static char CAPSLOCK;
 	private static char ENTER;
@@ -273,7 +276,7 @@ public class ApplySpecialKeys extends Canonicizer {
 			}
 			if (pos > len)
 			{
-				System.out.println(">>> pos: " + pos + ", len: " + len + ", c: " + c);
+				LOG.info(">>> pos: " + pos + ", len: " + len + ", c: " + c);
 			}
 		}
 

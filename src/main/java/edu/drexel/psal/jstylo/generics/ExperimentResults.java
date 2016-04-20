@@ -1,6 +1,8 @@
 package edu.drexel.psal.jstylo.generics;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.gson.JsonArray;
@@ -15,9 +17,11 @@ import com.google.gson.JsonObject;
  * 
  * @author Travis Dutko
  */
-public class ExperimentResults {
+public class ExperimentResults implements Serializable{
     
+    private static final long serialVersionUID = 1L;
     private List<DocResult> experimentContents;
+    private List<String> authorList; //for use with confusion matrix
     
     public ExperimentResults(){
         experimentContents = new ArrayList<DocResult>();
@@ -45,27 +49,61 @@ public class ExperimentResults {
         return correct/(correct+incorrect);
     }
     
+    public int getCorrectDocCount(){
+        int correct = 0;
+        for (DocResult result : experimentContents){
+            if (result.getActualAuthor().equalsIgnoreCase(result.getSuspectedAuthor()))
+                correct += 1.0;
+        }
+        return correct;
+    }
+    
     //expand this as we add more relevant stats to the processing
     public String getStatisticsString(){
         String statString = "";
-        statString+=String.format("Correctly classified %.2f percent of all documents\n",getTruePositiveRate()*100);
+        statString+=String.format("Correctly Identified %d out of %d documents\n", getCorrectDocCount(),experimentContents.size());
+        statString+="\n((Calculated Statistics))\n";
+        statString+=String.format("True Positive Percentage: %.2f\n",getTruePositiveRate()*100);
         return statString;
     }
     
-    //TODO switch on/off actual column based on if actual is known
-    //TODO add some sort of quickly visible "correct!" mark or column
-    public String getAllDocumentResults(){
-        String results = String.format("%-14s | %-14s | %-14s | %-14s |\n","Document Title","Actual","Suspect","Probability");
+    public String getSimpleResults(){
+        String results = "((Simple Document Results))\n";
+        results += String.format("%-14s | %-14s |\n","Document Title","Top Suspect");
         for (DocResult result : experimentContents){
-            results+=String.format("%-14s | %-14s | %-14s | %-14s |\n", 
-                    result.getTitle(),result.getActualAuthor(),result.getSuspectedAuthor(),
-                        String.format("%.2f", result.getProbabilities().get(result.getSuspectedAuthor())));
+            
+            results+=String.format("%-14s | %-14s |\n", 
+                    result.getTitle(),result.getSuspectedAuthor());
+            
         }
         return results;
     }
     
+    public String getAllDocumentResults(boolean known){
+        
+        String results = "((Individual Document Results))\n";
+        results += String.format("%-14s | %-14s | %-14s | %-14s |\n","Document Title","Actual","Top Suspect","Probability");
+        for (DocResult result : experimentContents){
+            String probString = String.format("%.2f", result.getProbabilities().get(result.getSuspectedAuthor()));
+            
+            results+=String.format("%-14s | %-14s | %-14s | %-14s |", 
+                    result.getTitle(),result.getActualAuthor(),result.getSuspectedAuthor(),probString);
+            
+            if (result.getActualAuthor().equals(result.getSuspectedAuthor()) && known)
+                results += " Correct!\n";
+            else if (known)
+                results +=" Incorrect...\n";
+            else if (!known)
+                results+="\n";
+        }
+        return results;
+    }
+    
+    
     public String getAllDocumentResultsVerbose(){
-        String results = "Document Title |";
+        
+        String results = "((Verbose Document Results))\n";
+        results += "Document Title |";
         
         //first column has all of the author names
         for (String author : experimentContents.get(0).getProbabilities().keySet()){
@@ -100,6 +138,7 @@ public class ExperimentResults {
     }
     
     public JsonObject toJson(){
+<<<<<<< HEAD
     	
     	JsonObject experimentContentsJson = new JsonObject();
     	
@@ -111,12 +150,69 @@ public class ExperimentResults {
     	experimentContentsJson.add("experimentContents", experimentContentsJsonArray);
 
         return experimentContentsJson;
+=======
+        
+        JsonObject experimentContentsJson = new JsonObject();
+        
+        JsonArray experimentContentsJsonArray = new JsonArray();
+        
+        for(DocResult docResult : experimentContents){
+            experimentContentsJsonArray.add(docResult.toJson());
+        }
+        experimentContentsJson.add("experimentContents", experimentContentsJsonArray);
+
+        return experimentContentsJson;
     }
     
-    //TODO
-    public String getConfusionMatrix(){
-        String confusionMatrix = "";
+    //x axis is who we labeled the author as
+    //y axis is who the author actually is
+    public int[][] getConfusionMatrix(){
         
+        authorList = new ArrayList<String>();
+        for (String author : experimentContents.get(0).getProbabilities().keySet()){
+            authorList.add(author);
+        }
+        Collections.sort(authorList);
+        
+        //initialize the matrix
+        int[][] matrix = new int[authorList.size()][authorList.size()];
+        for (int i = 0; i < matrix.length; i++){
+            for (int j=0; j<matrix[i].length; j++){
+                matrix[i][j] = 0;
+            }
+        }
+        
+        //increment all values
+        for (DocResult dr : experimentContents){
+            matrix[authorList.indexOf(dr.getActualAuthor())][authorList.indexOf(dr.getSuspectedAuthor())]+=1;
+        }
+        
+        return matrix;
+>>>>>>> refs/remotes/tdutko/master
+    }
+    
+    public String getConfusionMatrixString(){
+        int space = 16*experimentContents.get(0).getProbabilities().keySet().size()+2;
+        String confusionMatrix = String.format("%-"+space+"s|", "Suspected Authors");
+        confusionMatrix+=String.format("|||| %14s|\n","Actual Authors");
+        //add each author to the top
+        for (String author : experimentContents.get(0).getProbabilities().keySet()){
+            confusionMatrix+=String.format(" %-14s |",author);
+        }
+        confusionMatrix+="||||\n";
+        for (int i =0; i<space+20; i++){
+            confusionMatrix+="_";
+        }
+        confusionMatrix+="\n";
+        
+        int[][] matrix = getConfusionMatrix();
+        
+        for (int i = 0; i < matrix.length; i++){
+            for (int j=0; j<matrix[i].length; j++){
+                confusionMatrix+=String.format(" %-14d |", matrix[i][j]);
+            }
+            confusionMatrix+=String.format("|||| %14s|\n",authorList.get(i));
+        }
         
         return confusionMatrix;
     }

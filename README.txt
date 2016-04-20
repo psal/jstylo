@@ -9,7 +9,7 @@ http://psal.cs.drexel.edu/
 
 JStylo
 - Authorship recognition analysis tool
-- Version: 1.2
+- Version: 2.9.0
 
 ----------------------------------------------------
 
@@ -23,6 +23,7 @@ Dependencies:
 JStylo now utilizes a Maven POM file for managing dependencies. Note that there is one additional dependency (JGAAP) which is non-mavenized. 
 This dependency jar is included with each release of JStylo. Include it in your project's lib folder to allow JStylo to access its resources.
 
+
 Usage:
 
 JStylo requires Java 8 or later to run properly
@@ -32,7 +33,9 @@ In other platforms / to view on-the-fly log:
 
 > java [-Xmx2048m] -jar jsan.jar
 
+To configure log4j, copy the log4j.xml file in src/main/resources and make the desired modifications.
+Then, pass the VM the argument: -Dlog4j.configuration=file:///path/to/file/newlog4j.xml
+
 Note:
-For usage with large corpora or feature sets, it is recommended
-to increase the JVM heap size using the -Xmx option.
+For usage with large corpora or feature sets, it is recommended to increase the JVM heap size using the -Xmx option.
  

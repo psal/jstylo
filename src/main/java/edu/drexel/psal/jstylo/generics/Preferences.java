@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 
  * This is primarily a data storage class which adds some convenience functionality to the program.
@@ -23,6 +26,8 @@ import java.util.Map;
  * 		Recent/previously used problem set (maybe)
  */
 public class Preferences{
+    
+    private static final Logger LOG = LoggerFactory.getLogger(Preferences.class);
 
 	//older versions will be replaced with the default of the newest version
 	private static final double currentVersion = 0.78;
@@ -123,6 +128,8 @@ public class Preferences{
 		
 		if (isValid){
 			preferences.put(key, value);
+		} else {
+		    LOG.warn("Attempting to add invalid preference with key "+key+" and value "+value);
 		}
 	}
 	
@@ -152,7 +159,7 @@ public class Preferences{
 			else
 				return true;
 		} else {
-			System.out.println("Invalid key! "+key);
+			LOG.warn("Invalid key! "+key+" returning false...");
 			return false;
 		}
 	}
@@ -180,7 +187,7 @@ public class Preferences{
 		Preferences p = new Preferences();
 		
 		if (!preferenceFileIsPresent()){
-			System.out.println("Preference file not found! Generating default file...");
+			LOG.warn("Preference file not found! Generating default file...");
 			createDefaultPreferenceFile();
 			return buildDefaultPreferences();
 		}
@@ -196,10 +203,10 @@ public class Preferences{
 			while(line != null){
 				if (line.startsWith("version")){
 					String[] components = line.split("=");
-					//System.out.println("Old version: "+components[1]+" New version: "+currentVersion);
+					//LOG.warn("Old version: "+components[1]+" New version: "+currentVersion);
 					double d = Double.parseDouble(components[1]);
 					if (d != currentVersion){
-						System.out.println("Outdated preference file! Replacing...");
+						LOG.warn("Outdated preference file! Replacing...");
 						reader.close();
 						close = false;
 						createDefaultPreferenceFile();
@@ -207,7 +214,6 @@ public class Preferences{
 					}
 				} else if (line.contains("=")){
 					String[] components = line.split("=");
-					//System.out.printf("[0]:%s: [1]:%s:\n",components[0],components[1]);
 					p.setPreference(components[0],components[1]);
 				}
 				line = reader.readLine();;
@@ -262,22 +268,19 @@ public class Preferences{
 		try {
 			fileWriter = new BufferedWriter(new FileWriter(new File(preferenceFilePath)));
 		} catch (IOException e) {
-			System.out.println("Failed to open file writer!");
-			e.printStackTrace();
+			LOG.error("Failed to open file writer!",e);
 		}
 		
 		try {
 			fileWriter.write(printString);
 		} catch (IOException e) {
-			System.out.println("Failed to write preference!");
-			e.printStackTrace();
+		    LOG.error("Failed to write preference!",e);
 		}
 		
 		try {
 			fileWriter.close();
 		} catch (IOException e) {
-			System.out.println("Failed to close writer!");
-			e.printStackTrace();
+		    LOG.error("Failed to close writer!",e);
 		}
 	}
 	

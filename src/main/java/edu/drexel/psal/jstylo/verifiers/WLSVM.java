@@ -46,8 +46,13 @@ import libsvm.*;
 import java.io.Serializable;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class WLSVM extends Classifier implements WeightedInstancesHandler, OptionHandler, Serializable, TechnicalInformationHandler  {
 	
+    private static final Logger LOG = LoggerFactory.getLogger(WLSVM.class);
+    
 	protected static final long serialVersionUID = 14172;
 	
 	protected svm_parameter param; // LibSVM oprions
@@ -411,8 +416,7 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 	public void setWeights(double[] weights) {
 		param.nr_weight = weights.length;
 		if (param.nr_weight == 0) {
-			System.out
-			.println("Zero Weights processed. Default weights will be used");
+			LOG.info("Zero Weights processed. Default weights will be used");
 		}
 		
 		param.weight_label[0] = -1; // label of first class
@@ -643,7 +647,7 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 			if (instance.value(j - 1) != 0)
 				line += " " + j + ":" + instance.value(j - 1);
 		}
-		// System.out.println(line); 
+		// LOG.info(line); 
 		return (line + "\n");
 	}
 	
@@ -668,12 +672,12 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 		int svm_type = svm.svm_get_svm_type(model);
 		int nr_class = svm.svm_get_nr_class(model);
 		int[] labels = new int[nr_class];
-		System.out.println("nr_class: "+nr_class);
+		LOG.info("nr_class: "+nr_class);
 		double[] prob_estimates = null;
 		
 		if (param.probability == 1) {
 			if (svm_type == svm_parameter.EPSILON_SVR || svm_type == svm_parameter.NU_SVR) {
-				System.err.println("Do not use distributionForInstance for regression models!");
+				LOG.error("Do not use distributionForInstance for regression models!");
 				return null;
 			} else {
 				svm.svm_get_labels(model, labels);
@@ -708,18 +712,18 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 			
 			// Return order of probabilities to canonical weka attribute order
 			for (int k=0; k < prob_estimates.length; k++) {
-				System.out.print(labels[k] + ":" + prob_estimates[k] + " ");
+				LOG.info(labels[k] + ":" + prob_estimates[k] + " ");
 				if (labels[k] == -1) 
 					labels[k] = 0;
 				weka_probs[labels[k]] = prob_estimates[k];
 			}
-			 //System.out.println();
+			 //LOG.info();
 		} else {
 			v = svm.svm_predict(model, x);
 			if (v == -1) 
 				v = 0;
 			weka_probs[(int)v] = 1;
-			// System.out.println(v);
+			// LOG.info(v);
 		}
 		
 		return weka_probs;                
@@ -775,7 +779,7 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 		error_msg = svm.svm_check_parameter(prob, param);
 		
 		if (error_msg != null) {
-			System.err.print("Error: " + error_msg + "\n");
+			LOG.error("Error: " + error_msg + "\n");
 			System.exit(1);
 		}
 		
@@ -798,7 +802,7 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 	/*
 	public static void main(String[] argv) throws Exception {
 		if (argv.length < 1) {
-			System.out.println("Usage: Test <arff file>");
+			LOG.info("Usage: Test <arff file>");
 			System.exit(1);
 		}
 		String dataFile = argv[0];
@@ -827,7 +831,7 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 				//new String("1.0 1.0")
 		};
 		
-		System.out.println(Evaluation.evaluateModel(lib, ops));
+		LOG.info(Evaluation.evaluateModel(lib, ops));
 		
 	}
 	*/
@@ -854,7 +858,7 @@ public class WLSVM extends Classifier implements WeightedInstancesHandler, Optio
 				//new String("1.0 1.0")
 		};
 		String result = Evaluation.evaluateModel(this, ops);
-		System.out.println("RESULT: "+result);
+		LOG.info("RESULT: "+result);
 		return 0;
 	}
 
