@@ -3,8 +3,6 @@ package edu.drexel.psal.jstylo.generics;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
-
 public class DocumentData {
 
     private Map<String,Integer> normalizationValues;

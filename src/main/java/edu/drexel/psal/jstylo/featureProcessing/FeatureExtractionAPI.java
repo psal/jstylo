@@ -25,6 +25,7 @@ import edu.drexel.psal.jstylo.eventDrivers.SentenceCounterEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.SingleNumericEventDriver;
 import edu.drexel.psal.jstylo.eventDrivers.WordCounterEventDriver;
 import edu.drexel.psal.jstylo.generics.DocumentData;
+import edu.drexel.psal.jstylo.generics.FeatureData;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -25,8 +25,8 @@ import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.DocumentData;
+import edu.drexel.psal.jstylo.generics.FeatureData;
 import edu.drexel.psal.jstylo.generics.Preferences;
-import edu.drexel.psal.jstylo.generics.ProblemSet;
 
 /**
  * An API for the feature extraction process. Designed for running on a single machine while utilizing multi-threading.
@@ -187,7 +187,7 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 			threadsToUse = knownDocsSize;
 		}
 		
-		//if some documents are leftover after divvying them up, increment the div
+		//if some documents are leftover after divvying them up, increment the div by 1 to ensure that they're all captured
 		int div = knownDocsSize / threadsToUse;
 		if (div % threadsToUse != 0)
 			div++;

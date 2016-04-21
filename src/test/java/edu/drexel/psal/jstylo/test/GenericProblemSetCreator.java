@@ -1,12 +1,13 @@
 package edu.drexel.psal.jstylo.test;
 
-import edu.drexel.psal.jstylo.generics.ProblemSet;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import edu.drexel.psal.jstylo.featureProcessing.ProblemSet;
 
 /**
  *

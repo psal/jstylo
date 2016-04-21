@@ -15,8 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
-
 /**
  * This class is a generic class designed to hold all of the information extracted from documents prior to classification.
  * It consists of a few key data structures:

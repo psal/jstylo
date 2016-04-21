@@ -1,4 +1,4 @@
-package edu.drexel.psal.jstylo.generics;
+package edu.drexel.psal.jstylo.featureProcessing;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -16,8 +16,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.util.Collections;
 
 import com.jgaap.generics.*;
-
-import edu.drexel.psal.jstylo.featureProcessing.StringDocument;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
