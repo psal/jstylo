@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import edu.drexel.psal.jstylo.featureProcessing.FeatureData;
+import edu.drexel.psal.jstylo.generics.FeatureData;
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.DocumentData;
 
