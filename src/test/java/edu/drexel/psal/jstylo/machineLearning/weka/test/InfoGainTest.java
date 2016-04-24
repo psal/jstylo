@@ -1,4 +1,4 @@
-package edu.drexel.pasl.jstylo.machineLearning.weka.test;
+package edu.drexel.psal.jstylo.machineLearning.weka.test;
 
 import static org.junit.Assert.*;
 

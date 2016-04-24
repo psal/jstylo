@@ -1,4 +1,4 @@
-package edu.drexel.pasl.jstylo.generics.test;
+package edu.drexel.psal.jstylo.generics.test;
 
 import java.util.HashMap;
 import java.util.Map;
