@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.esotericsoftware.minlog.Log;
 import com.jgaap.generics.Document;
 
 import weka.classifiers.*;
@@ -48,6 +49,8 @@ public class WekaAnalyzer extends Analyzer {
 	 * Document titles
 	 */
 	private List<String> documentTitles;
+	
+	private Evaluation crossValResults;
 	
 	/* ============
 	 * constructors
@@ -182,7 +185,7 @@ public class WekaAnalyzer extends Analyzer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		crossValResults = eval;
 		return WekaUtils.resultsFromEvaluation(eval, data.attribute(data.numAttributes()-1).toString(),documentTitles);
 	}
 	
@@ -358,4 +361,19 @@ public class WekaAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 	}
+	
+	@Override
+	public String getExperimentMetrics(){
+        if (crossValResults == null)
+            return "No statistics calculated by WekaAnalyzer unless performing Cross validation";
+
+        String results = "Failed to calculate cross validation results.";
+
+        try {
+            results = crossValResults.toSummaryString()+"\n"+crossValResults.toClassDetailsString() + "\n" + crossValResults.toMatrixString();
+        } catch (Exception e) {
+            Log.error("Failed to calculate cross validation results", e);
+        }
+        return results;
+    }
 }

@@ -206,6 +206,11 @@ public class SparkAnalyzer extends Analyzer implements Serializable{
     public String getName() {
         return "Spark Analyzer";
     }
+    
+    @Override
+    public String getExperimentMetrics(){
+        return "No metrics calculated";
+    }
 
     public void initSuspects(DataMap data){
         suspectSet = new ArrayList<String>();

@@ -189,4 +189,10 @@ public abstract class Analyzer{
 	 */
 	public abstract String getName();
 	
+	/**
+	 * Returns metric string internal to this analyzer
+	 * @return
+	 */
+	public abstract String getExperimentMetrics();
+	
 }
