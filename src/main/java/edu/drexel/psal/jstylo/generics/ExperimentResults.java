@@ -182,7 +182,7 @@ public class ExperimentResults implements Serializable{
         String confusionMatrix = String.format("%-"+space+"s|", "Suspected Authors");
         confusionMatrix+=String.format("|||| %14s|\n","Actual Authors");
         //add each author to the top
-        for (String author : experimentContents.get(0).getProbabilities().keySet()){
+        for (String author : authorList){
             confusionMatrix+=String.format(" %-14s |",author);
         }
         confusionMatrix+="||||\n";
@@ -190,6 +190,7 @@ public class ExperimentResults implements Serializable{
             confusionMatrix+="_";
         }
         confusionMatrix+="\n";
+        
         
         int[][] matrix = getConfusionMatrix();
         
