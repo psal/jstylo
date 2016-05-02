@@ -143,7 +143,8 @@ public class ProblemSet implements Serializable {
 			docs = new LinkedList<Document>();
 			for (Document doc: other.trainDocsMap.get(author)) {
 				newDoc = new Document(doc.getFilePath(),doc.getAuthor(),doc.getTitle());
-				newDoc.readStringText(String.copyValueOf(doc.getProcessedText()));
+				if (loadDocContents)
+				    newDoc.readStringText(String.copyValueOf(doc.getProcessedText()));
 				docs.add(newDoc);
 			}
 			this.trainDocsMap.put(author, docs);
