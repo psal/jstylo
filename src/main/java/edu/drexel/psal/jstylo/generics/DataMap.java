@@ -189,7 +189,22 @@ public class DataMap {
             String nextline = "authorName, document, ";
             for (Integer index : features.keySet()){
                 nextline += features.get(index)+",";
+            } //TODO right now the feature normalization value isn't being saved. non-essential and not critical, but should be fixed in the future
+            
+            //add in metadata features
+            List<String> metadata = new ArrayList<String>();
+            nextline+=">METADATA<,";
+            for (String author : datamap.keySet()){
+                for (String doc : datamap.get(author).keySet()){
+                    for (String key : datamap.get(author).get(doc).getNormalizationValues().keySet()){
+                        nextline+=key+",";
+                        metadata.add(key);
+                    }
+                    break;
+                }
+                break;
             }
+            
             bw.write(nextline+"\n");
             
             //each row is a document, organized by author
@@ -199,10 +214,17 @@ public class DataMap {
                     ConcurrentHashMap<Integer,FeatureData> docdata = datamap.get(author).get(document).getDataValues();
                     for (int i = 0; i <features.size(); i++){
                         if (docdata.containsKey(i))
-                            nextline+=docdata.get(i).getValue()+",";
+                            nextline+=docdata.get(i).getValue()+":"+docdata.get(i).getCount()+",";
                         else
                             nextline+="0,";
                     }
+                    
+                    //add the metadata
+                    nextline += "-,"; //skip a column
+                    for (String s : metadata){
+                        nextline+=datamap.get(author).get(document).getNormalizationValues().get(s)+",";
+                    }
+                    
                     nextline = nextline.substring(0,nextline.length()-1);
                     nextline+="\n";
                     bw.write(nextline);
@@ -261,31 +283,45 @@ public class DataMap {
             String featureline = br.readLine();
             
             String[] loadedFeatures = featureline.split(",");
+            int metaindex = 0;
+            boolean learningmeta = true;
             //skip i=0=authorName and i=1=document
             List<String> features = new ArrayList<String>(loadedFeatures.length-2);
             for (int i = 2; i<loadedFeatures.length; i++){
+                if (learningmeta)
+                    if (loadedFeatures[i].equals(">METADATA<"))
+                        learningmeta=false;
+                
                 if (!loadedFeatures[i].equalsIgnoreCase(""))
                     features.add(loadedFeatures[i]);
+                
+                if (learningmeta)
+                    metaindex++;
             }
             
             map = new DataMap(name,features);
             
             while (br.ready()){
-                /* TODO this logic (and the write to CSV logic) needs to be completely redone. 
                 String line = br.readLine();
                 String[] parts = line.split(",");
                 ConcurrentHashMap<Integer,FeatureData> docfeatures = new ConcurrentHashMap<Integer,FeatureData>();
+                Map<String,Integer> norms = new HashMap<String,Integer>();
                 for (int i = 2; i<parts.length; i++){
-                    
-                    //docfeatures.put(i-2, Double.parseDouble(parts[i]));
+                    if (i < metaindex) {
+                        String[] values = parts[i].split(":");
+                        FeatureData fd = new FeatureData(features.get(i), "None", Integer.parseInt(values[1]));
+                        fd.setValue(Double.parseDouble(values[0]));
+                        docfeatures.put(i - 2, fd);
+                    } else if (i > metaindex) {
+                        norms.put(features.get(i), Integer.parseInt(parts[i]));
+                    } //i==metaindex is an empty column
                 }
                 
                 if (!map.getDataMap().containsKey(parts[0]))
                     map.initAuthor(parts[0]);
                     
-                Map<String,Integer> norms = new HashMap<String,Integer>();
-                map.addDocumentData(parts[0], parts[1], norms, docfeatures);
-                */
+                map.addDocumentData(parts[0], parts[1], new DocumentData(norms, docfeatures));
+                
             }
             
             br.close();
