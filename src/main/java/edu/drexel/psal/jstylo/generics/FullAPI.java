@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jgaap.generics.Document;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
@@ -504,16 +505,56 @@ public class FullAPI {
 	}
 	
 	public static void main(String[] args){
+	    /*
+	    ProblemSet ps = new ProblemSet("./jsan_resources/problem_sets/politicians.xml");
+	    
+	    ExperimentResults cumulativeResults = new ExperimentResults();
+	    int count = 1;
+	    for (Document toTest : ps.getAllTrainDocs()){
+	        ProblemSet ps2 = new ProblemSet(ps);
+	        ps2.removeTrainDocAt(toTest.getAuthor(), toTest);
+	        ps2.addTestDoc(toTest.getAuthor(), toTest);
+	        
+	        FullAPI test = null;
+	        
+	        try {
+	            test = new FullAPI.Builder()
+	                    .cfdPath("jsan_resources/feature_sets/politics.xml")
+	                    .ps(ps2)
+	                    .setAnalyzer(new WekaAnalyzer())
+	                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN)
+	                    .useCache(false).chunkDocs(false)
+	                    .build();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            LOG.error("Failed to intialize API, exiting...",e);
+	        }
+	        
+	        test.prepareInstances();
+	        test.run();
+	        for (DocResult dr : test.getResults().getExperimentContents()){
+	            cumulativeResults.addDocResult(dr);
+	        }
+	        LOG.info("Completed "+count+" of "+ps.getAllTrainDocs().size());
+	        count++;
+	    }
+	    
+	    LOG.info(cumulativeResults.getStatisticsString()+"\n"+cumulativeResults.getAllDocumentResults(true)+"\n"+cumulativeResults.getConfusionMatrixString());
+	    */
+	    
+	    ProblemSet ps = new ProblemSet("jsan_resources/problem_sets/politicians.xml");
+	    ps.addTestDoc(DocResult.defaultUnknown, new Document("/Users/tdutko200/Downloads/georgeWB.txt",DocResult.defaultUnknown,"georgeWB.txt"));
 	    
 	    FullAPI test = null;
 	    
         try {
             test = new FullAPI.Builder()
-                    .cfdPath("jsan_resources/feature_sets/writeprints_feature_set_limited.xml")
-                    .psPath("jsan_resources/problem_sets/drexel_1_train_test.xml")
+                    .cfdPath("jsan_resources/feature_sets/politics.xml")
+                    .ps(ps)
                     .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN).useCache(false).chunkDocs(false)
-                    .loadDocContents(true)
+                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
+                    .loadDocContents(false)
+                    .numFolds(3)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -524,6 +565,7 @@ public class FullAPI {
 		test.calcInfoGain();
 		//test.applyInfoGain(5);
 		test.run();
+		LOG.info(test.getUnderlyingAnalyzer().getExperimentMetrics());
 		LOG.info(test.getStatString());
 		LOG.info(test.getReadableInfoGain(false));
 		//LOG.info(test.getResults().toJson().toString());

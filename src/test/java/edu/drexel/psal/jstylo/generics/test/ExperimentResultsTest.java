@@ -195,16 +195,14 @@ public class ExperimentResultsTest {
 		testExperimentResults.addDocResult(testDocResult2);
 		
 		String expectedString = "Suspected Authors                                 ||||| Actual Authors|\n"
-				+ " Author3        | Author2        | Author1        |||||\n"
+				+ " Author1        | Author2        | Author3        |||||\n"
 				+ "______________________________________________________________________\n"
 				+ " 1              | 0              | 0              |||||        Author1|\n"
 				+ " 1              | 0              | 0              |||||        Author2|\n"
 				+ " 0              | 0              | 0              |||||        Author3|\n";
-		
-		
 		// Verify	
 		assertEquals(expectedString, testExperimentResults.getConfusionMatrixString());
-	}
+	} 
 	
 	
 	

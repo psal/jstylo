@@ -24,6 +24,7 @@ import com.jgaap.generics.EventSet;
 import edu.drexel.psal.JSANConstants;
 import edu.drexel.psal.jstylo.featureProcessing.CumulativeFeatureDriver.FeatureSetElement;
 import edu.drexel.psal.jstylo.generics.DataMap;
+import edu.drexel.psal.jstylo.generics.DocResult;
 import edu.drexel.psal.jstylo.generics.DocumentData;
 import edu.drexel.psal.jstylo.generics.FeatureData;
 import edu.drexel.psal.jstylo.generics.Preferences;
@@ -281,6 +282,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 	            String author = metadata.eventAt(0).getEvent();
 	            testingDataMap.initAuthor(author);
 	        }
+	        
+	        testingDataMap.initAuthor(DocResult.defaultUnknown);
 			
 			//make sure number of threads isn't silly
 			if (numThreads > numInstances) {
@@ -512,6 +515,8 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 					
 					//build the doc data
 	                String author = events.get(events.size()-1).eventAt(0).getEvent();
+	                if (!testingDataMap.getDataMap().containsKey(author))
+	                    testingDataMap.initAuthor(author);
 	                String title = events.get(events.size()-1).eventAt(1).getEvent();
 	                ConcurrentHashMap<Integer,FeatureData> docdata = createDocMap(features, relevantEvents, cfd, events);
 
