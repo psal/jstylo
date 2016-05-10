@@ -32,17 +32,23 @@ public class SparkAnalyzer extends Analyzer implements Serializable{
     private List<String> documentTitles;
     private List<String> suspectSet;
     private Map<String,String> titlesAndAuthors;
+    private String sparkmaster = "local[*]";
     
     //eventually have this initialize the default classifier, then add a constructor which allows for alternative classifiers
     //just an empty constructor is fine for now, though
-    //TODO
-    public SparkAnalyzer (){}
+    public SparkAnalyzer (){
+        
+    }
+    
+    public SparkAnalyzer(String sparkmaster){
+        this.sparkmaster = sparkmaster;
+    }
 
     @Override
     public ExperimentResults runCrossValidation(DataMap data, int folds, long randSeed) {
         //initialize context/data
         JavaSparkContext context = new JavaSparkContext(
-                new SparkConf().setAppName("Spark Classifier").setMaster("local[*]"));
+                new SparkConf().setAppName("JStylo Spark Classifier").setMaster(sparkmaster));
         SQLContext sql = new SQLContext(context);
         Map<String,Double> labels = SparkUtils.getLabelMap(data);
         documentTitles = null;
