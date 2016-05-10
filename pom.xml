@@ -1,0 +1,134 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>edu.drexel.psal</groupId>
+	<artifactId>jstylo</artifactId>
+	<name>${artifactId}</name>
+	<version>2.9.0</version>
+	<packaging>jar</packaging>
+	<description>A feature-extraction and authorship-attribution tool.</description>
+	<url>https://psal.cs.drexel.edu/</url>
+
+	<developers>
+		<developer>
+			<name>Travis Dutko</name>
+			<email>tad.drexel@gmail.com</email>
+			<organization>Drexel PSAL</organization>
+			<organizationUrl>https://psal.cs.drexel.edu/</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:http://github.com/psal/jstylo.git</connection>
+		<developerConnection>scm:git:https://github.com/psal/jstylo.git</developerConnection>
+		<url>http://github.com/psal/jstylo.git</url>
+	</scm>
+
+	<properties>
+		<spark-version>1.6.1</spark-version>
+		<log4j-version>1.7.21</log4j-version>
+		<weka-version>3.6.6</weka-version>
+		<tt4j-version>1.2.1</tt4j-version>
+		<gson-version>2.6.2</gson-version>
+		<junit-version>4.12</junit-version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>nz.ac.waikato.cms.weka</groupId>
+			<artifactId>weka-stable</artifactId>
+			<version>${weka-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.annolab.tt4j</groupId>
+			<artifactId>org.annolab.tt4j</artifactId>
+			<version>${tt4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jgaap-5.2.0-lite</groupId>
+			<artifactId>jgaap-5.2.0-lite</artifactId>
+			<scope>system</scope>
+			<version>5.2.0-lite</version>
+			<systemPath>${basedir}/lib/jgaap-5.2.0-lite.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${log4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gson-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_2.10</artifactId>
+			<version>${spark-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-mllib_2.10</artifactId>
+			<version>${spark-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_2.10</artifactId>
+			<version>${spark-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>2.0.2-beta</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-executable-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>edu.drexel.psal.jstylo.GUI.GUIMain</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<licenses>
+		<license>
+			<name>3-Clause BSD License</name>
+			<url>https://opensource.org/licenses/BSD-3-Clause</url>
+		</license>
+	</licenses>
+</project>

@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jaws-bin.jar"/>
-	<classpathentry kind="lib" path="lib/Jama-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/stanford-postagger-2012-01-06.jar"/>
-	<classpathentry kind="lib" path="lib/fasttag_v2.jar"/>
-	<classpathentry kind="lib" path="lib/jgaap-5.2.0-lite.jar"/>
-	<classpathentry kind="lib" path="lib/weka.jar" sourcepath="lib/weka.jar"/>
-	<classpathentry kind="lib" path="lib/org.annolab.tt4j-1.0.15.jar" sourcepath="C:/Users/Mordio/.m2/repository/org/annolab/tt4j/org.annolab.tt4j/1.0.15/org.annolab.tt4j-1.0.15-sources.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="src" path="src/test/resources"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/jgaap-5.2.0-lite.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
