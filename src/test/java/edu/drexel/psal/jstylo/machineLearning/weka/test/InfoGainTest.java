@@ -70,7 +70,7 @@ public class InfoGainTest {
 			};
 			
 			// Verify
-			assertEquals(expectedList,InfoGain.calcInfoGain(testDataMap));		
+			assertArrayEquals(expectedList,InfoGain.calcInfoGain(testDataMap));		
 		}
 
 		@Test
@@ -81,7 +81,7 @@ public class InfoGainTest {
 					{0.0,2.0}
 			};
 			
-			assertEquals(sortedFeature,InfoGain.applyInfoGain(sortedFeature, testDataMap, 3));	
+			assertArrayEquals(sortedFeature,InfoGain.applyInfoGain(sortedFeature, testDataMap, 3));	
 		}
 		
 		@Test
@@ -90,7 +90,7 @@ public class InfoGainTest {
 					{0.0,0.0}
 			};
 			
-			assertEquals(sortedFeature,InfoGain.applyInfoGain(sortedFeature, testDataMap, 4));	
+			assertArrayEquals(sortedFeature,InfoGain.applyInfoGain(sortedFeature, testDataMap, 4));	
 		}
 		
 		@Test
@@ -105,6 +105,6 @@ public class InfoGainTest {
 					{1.0,0.0}
 			};
 			
-			assertEquals(expectedFeature,InfoGain.applyInfoGain(sortedFeature, testDataMap, 2));	
+			assertArrayEquals(expectedFeature,InfoGain.applyInfoGain(sortedFeature, testDataMap, 2));	
 		}
 }

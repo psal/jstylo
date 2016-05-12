@@ -13,7 +13,6 @@ import edu.drexel.psal.jstylo.generics.FullAPI;
 import edu.drexel.psal.jstylo.generics.FullAPI.analysisType;
 import edu.drexel.psal.jstylo.generics.Preferences;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
-import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 public class FullAPITest {
 	

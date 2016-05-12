@@ -11,10 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-
 import edu.drexel.psal.jstylo.generics.DocResult;
 import edu.drexel.psal.jstylo.generics.ExperimentResults;
-import scala.inline;
 
 public class ExperimentResultsTest {
 	

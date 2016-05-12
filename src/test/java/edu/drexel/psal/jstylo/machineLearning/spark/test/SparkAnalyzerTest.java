@@ -1,7 +1,5 @@
 package edu.drexel.psal.jstylo.machineLearning.spark.test;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,12 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jgaap.generics.Document;
-
 import edu.drexel.psal.jstylo.generics.DataMap;
-import edu.drexel.psal.jstylo.generics.DocResult;
 import edu.drexel.psal.jstylo.generics.DocumentData;
-import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import edu.drexel.psal.jstylo.generics.FeatureData;
 import edu.drexel.psal.jstylo.machineLearning.spark.SparkAnalyzer;
 

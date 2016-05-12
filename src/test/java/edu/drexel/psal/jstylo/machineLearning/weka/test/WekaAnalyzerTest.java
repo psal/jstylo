@@ -1,6 +1,6 @@
 package edu.drexel.psal.jstylo.machineLearning.weka.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,10 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.netlib.util.booleanW;
 
 import com.jgaap.generics.Document;
-import com.typesafe.config.ConfigException.Null;
 
 import edu.drexel.psal.jstylo.generics.DataMap;
 import edu.drexel.psal.jstylo.generics.DocResult;
@@ -23,8 +21,6 @@ import edu.drexel.psal.jstylo.generics.ExperimentResults;
 import edu.drexel.psal.jstylo.generics.FeatureData;
 import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
-import weka.experiment.Experiment;
 
 public class WekaAnalyzerTest {
 
@@ -288,7 +284,7 @@ public class WekaAnalyzerTest {
 				, "L<ARG>	Use lower-order terms.\n" + "	(default: no)" };
 
 		String[] aa = testWekaAnalyzer.optionsDescription();
-		assertEquals(expectedResults, aa);
+		assertArrayEquals("Results strings were not equal",expectedResults, aa);
 	}
 
 
