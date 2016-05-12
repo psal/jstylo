@@ -24,7 +24,7 @@ public class FullAPITest {
 	public void setup(){
 		testBuild = new FullAPI.Builder();		
 		testBuild = testBuild.preferences(Preferences.buildDefaultPreferences());
-		testBuild = testBuild.psPath("testPsXML");
+		testBuild = testBuild.psPath("./jsan_resources/problem_sets/drexel_1_small.xml");
 		testBuild = testBuild.setApplyInfoGain(true);
 		testBuild = testBuild.setFeaturesToKeep(1);
 		testBuild = testBuild.cfdPath("Test");
@@ -41,25 +41,25 @@ public class FullAPITest {
 		testBuild = testBuild.numThreads(1);
 		
 		testBuild = testBuild.preferences(null);
-		testBuild = testBuild.numThreads(3);
+		testBuild = testBuild.numThreads(4);
 		
 		testBuild = testBuild.numFolds(1);
 
-		testBuild = testBuild.analysisType(analysisType.TRAIN_TEST_KNOWN);
+		testBuild = testBuild.analysisType(analysisType.CROSS_VALIDATION);
 		
-		testBuild = testBuild.useCache(true);
+		testBuild = testBuild.useCache(false);
 		
-		testBuild = testBuild.chunkDocs(true);
+		testBuild = testBuild.chunkDocs(false);
 		testBuild = testBuild.loadDocContents(true);
 		testBuild = testBuild.verifierName("test");
 		
 		testFullAPI = testBuild.build();
 		
-		testFullAPI.prepareInstances();
+		//testFullAPI.prepareInstances();
 		
 		testFullAPI.calcInfoGain();
 		
-		testFullAPI.setUseCache(true);	
+		testFullAPI.setUseCache(false);	
 		
 		testFullAPI.setProblemSet(Mockito.mock(ProblemSet.class));
 		
@@ -73,7 +73,7 @@ public class FullAPITest {
 	
 	@Test
 	public void isUsingCache_Success() {
-		assertTrue(testFullAPI.isUsingCache());
+		assertTrue(!testFullAPI.isUsingCache());
 	}
 	
 
