@@ -329,4 +329,23 @@ public class DataMapTest {
         f.delete();
         //assertEquals(testDataMap,loaded);
 	}
+	
+	@Test
+	public void failWritingGracefully(){
+        // Setup
+        FullAPI test = new FullAPI.Builder()
+                .cfdPath("./jsan_resources/feature_sets/9_features.xml")
+                .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
+                .setAnalyzer(new WekaAnalyzer())
+                .numThreads(4).analysisType(analysisType.CROSS_VALIDATION)
+                .useCache(false).chunkDocs(false)
+                .loadDocContents(false)
+                .numFolds(3)
+                .build();
+        
+        test.prepareInstances();
+        String csvpath = "./src/test/resources/doesnot/exist/test.csv";
+        
+        test.getTrainingDataMap().saveDataMapToCSV(csvpath);
+	}
 }

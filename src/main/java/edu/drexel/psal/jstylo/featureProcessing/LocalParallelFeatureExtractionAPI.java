@@ -627,13 +627,6 @@ public class LocalParallelFeatureExtractionAPI extends FeatureExtractionAPI {
 		int knownDocsSize; //the number of docs total
 		List<Document> knownDocs; //the docs to be extracted
 		CumulativeFeatureDriver cfd; //the cfd to do the extracting with
-		
-		/**
-		 * @return The list of extracted event sets for this division of documents
-		 */
-		public ArrayList<List<EventSet>> getList() {
-			return list;
-		}
 
 		//Constructor
 		public FeatureExtractionThread(int div, int threadId,

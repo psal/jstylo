@@ -69,7 +69,7 @@ public class CacheTests
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	/*
+	
 	@Test
 	public void testNoCache() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		ProblemSet ps = new ProblemSet(Paths.get(JSANConstants.JSAN_PROBLEMSETS_PREFIX, "drexel_1_small.xml").toString());
@@ -122,7 +122,6 @@ public class CacheTests
         }
         Assert.assertTrue("Chunking was turned on, but no chunking directory was found.", foundChunkingDirectory);
 	}
-	*/
 	
 	/**
 	 * Test to make sure that chunking does not change the results.
@@ -166,7 +165,7 @@ public class CacheTests
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	/*
+
 	@Test
 	public void testWithChunking() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		// the max difference allowed between chunked / non-chunked.
@@ -298,7 +297,7 @@ public class CacheTests
         System.out.println(results8);
         Assert.assertEquals("Cached results different from non-cached results", results7, results8);
 	}
-	*/
+	
 	/*
 	 * Tests to make sure the caching system works.
 	 * Compares the results of using cached/non-cached features.
