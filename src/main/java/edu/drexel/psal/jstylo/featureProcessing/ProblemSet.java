@@ -61,49 +61,6 @@ public class ProblemSet implements Serializable {
 	}
 	
 	/**
-	 * Constructor for ProblemSet. Initializes the training documents map and name to the given ones, and an empty test documents map.
-	 * @param trainCorpusName
-	 * 		The name of the training corpus.
-	 * @param trainDocsMap
-	 * 		The map of training documents to set to.
-	 */
-	public ProblemSet(String trainCorpusName, SortedMap<String,List<Document>> trainDocsMap) {
-		this.trainDocsMap = trainDocsMap;
-		//testDocs = new LinkedList<Document>();
-		testDocsMap = new TreeMap<String,List<Document>>();
-		this.trainCorpusName = trainCorpusName;
-	}
-	
-	/**
-	 * Constructor for ProblemSet. Initializes the training documents map and name to be empty, and the test documents map to
-	 * the given one.
-	 * @param testDocs
-	 * 		The test documents map to set to.
-	 */
-	public ProblemSet(SortedMap<String,List<Document>> testDocs){
-		trainDocsMap = new TreeMap<String,List<Document>>();
-		//testDocs = new LinkedList<Document>();
-		testDocsMap = testDocs;
-		trainCorpusName = "";
-	}
-	
-	/**
-	 * Constructor for ProblemSet. Initializes the training documents map and the test documents map to the given ones.
-	 * @param trainCorpusName
-	 * 		The name of the training corpus.
-	 * @param trainDocsMap
-	 * 		The map of training documents to set to.
-	 * @param testDocs
-	 * 		The test documents map to set to.
-	 */
-	public ProblemSet(String trainCorpusName, SortedMap<String,List<Document>> trainDocsMap, SortedMap<String,List<Document>> testDocs) {
-		this.trainDocsMap = trainDocsMap;
-		//testDocs = new LinkedList<Document>();
-		testDocsMap = testDocs;
-		this.trainCorpusName = trainCorpusName;
-	}
-	
-	/**
 	 * Constructor for ProblemSet from a given XML file.
 	 * @param filename
 	 * 		The name of the XML file to generate the problem set from.

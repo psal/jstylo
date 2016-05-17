@@ -476,8 +476,6 @@ public class FullAPI {
             resultsString+="[[Showing results for a Train-Test with Unknown Authors Experiment]]\n";
             resultsString+=eval.getSimpleResults();
             return resultsString; //return this one early as we don't want to add the stat string to it since it'd be misleading
-        } else {
-            resultsString+="[[Showing results for an unidentifiable experiment... how did you get here?]]\n";
         }
             
         resultsString += eval.getStatisticsString() + "\n";

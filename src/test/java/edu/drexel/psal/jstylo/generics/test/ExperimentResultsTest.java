@@ -11,10 +11,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-
 import edu.drexel.psal.jstylo.generics.DocResult;
 import edu.drexel.psal.jstylo.generics.ExperimentResults;
-import scala.inline;
+import edu.drexel.psal.jstylo.generics.FullAPI;
+import edu.drexel.psal.jstylo.generics.FullAPI.analysisType;
+import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 
 public class ExperimentResultsTest {
 	
@@ -204,7 +205,21 @@ public class ExperimentResultsTest {
 		assertEquals(expectedString, testExperimentResults.getConfusionMatrixString());
 	} 
 	
-	
+	@Test
+	public void testGenerateJSON(){
+        FullAPI test = new FullAPI.Builder()
+                .cfdPath("./jsan_resources/feature_sets/9_features.xml")
+                .psPath("./jsan_resources/problem_sets/drexel_1_small.xml")
+                .setAnalyzer(new WekaAnalyzer())
+                .numThreads(4).analysisType(analysisType.CROSS_VALIDATION)
+                .useCache(false).chunkDocs(false)
+                .loadDocContents(false)
+                .numFolds(3)
+                .build();
+        test.prepareInstances();
+        test.run();
+        test.getResults().toJson();
+	}
 	
 	
 	

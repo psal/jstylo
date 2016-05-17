@@ -238,8 +238,6 @@ public class DataMap {
     }
     
     public Integer getFeatureIndex(String featureName){
-        if (!features.containsValue(featureName))
-            return -1;
         for (Integer index : features.keySet()){
             if (features.get(index).equals(featureName))
                 return index;
@@ -274,7 +272,7 @@ public class DataMap {
      * @param path path to CSV file
      * @return initialized datamap
      */
-    public DataMap loadDataMapFromCSV(String path){
+    public static DataMap loadDataMapFromCSV(String path){
         DataMap map = null;
         try {
             BufferedReader br = new BufferedReader(new FileReader(new File(path)));
@@ -283,7 +281,7 @@ public class DataMap {
             String featureline = br.readLine();
             
             String[] loadedFeatures = featureline.split(",");
-            int metaindex = 0;
+            int metaindex = 2;
             boolean learningmeta = true;
             //skip i=0=authorName and i=1=document
             List<String> features = new ArrayList<String>(loadedFeatures.length-2);
@@ -313,7 +311,7 @@ public class DataMap {
                         fd.setValue(Double.parseDouble(values[0]));
                         docfeatures.put(i - 2, fd);
                     } else if (i > metaindex) {
-                        norms.put(features.get(i), Integer.parseInt(parts[i]));
+                        norms.put(features.get(i-2), Integer.parseInt(parts[i]));
                     } //i==metaindex is an empty column
                 }
                 

@@ -69,6 +69,7 @@ public class CacheTests
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
+	
 	@Test
 	public void testNoCache() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		ProblemSet ps = new ProblemSet(Paths.get(JSANConstants.JSAN_PROBLEMSETS_PREFIX, "drexel_1_small.xml").toString());
@@ -164,6 +165,7 @@ public class CacheTests
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
+
 	@Test
 	public void testWithChunking() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		// the max difference allowed between chunked / non-chunked.

@@ -189,20 +189,6 @@ public class WekaAnalyzer extends Analyzer {
 		return WekaUtils.resultsFromEvaluation(eval, data.attribute(data.numAttributes()-1).toString(),documentTitles);
 	}
 	
-	protected String resultsString(Evaluation eval){
-		String results = "";
-		
-		results+=eval.toSummaryString(false)+"\n";
-		try {
-			results+=eval.toClassDetailsString()+"\n";
-			results+=eval.toMatrixString()+"\n";
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return results;
-	}
-	
 	@Override
 	public ExperimentResults classifyWithKnownAuthors(DataMap trainMap, DataMap testMap) throws Exception{
 	    documentTitles = testMap.getDocumentTitles();

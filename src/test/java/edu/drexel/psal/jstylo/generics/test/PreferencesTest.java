@@ -49,12 +49,12 @@ public class PreferencesTest {
 	
 	@Test
 	public void preferenceFileIsPresent_Test_Success(){
-		assertTrue(testPreferences.preferenceFileIsPresent());
+		assertTrue(Preferences.preferenceFileIsPresent());
 	}
 	
 	@Test
 	public void loadPreferences_Test_Success(){
-		testPreferences.equals(testPreferences.loadPreferences());
+		testPreferences.equals(Preferences.loadPreferences());
 	}
 	
 	
