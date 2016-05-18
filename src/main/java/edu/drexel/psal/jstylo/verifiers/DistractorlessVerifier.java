@@ -31,6 +31,7 @@ public class DistractorlessVerifier extends Verifier{
     private static final Logger LOG = LoggerFactory.getLogger(DistractorlessVerifier.class);
     
     private static final long serialVersionUID = 1L;
+    private static final double INCLUSION_ADJUSTMENT = .001; //adjustment value to increase threshold by in experiments where we're using a known true positive rate to establish threshold
     private String trainAuthor; //the author whose training data we are using to perform verification
 	private String analysisString; //string of data to be analyzed
 	private List<DistractorlessEvaluation> evaluations; //stores each experiment
@@ -146,15 +147,13 @@ public class DistractorlessVerifier extends Verifier{
 		Double thresh = 0.0;
 		// Create a list of evaluations--one for each testing instance
 		if (TPThresholdRate == Double.MIN_VALUE){
-			LOG.info("Generating threshold based on average times a multiplier");
 			thresh = calculateDesiredThreshold(0.0); // grab the threshold from the analysis string
 			thresh = thresh + thresh * thresholdModifier; // apply the modifier
 		} else {
-			LOG.info("Generating threshold bassed on desired true positive rate on known data");
 			thresh = calculateDesiredThreshold(TPThresholdRate);
 		}
 		
-		LOG.info("Thresh: "+thresh);
+		LOG.info("Using Threshold: "+thresh);
 		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
@@ -327,20 +326,13 @@ public class DistractorlessVerifier extends Verifier{
 		int count = 0;
 		String[] line;
 		Scanner s = new Scanner(aCopy);
-		LOG.info(aCopy);
-		//s.nextLine(); //skip the header
+		LOG.debug("\n"+aCopy);
 		List<Double> thresholds = new ArrayList<Double>();
 		//collect all of the numbers
 		while (s.hasNext()){
 			String string = s.nextLine();
 			line = string.split(",");
 			double value = Double.parseDouble(line[line.length-1]);
-			/*if (value == Double.NaN){
-				LOG.info("NaN from: "+line);
-			} else {
-				LOG.info("In-process assessment: " + value);
-				LOG.info("Line: "+string);
-			}*/
 			if (value > max){
 				max = value;
 			}
@@ -358,13 +350,14 @@ public class DistractorlessVerifier extends Verifier{
 		} else if (rate == 1.0){
 		    LOG.info("Using largest document threshold");
 			Collections.sort(thresholds);
-			return thresholds.get(thresholds.size()-1);
+			return thresholds.get(thresholds.size()-1) + thresholds.get(thresholds.size()-1)*INCLUSION_ADJUSTMENT;
 		//otherwise, it's time to do some extra math
 		} else {
 			int goal = -1;
 			for (int i = 0; i<count; i++){
 				if ((i * (1.0/count)) > rate){
 					goal = i;
+					LOG.info("goal is: "+goal+" getting rate: "+rate);
 					break;
 				}
 			}
@@ -380,7 +373,7 @@ public class DistractorlessVerifier extends Verifier{
 				for (Double d : thresholds){
 				    LOG.info("Threshold value: "+d);
 				}
-				return thresholds.get(goal);
+				return thresholds.get(goal-1)+thresholds.get(goal)*INCLUSION_ADJUSTMENT;
 			}
 		}
 	}
