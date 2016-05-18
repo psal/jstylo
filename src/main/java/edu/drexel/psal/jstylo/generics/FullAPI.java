@@ -540,8 +540,7 @@ public class FullAPI {
 	    LOG.info(cumulativeResults.getStatisticsString()+"\n"+cumulativeResults.getAllDocumentResults(true)+"\n"+cumulativeResults.getConfusionMatrixString());
 	    */
 	    
-	    ProblemSet ps = new ProblemSet("jsan_resources/problem_sets/politicians.xml");
-	    ps.addTestDoc(DocResult.defaultUnknown, new Document("/Users/tdutko200/Downloads/georgeWB.txt",DocResult.defaultUnknown,"georgeWB.txt"));
+	    ProblemSet ps = new ProblemSet("jsan_resources/problem_sets/trumpMiller.xml");
 	    
 	    FullAPI test = null;
 	    
@@ -559,13 +558,45 @@ public class FullAPI {
             LOG.error("Failed to intialize API, exiting...",e);
         }
 
-		test.prepareInstances();
-		test.calcInfoGain();
+        test.prepareInstances();
+        Verifier v = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false);
+        v.verify();
+        LOG.info("Default verification\n"+v.getResultString());
+        
+        Verifier v3 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false, 1.0);
+        v3.verify();
+        LOG.info("100% known verification\n"+v3.getResultString());
+        
+        Verifier v2 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false, .86);
+        v2.verify();
+        LOG.info("85% known verification\n"+v2.getResultString());
+        
+        Verifier v4 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.72);
+        v4.verify();
+        LOG.info("50% known verification\n"+v4.getResultString());
+        
+        Verifier v7 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.58);
+        v7.verify();
+        LOG.info("50% known verification\n"+v7.getResultString());
+        
+        Verifier v6 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.43);
+        v6.verify();
+        LOG.info("50% known verification\n"+v6.getResultString());
+        
+        Verifier v5 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.29);
+        v5.verify();
+        LOG.info("50% known verification\n"+v5.getResultString());
+        
+        Verifier v8 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.15);
+        v8.verify();
+        LOG.info("50% known verification\n"+v8.getResultString());
+		
+		//test.calcInfoGain();
 		//test.applyInfoGain(5);
-		test.run();
-		LOG.info(test.getUnderlyingAnalyzer().getExperimentMetrics());
-		LOG.info(test.getStatString());
-		LOG.info(test.getReadableInfoGain(false));
+		//test.run();
+		//LOG.info(test.getUnderlyingAnalyzer().getExperimentMetrics());
+		//LOG.info(test.getStatString());
+		//LOG.info(test.getReadableInfoGain(false));
 		//LOG.info(test.getResults().toJson().toString());
 		//LOG.info("Count for "+test.getTestingDataMap().getFeatures().get(0)+
 		//        " is "+test.getTestingDataMap().getDataMap().get("a").get("a_07.txt").getFeatureCountAtIndex(0));

@@ -63,7 +63,6 @@ public class DistractorlessVerifier extends Verifier{
 		//initialize data structures
 		analysisString = "";
 		evaluations = new ArrayList<DistractorlessEvaluation>();
-		
 		metaVerification = meta;
 	}
 	
@@ -104,7 +103,8 @@ public class DistractorlessVerifier extends Verifier{
 	 * @param tei
 	 * @param modifier
 	 */
-	public DistractorlessVerifier(DataMap train, DataMap test, double modifier, boolean meta) {
+	/*
+	public DistractorlessVerifier(DataMap train, DataMap test, double leeway, boolean meta) {
 		
 		//grab the instances
 		trainingInstances = WekaUtils.instancesFromDataMap(train);
@@ -122,10 +122,10 @@ public class DistractorlessVerifier extends Verifier{
 		metaVerification = meta;
 		
 		//grab threshold modifier
-		thresholdModifier = modifier;
+		thresholdModifier = leeway;
 		TPThresholdRate = Double.MIN_VALUE;
 	} 
-	
+	*/
 	public void setTestInstances(Instances tei){
 		testingInstances = tei;
 	}
@@ -146,15 +146,15 @@ public class DistractorlessVerifier extends Verifier{
 		Double thresh = 0.0;
 		// Create a list of evaluations--one for each testing instance
 		if (TPThresholdRate == Double.MIN_VALUE){
-			//LOG.info("Generating threshold based on average times a multiplier");
+			LOG.info("Generating threshold based on average times a multiplier");
 			thresh = calculateDesiredThreshold(0.0); // grab the threshold from the analysis string
 			thresh = thresh + thresh * thresholdModifier; // apply the modifier
 		} else {
-			//LOG.info("Generating threshold bassed on desired true positive rate on known data");
+			LOG.info("Generating threshold bassed on desired true positive rate on known data");
 			thresh = calculateDesiredThreshold(TPThresholdRate);
 		}
 		
-		//LOG.info("Thresh: "+thresh);
+		LOG.info("Thresh: "+thresh);
 		
 		// for all testing documents
 		for (int i = 0; i < testingInstances.numInstances(); i++) {
@@ -327,7 +327,8 @@ public class DistractorlessVerifier extends Verifier{
 		int count = 0;
 		String[] line;
 		Scanner s = new Scanner(aCopy);
-		s.nextLine(); //skip the header
+		LOG.info(aCopy);
+		//s.nextLine(); //skip the header
 		List<Double> thresholds = new ArrayList<Double>();
 		//collect all of the numbers
 		while (s.hasNext()){
@@ -352,8 +353,10 @@ public class DistractorlessVerifier extends Verifier{
 		
 		//if we're using the average * multiplier method, just return the average
 		if (rate == 0.0){
+		    LOG.info("Using average threshold");
 			return (cumulative/count);
-		}else if (rate == 1.0){
+		} else if (rate == 1.0){
+		    LOG.info("Using largest document threshold");
 			Collections.sort(thresholds);
 			return thresholds.get(thresholds.size()-1);
 		//otherwise, it's time to do some extra math
@@ -368,13 +371,15 @@ public class DistractorlessVerifier extends Verifier{
 			
 			//if we can't find something satisfactory for some reason, return the average
 			if (goal == -1){
+			    LOG.info("Failed to calculate threshold based on input, returning average");
 				return (cumulative/count);
 			} else {
 				Collections.sort(thresholds);
-				/*
 				LOG.info("To get at least a rate of: "+rate+" we need a threshold of: "+thresholds.get(goal));
 				LOG.info("For comparison, the average distance is: "+cumulative/count);
-				*/
+				for (Double d : thresholds){
+				    LOG.info("Threshold value: "+d);
+				}
 				return thresholds.get(goal);
 			}
 		}
@@ -439,9 +444,10 @@ public class DistractorlessVerifier extends Verifier{
 			// format is train author, test author, cosine distance
 			// DO NOT CHANGE
 			// unless you also change the Distractorless.java's evalCSV method to compensate
-			s += String.format(instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
-					+ instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
-					+ dist + "\n");
+			String news = String.format(instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
+                    + instJ.attribute(instJ.classIndex()).value((int) instJ.classValue()) + ","
+                    + dist + "\n");
+			s += news;
 		}
 		return s;
 	}
