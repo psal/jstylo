@@ -546,7 +546,7 @@ public class FullAPI {
 	    
         try {
             test = new FullAPI.Builder()
-                    .cfdPath("jsan_resources/feature_sets/politics.xml")
+                    .cfdPath("jsan_resources/feature_sets/writeprints_limited_norm_revised.xml")
                     .ps(ps)
                     .setAnalyzer(new WekaAnalyzer())
                     .numThreads(4).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
