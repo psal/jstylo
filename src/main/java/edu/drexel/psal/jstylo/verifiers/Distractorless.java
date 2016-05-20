@@ -92,7 +92,7 @@ public class Distractorless implements Serializable{
 		double dist;
 		
 		// skip header
-		scan.nextLine();
+		//scan.nextLine();
 		
 		while (scan.hasNext())
 		{

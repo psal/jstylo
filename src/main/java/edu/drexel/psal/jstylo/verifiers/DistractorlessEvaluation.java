@@ -56,7 +56,7 @@ public class DistractorlessEvaluation implements Serializable{
 	public String getResultString() {
 		String s = "";
 		try {
-			s += "<=========[" + testInstance.stringValue(testInstance.attribute(0)) + "]=========>";
+			s += "<=========[--]=========>";
 			s += /* e.toSummaryString() + "\n" + e.toClassDetailsString() + "\n" + */resultEval.toMatrixString() + "\n";
 		} catch (Exception exc) {
 			exc.printStackTrace();
