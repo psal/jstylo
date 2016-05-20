@@ -503,51 +503,13 @@ public class FullAPI {
 	}
 	
 	public static void main(String[] args){
-	    /*
-	    ProblemSet ps = new ProblemSet("./jsan_resources/problem_sets/politicians.xml");
-	    
-	    ExperimentResults cumulativeResults = new ExperimentResults();
-	    int count = 1;
-	    for (Document toTest : ps.getAllTrainDocs()){
-	        ProblemSet ps2 = new ProblemSet(ps);
-	        ps2.removeTrainDocAt(toTest.getAuthor(), toTest);
-	        ps2.addTestDoc(toTest.getAuthor(), toTest);
-	        
-	        FullAPI test = null;
-	        
-	        try {
-	            test = new FullAPI.Builder()
-	                    .cfdPath("jsan_resources/feature_sets/politics.xml")
-	                    .ps(ps2)
-	                    .setAnalyzer(new WekaAnalyzer())
-	                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_KNOWN)
-	                    .useCache(false).chunkDocs(false)
-	                    .build();
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            LOG.error("Failed to intialize API, exiting...",e);
-	        }
-	        
-	        test.prepareInstances();
-	        test.run();
-	        for (DocResult dr : test.getResults().getExperimentContents()){
-	            cumulativeResults.addDocResult(dr);
-	        }
-	        LOG.info("Completed "+count+" of "+ps.getAllTrainDocs().size());
-	        count++;
-	    }
-	    
-	    LOG.info(cumulativeResults.getStatisticsString()+"\n"+cumulativeResults.getAllDocumentResults(true)+"\n"+cumulativeResults.getConfusionMatrixString());
-	    */
-	    
-	    ProblemSet ps = new ProblemSet("jsan_resources/problem_sets/trumpMiller.xml");
 	    
 	    FullAPI test = null;
 	    
         try {
             test = new FullAPI.Builder()
                     .cfdPath("jsan_resources/feature_sets/writeprints_limited_norm_revised.xml")
-                    .ps(ps)
+                    .psPath("jsan_resources/problem_sets/trumpMiller.xml")
                     .setAnalyzer(new WekaAnalyzer())
                     .numThreads(4).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
                     .loadDocContents(false)
@@ -567,29 +529,29 @@ public class FullAPI {
         v3.verify();
         LOG.info("100% known verification\n"+v3.getResultString());
         
-        Verifier v2 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false, .86);
+        Verifier v2 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false, .85);
         v2.verify();
         LOG.info("85% known verification\n"+v2.getResultString());
         
-        Verifier v4 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.72);
+        Verifier v4 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.71);
         v4.verify();
-        LOG.info("50% known verification\n"+v4.getResultString());
+        LOG.info("71% known verification\n"+v4.getResultString());
         
-        Verifier v7 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.58);
+        Verifier v7 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.57);
         v7.verify();
-        LOG.info("50% known verification\n"+v7.getResultString());
+        LOG.info("58% known verification\n"+v7.getResultString());
         
-        Verifier v6 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.43);
+        Verifier v6 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.42);
         v6.verify();
-        LOG.info("50% known verification\n"+v6.getResultString());
+        LOG.info("43% known verification\n"+v6.getResultString());
         
-        Verifier v5 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.29);
+        Verifier v5 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.28);
         v5.verify();
-        LOG.info("50% known verification\n"+v5.getResultString());
+        LOG.info("29% known verification\n"+v5.getResultString());
         
-        Verifier v8 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.15);
+        Verifier v8 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.14);
         v8.verify();
-        LOG.info("50% known verification\n"+v8.getResultString());
+        LOG.info("15% known verification\n"+v8.getResultString());
 		
 		//test.calcInfoGain();
 		//test.applyInfoGain(5);
