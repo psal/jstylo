@@ -5,7 +5,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgaap.generics.Document;
 import com.jgaap.generics.EventSet;
 
 import edu.drexel.psal.jstylo.featureProcessing.Chunker;
@@ -15,7 +14,6 @@ import edu.drexel.psal.jstylo.featureProcessing.ProblemSet;
 import edu.drexel.psal.jstylo.machineLearning.Analyzer;
 import edu.drexel.psal.jstylo.machineLearning.Verifier;
 import edu.drexel.psal.jstylo.machineLearning.weka.InfoGain;
-import edu.drexel.psal.jstylo.machineLearning.weka.WekaAnalyzer;
 import edu.drexel.psal.jstylo.verifiers.DistractorlessVerifier;
 
 /**
@@ -501,69 +499,4 @@ public class FullAPI {
 	public CumulativeFeatureDriver getCFD(){
 		return cfd;
 	}
-	
-	public static void main(String[] args){
-	    
-	    FullAPI test = null;
-	    
-        try {
-            test = new FullAPI.Builder()
-                    .cfdPath("jsan_resources/feature_sets/writeprints_limited_norm_revised.xml")
-                    .psPath("jsan_resources/problem_sets/trumpMiller.xml")
-                    .setAnalyzer(new WekaAnalyzer())
-                    .numThreads(4).analysisType(analysisType.TRAIN_TEST_UNKNOWN).useCache(false).chunkDocs(false)
-                    .loadDocContents(false)
-                    .numFolds(3)
-                    .build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOG.error("Failed to intialize API, exiting...",e);
-        }
-
-        test.prepareInstances();
-        Verifier v = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false);
-        v.verify();
-        LOG.info("Default verification\n"+v.getResultString());
-        
-        Verifier v3 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false, 1.0);
-        v3.verify();
-        LOG.info("100% known verification\n"+v3.getResultString());
-        
-        Verifier v2 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false, .85);
-        v2.verify();
-        LOG.info("85% known verification\n"+v2.getResultString());
-        
-        Verifier v4 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.71);
-        v4.verify();
-        LOG.info("71% known verification\n"+v4.getResultString());
-        
-        Verifier v7 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.57);
-        v7.verify();
-        LOG.info("58% known verification\n"+v7.getResultString());
-        
-        Verifier v6 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.42);
-        v6.verify();
-        LOG.info("43% known verification\n"+v6.getResultString());
-        
-        Verifier v5 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.28);
-        v5.verify();
-        LOG.info("29% known verification\n"+v5.getResultString());
-        
-        Verifier v8 = new DistractorlessVerifier(test.getTrainingDataMap(),test.getTestingDataMap(),false,.14);
-        v8.verify();
-        LOG.info("15% known verification\n"+v8.getResultString());
-		
-		//test.calcInfoGain();
-		//test.applyInfoGain(5);
-		//test.run();
-		//LOG.info(test.getUnderlyingAnalyzer().getExperimentMetrics());
-		//LOG.info(test.getStatString());
-		//LOG.info(test.getReadableInfoGain(false));
-		//LOG.info(test.getResults().toJson().toString());
-		//LOG.info("Count for "+test.getTestingDataMap().getFeatures().get(0)+
-		//        " is "+test.getTestingDataMap().getDataMap().get("a").get("a_07.txt").getFeatureCountAtIndex(0));
-		//LOG.info(test.getClassificationAccuracy());
-		//LOG.info(test.getStatString());
-	}
-	
 }

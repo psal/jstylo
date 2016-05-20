@@ -38,4 +38,9 @@ Then, pass the VM the argument: -Dlog4j.configuration=file:///path/to/file/newlo
 
 Note:
 For usage with large corpora or feature sets, it is recommended to increase the JVM heap size using the -Xmx option.
+
+Logging:
+
+JStylo uses Log4j for logging. To get log files for any experiments you run, add the VM argument -Dlog4j.configuration=file://${/path/to/log4j.xml}
+A default log4j.xml file is included in src/main/resources
  
