@@ -13,6 +13,11 @@ JStylo
 
 ----------------------------------------------------
 
+VERSION 2.9.0 NOTES:
+
+Version 2.9.0 was produced by a limited-duration project specifically to update the JStylo API and backend infrastructure.
+Updating and testing the UI was not a part of this project. If you intend to use the JStylo desktop UI, we recommend that you use branch 2.3.0.
+
 License:
 
 JStylo was released by the Privacy, Security and Automation lab at Drexel University in 2011 under the AGPLv3 license. It was ported to the BSD-3 clause license in 2013.
@@ -23,6 +28,9 @@ Dependencies:
 JStylo now utilizes a Maven POM file for managing dependencies. Note that there is one additional dependency (JGAAP) which is non-mavenized. 
 This dependency jar is included with each release of JStylo. Include it in your project's lib folder to allow JStylo to access its resources.
 
+Building/Installing:
+
+run a maven clean install either via command line or your IDE plugin. You can add the -DskipTests flag to improve the time on the build process.
 
 Usage:
 
@@ -31,7 +39,7 @@ JStylo requires Java 8 or later to run properly
 In windows: double-click jstylo.jar
 In other platforms / to view on-the-fly log:
 
-> java [-Xmx2048m] -jar jsan.jar
+> java [-Xmx2048m] -jar jtylo.jar
 
 To configure log4j, copy the log4j.xml file in src/main/resources and make the desired modifications.
 Then, pass the VM the argument: -Dlog4j.configuration=file:///path/to/file/newlog4j.xml
