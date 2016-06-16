@@ -31,6 +31,10 @@ This dependency jar is included with each release of JStylo. Include it in your 
 Building/Installing:
 
 run a maven clean install either via command line or your IDE plugin. You can add the -DskipTests flag to improve the time on the build process.
+NOTE: JStylo depends on JGAAP, which is not hosted on the maven central repository. Additionally, due to github's policy on large files, it cannot be included with the project.
+JStylo branch 2.3.0, an older version from before this github restriction, has this dependency included. To build this version, please download "jgaap-5.2.0-lite.jar" from branch 2.3.0 and place it in /lib subdirectory of the project.
+
+If someone mavenizes JGAAP, let us know and we'll update our pom file.
 
 Usage:
 
