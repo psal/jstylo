@@ -26,7 +26,7 @@
 		<cullers>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="letter bigrams" calc_hist="true">
 		<description value="Most common letter bigrams (e.g. aa, ab etc.), case insensitive. Bigrams are taken only within words (do not cross adjacent words)."/>
@@ -43,7 +43,7 @@
 			</culler>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="letter trigrams" calc_hist="true">
 		<description value="Most common letter trigrams (e.g. aaa, aab etc.), case insensitive. Trigrams are taken only within words (do not cross adjacent words)."/>
@@ -60,7 +60,7 @@
 			</culler>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="digits" calc_hist="true">
 		<description value="Frequency of digits in the document (0,1,...,9)."/>
@@ -72,7 +72,7 @@
 		<cullers>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="digit bigrams" calc_hist="true">
 		<description value="Frequencies of 2 digit numbers (e.g. 11, 99 etc.)."/>
@@ -87,7 +87,7 @@
 			</culler>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="digit trigrams" calc_hist="true">
 		<description value="Frequencies of 3 digit numbers (e.g. 100, 209 etc.)."/>
@@ -102,7 +102,7 @@
 			</culler>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="word lengths" calc_hist="true">
 		<description value="Frequency of words of different lengths (excluding punctuation)."/>
@@ -154,7 +154,7 @@
 			</culler>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="Punctuation" calc_hist="true">
 		<description value="Punctuation symbols like . , ! etc."/>
@@ -181,7 +181,7 @@
 		<cullers>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="POS bigrams" calc_hist="true">
 		<description value="Part-Of-Speech tag bigrams extracted by the Stanford POS Maxent Tagger."/>
@@ -196,7 +196,7 @@
 			</culler>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="POS trigrams" calc_hist="true">
 		<description value="Part-Of-Speech tag trigrams extracted by the Stanford POS Maxent Tagger."/>
@@ -211,7 +211,7 @@
 			</culler>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="bag-of-words" calc_hist="true">
 		<description value="Frequencies of various words in the text, case insensitive and without punctuation."/>
@@ -248,7 +248,7 @@
 			</culler>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="word trigrams" calc_hist="true">
 		<description value="Frequencies of various word trigrams in the text, case insensitive and without punctuations."/>
@@ -267,7 +267,7 @@
 			</culler>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="misspellings" calc_hist="true">
 		<description value="Frequencies of misspelled words out of a list of 5,513 common misspellings."/>
@@ -290,7 +290,7 @@
 			</culler>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="unique words count" calc_hist="false">
 		<description value=""/>
@@ -305,7 +305,7 @@
 		<cullers>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="large words count" calc_hist="false">
 		<description value="counting number of words of length > 4"/>
@@ -321,7 +321,7 @@
 		<cullers>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="% of digits" calc_hist="false">
 		<description value=""/>
@@ -333,7 +333,7 @@
 		<cullers>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="% of letters" calc_hist="false">
 		<description value=""/>
@@ -345,7 +345,7 @@
 		<cullers>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="% of uppercase letters" calc_hist="false">
 		<description value=""/>
@@ -357,7 +357,7 @@
 		<cullers>
 		</cullers>
 		<norm value="CHARS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="hapax legomena" calc_hist="false">
 		<description value="number of words used once"/>
@@ -372,7 +372,7 @@
 		<cullers>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="dis legomena" calc_hist="false">
 		<description value="number of words used twice"/>
@@ -387,7 +387,7 @@
 		<cullers>
 		</cullers>
 		<norm value="WORDS_IN_DOC"/>
-		<factor value="100.0"/>
+		<factor value="1.0"/>
 	</feature>
 	<feature name="yule's k" calc_hist="false">
 		<description value="Yule's characteristic K"/>
